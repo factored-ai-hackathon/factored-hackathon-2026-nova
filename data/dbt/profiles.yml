@@ -1,0 +1,16 @@
+# No secrets here: authentication comes from your AWS CLI profile
+# (aws configure, see docs/setup.md). The bucket defaults to
+# fh26-hackaton-data; override with DBT_WORK_BUCKET if needed.
+latam_bank:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      region_name: "{{ env_var('AWS_REGION', 'us-east-2') }}"
+      database: awsdatacatalog
+      schema: latam_curated
+      work_group: hackathon
+      s3_staging_dir: "s3://{{ env_var('DBT_WORK_BUCKET', 'fh26-hackaton-data') }}/athena-results/dbt/"
+      s3_data_dir: "s3://{{ env_var('DBT_WORK_BUCKET', 'fh26-hackaton-data') }}/curated/"
+      s3_data_naming: schema_table
+      threads: 4

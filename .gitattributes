@@ -1,0 +1,9 @@
+# Normalize line endings so Mac and Windows contributors don't create noisy diffs.
+* text=auto
+
+# Shell scripts must keep LF or they break on Mac/Linux.
+*.sh text eol=lf
+
+# Notebook outputs are stripped on commit (run `uv run nbstripout --install` once).
+*.ipynb filter=nbstripout
+*.ipynb diff=ipynb

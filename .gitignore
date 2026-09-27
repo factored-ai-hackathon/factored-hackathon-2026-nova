@@ -1,0 +1,39 @@
+# Dataset: never commit (public repo). data/ holds pipeline code, so only
+# dataset files and local dataset folders are ignored.
+data_root/
+data_gz/
+data/raw/
+data/local/
+*.csv
+*.csv.gz
+*.parquet
+*.zip
+*.tar.gz
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+.terraform.tfstate.lock.info
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+__pycache__/
+.venv/
+
+# dbt
+data/dbt/target/
+data/dbt/dbt_packages/
+data/dbt/logs/
+data/dbt/.venv/
+data/dbt/.user.yml

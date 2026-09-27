@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: stg_call_center_interactions
+    description: Typed, deduplicated call center interactions (latest process_date wins).
+    columns:
+      - name: interaction_id
+        data_tests: [unique, not_null]
+  - name: stg_satisfaction_surveys
+    columns:
+      - name: survey_id
+        data_tests: [unique, not_null]
+  - name: stg_call_transcripts
+    columns:
+      - name: transcript_id
+        description: A few source rows have no transcript_id; they are kept and reported, not dropped.
+        data_tests:
+          - unique
+          - not_null:
+              config:
+                severity: warn
+  - name: stg_complaints
+    columns:
+      - name: complaint_id
+        data_tests: [unique, not_null]
+  - name: stg_service_agents
+    description: Agents without personal contact data.
+    columns:
+      - name: agent_id
+        data_tests: [unique, not_null]
+  - name: stg_customers
+    description: Customers without direct identifiers (no names, document, contact data, address or birth date).
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]

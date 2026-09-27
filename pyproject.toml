@@ -1,0 +1,26 @@
+[project]
+name = "factored-hackathon-2026"
+version = "0.1.0"
+description = "AI-first contact center agent: data model, ML and agent"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    # Data model (data/dbt)
+    "dbt-core>=1.9,<2",
+    "dbt-athena>=1.9,<2",
+    # Notebooks
+    "jupyterlab>=4",
+    "ipykernel",
+    "nbstripout",  # strips notebook outputs before commit (keeps data out of the public repo)
+    # Data access and analysis
+    "awswrangler>=3",  # query Athena / read S3 Parquet into pandas
+    "duckdb>=1",
+    "pandas>=2",
+    "pyarrow",
+    "matplotlib",
+    "seaborn",
+    # Modeling (add other libraries only when a comparison shows they help)
+    "scikit-learn",
+]
+
+[tool.uv]
+package = false

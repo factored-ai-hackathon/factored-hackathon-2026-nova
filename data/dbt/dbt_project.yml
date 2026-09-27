@@ -1,0 +1,30 @@
+name: latam_bank
+version: "0.1.0"
+config-version: 2
+profile: latam_bank
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # A resolved contact counts as FCR only if the same customer does not
+  # contact us again about the same reason_category within this window.
+  fcr_window_days: 7
+  # Last day of the dataset; used for ages and to know which contacts are
+  # too recent to judge FCR.
+  as_of_date: "2026-06-17"
+  date_spine_start: "2023-06-01"
+  date_spine_end: "2026-06-30"
+
+models:
+  latam_bank:
+    +materialized: table
+    +format: parquet
+    +write_compression: snappy
+    staging:
+      +tags: ["staging"]
+    marts:
+      +tags: ["marts"]
