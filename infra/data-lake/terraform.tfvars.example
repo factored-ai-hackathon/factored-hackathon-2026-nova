@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars (gitignored) and fill in.
+aws_profile         = "hackathon"
+
+# Optional overrides
+# region               = "us-east-2"
+# athena_scan_limit_gb = 10

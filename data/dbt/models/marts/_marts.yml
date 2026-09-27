@@ -1,0 +1,65 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: One row per calendar day covering the dataset.
+    columns:
+      - name: date_day
+        data_tests: [unique, not_null]
+
+  - name: dim_agent
+    description: One row per service agent (no personal contact data).
+    columns:
+      - name: agent_id
+        data_tests: [unique, not_null]
+
+  - name: dim_customer
+    description: One row per customer (no direct identifiers).
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+
+  - name: fact_interaction
+    description: >
+      One row per call center interaction, with first contact resolution (FCR),
+      survey outcome and transcript metadata.
+    columns:
+      - name: interaction_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: Orphaned keys are expected in this dataset, so this test warns instead of failing.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+              config:
+                severity: warn
+      - name: agent_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_agent')
+                field: agent_id
+              config:
+                severity: warn
+      - name: date_day
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+              config:
+                severity: warn
+      - name: detected_sentiment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Muy Negativo', 'Negativo', 'Neutral', 'Positivo', 'Muy Positivo']
+              config:
+                severity: warn
+      - name: is_fcr
+        description: >
+          TRUE when resolved and no repeat contact from the same customer about the
+          same reason_category within var('fcr_window_days') days. NULL when it
+          can't be judged (missing data, or too close to the end of the dataset).
