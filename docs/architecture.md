@@ -13,7 +13,7 @@
 | Part | Technology |
 |---|---|
 | Agent | LangGraph (steps and security rules) + LangChain (models, tools) |
-| LLM | Claude on Amazon Bedrock (production); OpenRouter free models (local only) |
+| LLM | Claude on Amazon Bedrock (production); Hugging Face Inference Providers, free tier (local only) |
 | Knowledge answers | RAG over products, policies, FAQs |
 | Customer data for the agent | DynamoDB |
 | Contact center models | To be decided (scikit-learn), trained on `latam_curated` |

@@ -1,5 +1,37 @@
 # backend
 
 API (FastAPI) and the agent (LangGraph + LangChain). Owners: Paul, Esteban (API); Paul, Iris (agent).
+Separate uv project from the root data/ML one, so the image stays small. API contract: [docs/api-contract.md](../docs/api-contract.md).
 
-**Local LLM:** copy `.env.example` to `.env` and add your personal OpenRouter key (set its credit limit to $0). Only send test data to OpenRouter. Production uses Bedrock.
+## Run locally
+```bash
+cd backend
+uv sync
+cp .env.example .env        # then set HF_TOKEN (see below)
+uv run uvicorn app.main:app --reload
+```
+API on http://localhost:8000 (interactive docs at `/docs`). Start the frontend too (see `frontend/README.md`).
+
+**Local LLM:** create a personal Hugging Face token (fine-grained, permission "Make calls to Inference Providers") and put it in `backend/.env` as `HF_TOKEN`. The free tier is only $0.10 of credits per month, so chat sparingly. Send only test text, never real customer data. Production uses Bedrock; with `APP_ENV=prod` the app refuses to start with any other provider.
+
+Without `HF_TOKEN` the API still runs, but each message ends with an `error` event.
+
+## Tests
+```bash
+uv run pytest            # API, agent (fake model) and the smoke eval in ../evals/agent
+uv run ruff check
+uv run ruff format
+```
+No token or network needed. `HF_TOKEN=... uv run pytest -m live` runs the one live test.
+
+## Layout
+| Path | What |
+|---|---|
+| `app/main.py` | App, CORS, `/health`, prod provider guard at startup |
+| `app/config.py` | Settings from env vars / `.env` |
+| `app/api/chat.py` | Sessions and SSE streaming (see the contract) |
+| `app/sessions.py` | In-memory session store behind an interface (DynamoDB later) |
+| `app/llm.py` | Chat model per `LLM_PROVIDER` |
+| `app/agent/` | `stream_reply` seam, LangGraph graph, system prompts per language |
+
+The next graph nodes (`classify_turn`, `auth_gate`, `answer_public`, `handoff`) are marked with TODOs in `app/agent/graph.py`.

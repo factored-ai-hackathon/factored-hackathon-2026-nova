@@ -9,3 +9,10 @@ Every capability ships with its eval set, in Spanish and Portuguese:
 - `reliability/`: tool/LLM failures, timeouts, malformed outputs, escalation
 
 Reported results run against Bedrock (the production provider). Eval cases use synthetic data only.
+
+## Run
+From `backend/`: `uv run pytest ../evals/agent`. It uses a fake model by default (no token, no cost), which checks the harness and the graph. `EVAL_LIVE=1` runs the cases against the configured provider.
+
+| Set | Cases | Checks |
+|---|---|---|
+| `agent/smoke.yaml` | 10 (5 ES, 5 PT) | Reply language; never asks for card number/PIN/password; no invented amounts |
