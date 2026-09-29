@@ -677,3 +677,52 @@
 
 .detail-value.debit { color: var(--color-error); }
 .detail-value.credit { color: var(--color-accent); }
+
+/* Markdown inside agent replies */
+.msg-bubble.user {
+  white-space: pre-wrap;
+}
+
+.msg-markdown > :first-child {
+  margin-top: 0;
+}
+
+.msg-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.msg-markdown p,
+.msg-markdown ul,
+.msg-markdown ol {
+  margin: 0 0 var(--space-2);
+}
+
+.msg-markdown ul,
+.msg-markdown ol {
+  padding-left: var(--space-5);
+}
+
+.msg-markdown li + li {
+  margin-top: var(--space-1);
+}
+
+.msg-markdown h1,
+.msg-markdown h2,
+.msg-markdown h3,
+.msg-markdown h4 {
+  margin: var(--space-2) 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.msg-markdown a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.msg-markdown code {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background: #f0f4f8;
+  font-size: 0.95em;
+}
