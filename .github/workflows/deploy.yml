@@ -50,7 +50,9 @@ jobs:
             --s3-bucket "${{ vars.ARTIFACTS_BUCKET }}" \
             --s3-key backend/lambda.zip \
             --query LastUpdateStatus --output text
-          aws lambda wait function-updated-v2 --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}"
+          # function-updated polls GetFunctionConfiguration (allowed); -v2 needs GetFunction,
+          # which would also let the role download the code.
+          aws lambda wait function-updated --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}"
 
       - name: Smoke test
         run: curl --fail --silent --show-error --retry 5 --retry-all-errors "${{ vars.APP_URL }}/health"

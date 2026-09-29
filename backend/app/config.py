@@ -34,6 +34,12 @@ class Settings(BaseSettings):
     interactions_path: Path = BACKEND_DIR / ".interactions" / "interactions.jsonl"
     interactions_table: str = "fh26-chat-interactions"
     interactions_ttl_days: int = 30
+    # Spend limits (see docs/api-contract.md). Unset = no limit (local development).
+    daily_budget_usd: float | None = None
+    rate_limit_per_hour: int | None = None
+    # Price of the model, to turn tokens into dollars. Defaults: Claude Haiku 4.5 on Bedrock.
+    llm_price_input_per_mtok: float = 1.0
+    llm_price_output_per_mtok: float = 5.0
 
     @property
     def cors_origin_list(self) -> list[str]:
