@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AgentPanel } from '../components/agent/AgentPanel';
 import { AgentFAB } from '../components/agent/AgentFAB';
@@ -129,6 +129,9 @@ describe('Agent FAB and panel', () => {
     await user.click(screen.getByLabelText(/abrir asistente nova/i));
     const closeBtn = screen.getAllByRole('button', { name: /cerrar/i }).at(-1)!;
     await user.click(closeBtn);
+    // Closing asks first (and offers to save the conversation).
+    const dialog = screen.getByRole('alertdialog', { name: /cerrar el chat/i });
+    await user.click(within(dialog).getByRole('button', { name: /sí, cerrar/i }));
     expect(screen.queryByRole('complementary', { name: /nova/i })).not.toBeInTheDocument();
   });
 });

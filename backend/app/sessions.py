@@ -33,6 +33,8 @@ class Session:
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     messages: list[ChatMessage] = field(default_factory=list)
     auth: dict = field(default_factory=dict)  # identity verification state
+    # Human handoff (app/agent/handoff.py): {"handoff": {case_id, status}, "evidence": [...]}
+    case: dict = field(default_factory=dict)
 
 
 class SessionStore(Protocol):
@@ -44,10 +46,15 @@ class SessionStore(Protocol):
     async def set_lang(self, session_id: str, lang: Lang) -> None: ...
 
     async def save_messages(
-        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None = None
+        self,
+        session_id: str,
+        lang: Lang,
+        messages: list[ChatMessage],
+        auth: dict | None = None,
+        case: dict | None = None,
     ) -> None:
         """Replace the conversation history and verification state (creating the session if it
-        doesn't exist)."""
+        doesn't exist). `case` replaces the handoff state; None leaves it as it is."""
         ...
 
 
@@ -70,9 +77,16 @@ class InMemorySessionStore:
         self._sessions[session_id].lang = lang
 
     async def save_messages(
-        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None = None
+        self,
+        session_id: str,
+        lang: Lang,
+        messages: list[ChatMessage],
+        auth: dict | None = None,
+        case: dict | None = None,
     ) -> None:
         session = self._sessions.setdefault(session_id, Session(id=session_id, lang=lang))
+        if case is not None:
+            session.case = dict(case)
         session.messages = list(messages[-self.max_messages :])
         session.auth = dict(auth or {})
 
@@ -114,6 +128,7 @@ class DynamoSessionStore:
             created_at=datetime.fromisoformat(item["created_at"]),
             messages=[ChatMessage(**m) for m in json.loads(item.get("messages", "[]"))],
             auth=json.loads(item.get("auth_state", "{}")),
+            case=json.loads(item.get("case_state", "{}")),
         )
 
     def _set_lang(self, session_id: str, lang: Lang) -> None:
@@ -124,23 +139,33 @@ class DynamoSessionStore:
         )
 
     def _save_messages(
-        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None
+        self,
+        session_id: str,
+        lang: Lang,
+        messages: list[ChatMessage],
+        auth: dict | None,
+        case: dict | None,
     ) -> None:
         kept = [{"role": m.role, "content": m.content} for m in messages[-self.max_messages :]]
+        update = (
+            "SET messages = :m, auth_state = :auth, lang = if_not_exists(lang, :lang), "
+            "expires_at = :exp, created_at = if_not_exists(created_at, :now)"
+        )
+        values = {
+            ":m": json.dumps(kept, ensure_ascii=False),
+            # "auth" is a DynamoDB reserved word, hence auth_state.
+            ":auth": json.dumps(auth or {}),
+            ":lang": lang,
+            ":exp": self._expires_at(),
+            ":now": datetime.now(UTC).isoformat(),
+        }
+        if case is not None:
+            update += ", case_state = :case"
+            values[":case"] = json.dumps(case, ensure_ascii=False)
         self.table.update_item(
             Key={"session_id": session_id},
-            UpdateExpression=(
-                "SET messages = :m, auth_state = :auth, lang = if_not_exists(lang, :lang), "
-                "expires_at = :exp, created_at = if_not_exists(created_at, :now)"
-            ),
-            ExpressionAttributeValues={
-                ":m": json.dumps(kept, ensure_ascii=False),
-                # "auth" is a DynamoDB reserved word, hence auth_state.
-                ":auth": json.dumps(auth or {}),
-                ":lang": lang,
-                ":exp": self._expires_at(),
-                ":now": datetime.now(UTC).isoformat(),
-            },
+            UpdateExpression=update,
+            ExpressionAttributeValues=values,
         )
 
     async def create(self, lang: Lang, auth: dict | None = None) -> Session:
@@ -153,9 +178,14 @@ class DynamoSessionStore:
         await asyncio.to_thread(self._set_lang, session_id, lang)
 
     async def save_messages(
-        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None = None
+        self,
+        session_id: str,
+        lang: Lang,
+        messages: list[ChatMessage],
+        auth: dict | None = None,
+        case: dict | None = None,
     ) -> None:
-        await asyncio.to_thread(self._save_messages, session_id, lang, messages, auth)
+        await asyncio.to_thread(self._save_messages, session_id, lang, messages, auth, case)
 
 
 def build_session_store(settings: Settings) -> SessionStore:

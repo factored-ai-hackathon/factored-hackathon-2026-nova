@@ -39,6 +39,8 @@ class FakeTable:
         if ":m" in v:
             item["messages"] = v[":m"]
             item["auth_state"] = v[":auth"]
+            if ":case" in v:
+                item["case_state"] = v[":case"]
             item.setdefault("lang", v[":lang"])
             item.setdefault("created_at", v[":now"])
         if "SET lang = :lang" in UpdateExpression:
@@ -69,6 +71,14 @@ async def test_dynamo_session_keeps_its_initial_verification_state():
     store = dynamo_store()
     session = await store.create("es", {"session_customer_id": "C1"})
     assert (await store.get(session.id)).auth == {"session_customer_id": "C1"}
+
+
+async def test_dynamo_session_keeps_the_handoff_state_unless_replaced():
+    store = dynamo_store()
+    session = await store.create("es")
+    await store.save_messages(session.id, "es", [], case={"handoff": {"case_id": "NB-1"}})
+    await store.save_messages(session.id, "es", [ChatMessage("user", "hola")])  # case: None
+    assert (await store.get(session.id)).case == {"handoff": {"case_id": "NB-1"}}
 
 
 async def test_expired_session_is_gone_even_before_ttl_deletes_it():

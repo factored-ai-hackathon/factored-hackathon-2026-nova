@@ -120,7 +120,8 @@ export interface AgentContext {
   transactionContext?: Transaction; // context injected from banking UI
 }
 
-export type MessageRole = 'user' | 'agent' | 'system';
+/** agent: Nova; human: a human agent after a handoff; system: notices (demo SMS, case status). */
+export type MessageRole = 'user' | 'agent' | 'human' | 'system';
 
 export type Rating = 'up' | 'down';
 
@@ -131,6 +132,7 @@ export interface ConversationMessage {
   timestamp: string; // ISO datetime string
   suggestedActions?: string[];
   serverMessageId?: string; // backend message_id, needed to send feedback
+  author?: string; // the human agent's name (role 'human')
   feedback?: Rating;
 }
 

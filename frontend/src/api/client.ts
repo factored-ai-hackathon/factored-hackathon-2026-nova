@@ -147,6 +147,27 @@ export async function createSession(
 
 export type Rating = 'up' | 'down'
 
+export interface HandoffUpdate {
+  status: 'none' | 'waiting' | 'active' | 'closed'
+  case_id: string | null
+  agent_name: string | null
+  /** The human agent's messages and case notices since `after`. */
+  messages: { from: 'agent' | 'system'; text: string; at: string }[]
+  /** Pass it as `after` on the next poll. */
+  next: number
+}
+
+/** While a human agent has the conversation (after a handoff), the chat polls this. */
+export async function handoffUpdates(sessionId: string, after: number): Promise<HandoffUpdate> {
+  const res = await fetch(`${BASE_URL}/v1/chat/sessions/${sessionId}/handoff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ after }),
+  })
+  if (!res.ok) throw new ApiError(res.status, `handoff updates failed: ${res.status}`)
+  return res.json()
+}
+
 export async function sendFeedback(sessionId: string, messageId: string, rating: Rating): Promise<void> {
   const res = await fetch(`${BASE_URL}/v1/chat/sessions/${sessionId}/messages/${messageId}/feedback`, {
     method: 'POST',

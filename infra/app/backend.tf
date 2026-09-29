@@ -89,6 +89,12 @@ resource "aws_iam_role_policy" "api" {
         Resource = aws_dynamodb_table.interactions.arn
       },
       {
+        Sid      = "HandoffCases"
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Scan"]
+        Resource = aws_dynamodb_table.handoff_cases.arn
+      },
+      {
         Sid      = "ReadDemoCustomers"
         Effect   = "Allow"
         Action   = ["dynamodb:GetItem", "dynamodb:Query"]
@@ -132,6 +138,8 @@ resource "aws_lambda_function" "api" {
       SESSION_TTL_HOURS     = tostring(var.session_ttl_hours)
       INTERACTIONS_STORE    = "dynamodb"
       INTERACTIONS_TABLE    = aws_dynamodb_table.interactions.name
+      CASES_STORE           = "dynamodb"
+      CASES_TABLE           = aws_dynamodb_table.handoff_cases.name
       CUSTOMER_DIRECTORY    = "dynamodb"
       CUSTOMERS_TABLE       = aws_dynamodb_table.demo_customers.name
       INTERACTIONS_TTL_DAYS = tostring(var.interactions_ttl_days)

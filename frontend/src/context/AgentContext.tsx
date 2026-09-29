@@ -31,10 +31,21 @@ interface AgentContextValue {
   closeFullView: () => void;
   sendMessage: (text: string, transaction?: Transaction) => Promise<void>;
   resetConversation: () => void;
+  handoff: HandoffState | null;
   rateMessage: (messageId: string, rating: Rating) => Promise<void>;
 }
 
 const AgentCtx = createContext<AgentContextValue | null>(null);
+
+/** A human agent took over the conversation (decision 27). */
+export interface HandoffState {
+  caseId: string;
+  status: 'waiting' | 'active' | 'closed';
+  agentName: string | null;
+  next: number; // case messages already received
+}
+
+const POLL_MS = 3000;
 
 function freshConversation(language: 'es' | 'pt', customerName = 'Miguel Ramírez'): Conversation {
   const firstName = customerName.split(' ')[0];
@@ -64,6 +75,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     freshConversation(language, customer?.name)
   );
   const [isTyping, setIsTyping] = useState(false);
+  const [handoff, setHandoff] = useState<HandoffState | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const transactionContext = conversation.agentContext.transactionContext;
 
@@ -170,7 +182,12 @@ export function AgentProvider({ children }: { children: ReactNode }) {
             }),
             agentContext: { ...prev.agentContext, status: 'responding' },
           }));
-        }, (noticeText) => {
+        }, (noticeText, kind) => {
+          if (kind === 'handoff') {
+            // Handed over to a human: the reply already says so; start listening for the agent.
+            setHandoff({ caseId: noticeText, status: 'waiting', agentName: null, next: 0 });
+            return;
+          }
           // e.g. the demo SMS with the verification code, shown as a system message
           setConversation((prev) => ({
             ...prev,
@@ -195,7 +212,10 @@ export function AgentProvider({ children }: { children: ReactNode }) {
         setConversation((prev) => ({
           ...prev,
           id: response.conversation_id,
-          messages: withAgentMsg(prev.messages, agentMsg),
+          // With a human agent on the case the bot doesn't answer: no empty bubble.
+          messages: response.message
+            ? withAgentMsg(prev.messages, agentMsg)
+            : prev.messages.filter((m) => m.id !== agentMsgId),
           agentContext: {
             intent: response.intent,
             sentiment: response.sentiment,
@@ -239,12 +259,52 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     previousCustomerId.current = customerId;
     agentService.startForCustomer(customer?.sessionId);
     setConversation(freshConversation(language, customer?.name));
+    setHandoff(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only a customer change resets
   }, [customerId]);
+
+  // After a handoff: poll for the human agent's messages until the case closes.
+  const handoffOpen = handoff !== null && handoff.status !== 'closed';
+  const handoffNext = handoff?.next ?? 0;
+  useEffect(() => {
+    if (!handoffOpen) return;
+    const timer = setTimeout(async () => {
+      try {
+        const update = await agentService.pollHandoff(handoffNext);
+        if (!update || update.status === 'none') return;
+        if (update.messages.length) {
+          setConversation((prev) => ({
+            ...prev,
+            messages: [
+              ...prev.messages,
+              ...update.messages.map((m, i) => ({
+                id: `msg-h-${update.next}-${i}`,
+                role: m.from === 'agent' ? ('human' as const) : ('system' as const),
+                content: m.text,
+                timestamp: m.at,
+                author: m.from === 'agent' ? (update.agent_name ?? undefined) : undefined,
+              })),
+            ],
+          }));
+        }
+        setHandoff({
+          caseId: update.case_id ?? '',
+          status: update.status as HandoffState['status'],
+          agentName: update.agent_name,
+          next: update.next,
+        });
+      } catch {
+        // Try again on the next tick: a missed poll only delays the agent's message.
+        setHandoff((prev) => (prev ? { ...prev } : prev));
+      }
+    }, POLL_MS);
+    return () => clearTimeout(timer);
+  }, [handoffOpen, handoffNext, handoff]);
 
   const resetConversation = useCallback(() => {
     agentService.resetConversation();
     setConversation(freshConversation(language, customer?.name));
+    setHandoff(null);
     setIsTyping(false);
     setIsStreaming(false);
   }, [customer?.name, language]);
@@ -284,6 +344,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
         closeFullView,
         sendMessage,
         resetConversation,
+        handoff,
         rateMessage,
       }}
     >

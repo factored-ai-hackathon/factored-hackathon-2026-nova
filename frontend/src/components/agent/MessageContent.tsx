@@ -8,7 +8,7 @@ const components: Components = {
 };
 
 export function MessageContent({ role, content }: { role: MessageRole; content: string }) {
-  if (role !== 'agent') return <>{content}</>;
+  if (role !== 'agent' && role !== 'human') return <>{content}</>;
   return (
     <div className="msg-markdown">
       <Markdown components={components}>{content}</Markdown>
