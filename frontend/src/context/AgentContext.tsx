@@ -20,6 +20,8 @@ interface AgentContextValue {
   isFullView: boolean;
   conversation: Conversation;
   isTyping: boolean;
+  /** True once the first token of the reply has arrived (the reply is visible). */
+  isStreaming: boolean;
   openAgent: (txn?: Transaction) => void;
   closeAgent: () => void;
   openFullView: () => void;
@@ -58,6 +60,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     freshConversation(language, customer?.name)
   );
   const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const transactionContext = conversation.agentContext.transactionContext;
 
   const conversationForDisplay = conversation.messages.length === 1 && conversation.agentContext.status === 'idle'
@@ -152,6 +155,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
             : [...messages, agentMsg];
 
         const response = await agentService.sendMessage(request, (textSoFar) => {
+          setIsStreaming(true);
           setConversation((prev) => ({
             ...prev,
             messages: withAgentMsg(prev.messages, {
@@ -200,6 +204,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
         }));
       } finally {
         setIsTyping(false);
+        setIsStreaming(false);
       }
     },
     [customer, language, conversation.id, transactionContext]
@@ -209,6 +214,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     agentService.resetConversation();
     setConversation(freshConversation(language, customer?.name));
     setIsTyping(false);
+    setIsStreaming(false);
   }, [customer?.name, language]);
 
   return (
@@ -218,6 +224,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
         isFullView,
         conversation: conversationForDisplay,
         isTyping,
+        isStreaming,
         openAgent,
         closeAgent,
         openFullView,

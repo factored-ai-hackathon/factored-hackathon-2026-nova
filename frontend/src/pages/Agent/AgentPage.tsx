@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AgentContextPanel } from '../../components/agent/AgentContextPanel';
+import { MessageContent } from '../../components/agent/MessageContent';
 import { useAgent } from '../../context/AgentContext';
 import { useApp } from '../../context/AppContext';
 import { t } from '../../i18n/translations';
@@ -126,7 +127,9 @@ function FullMessageRow({ message, onSuggestedAction, language }: FullMessageRow
         <div className="msg-avatar" aria-hidden="true">N</div>
       )}
       <div>
-        <div className={`msg-bubble ${message.role}`}>{message.content}</div>
+        <div className={`msg-bubble ${message.role}`}>
+          <MessageContent role={message.role} content={message.content} />
+        </div>
         <span className="msg-time">{formatTime(message.timestamp, language === 'pt' ? 'pt-BR' : 'es-CO')}</span>
         {message.role === 'agent' && message.suggestedActions && message.suggestedActions.length > 0 && (
           <div className="suggested-actions">
@@ -165,7 +168,7 @@ function TypingIndicator({ language }: { language: 'es' | 'pt' }) {
 export function AgentPage() {
   const navigate = useNavigate();
   const { language } = useApp();
-  const { conversation, isTyping, sendMessage } = useAgent();
+  const { conversation, isTyping, isStreaming, sendMessage } = useAgent();
 
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -230,7 +233,7 @@ export function AgentPage() {
               }}
             />
           ))}
-          {isTyping && <TypingIndicator language={language} />}
+          {isTyping && !isStreaming && <TypingIndicator language={language} />}
           <div ref={messagesEndRef} aria-hidden="true" />
         </div>
 
