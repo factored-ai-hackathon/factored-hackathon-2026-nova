@@ -40,7 +40,7 @@ your branch ──PR──▶ development ──PR (merge commit)──▶ main 
 - **Only `development` can go into `main`.** A check ("Release comes from development") blocks any other Pull Request into `main`. If you opened one by mistake, change its base branch to `development`.
 - **`development` → `main`:** merge with **"Create a merge commit"** (not squash or rebase), and **don't click "Delete branch"** afterwards. Squash or rebase would make the two branches drift apart.
 - **Releases:** every deploy creates a [GitHub release](../../releases) named after the date (`v2026.09.29`; more releases the same day get `.2`, `.3`...) with the list of merged Pull Requests. Nothing to decide or label.
-- Tests run on every Pull Request. Only the parts you changed are tested (`frontend/`, `backend/`, `evals/`); docs changes run nothing.
+- Tests run on every Pull Request. Only the parts you changed are tested (`frontend/`, `backend/`, `evals/`); docs (`docs/`, `.md`) and infrastructure (`infra/`) changes run nothing.
 
 ## Five rules
 1. **Never commit data, passwords or keys.** The repo is public. (Git already ignores `.csv`, `.parquet` and `.env`.)
