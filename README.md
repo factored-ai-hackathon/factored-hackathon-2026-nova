@@ -38,6 +38,7 @@ your branch ──PR──▶ development ──PR (merge commit)──▶ main 
 - **`development`** is where we work. It lives for the whole project: **never delete it**. Every Pull Request goes here.
 - **`main`** is what is live at the demo link. Merging into `main` deploys to AWS automatically, so only a Pull Request from `development` goes there, when we want to release.
 - **`development` → `main`:** merge with **"Create a merge commit"** (not squash or rebase), and **don't click "Delete branch"** afterwards. Squash or rebase would make the two branches drift apart.
+- **Releases:** every deploy creates a [GitHub release](../../releases) named after the date (`v2026.09.29`; more releases the same day get `.2`, `.3`...) with the list of merged Pull Requests. Nothing to decide or label.
 - Tests run on every Pull Request. Only the parts you changed are tested (`frontend/`, `backend/`, `evals/`); docs changes run nothing.
 
 ## Five rules

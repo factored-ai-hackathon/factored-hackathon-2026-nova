@@ -1,6 +1,7 @@
 name: Deploy
 
-# Pushing to main (merging a PR) tests and deploys the app to AWS.
+# Pushing to main (merging a PR) tests and deploys the app to AWS, then creates a GitHub
+# release (date version, notes generated from the merged PRs).
 # Infrastructure comes from infra/app (Terraform, applied by hand); this workflow only ships code.
 # Repository variables come from `terraform -chdir=infra/app output github_variables`.
 on:
@@ -91,3 +92,36 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" --paths "/*" \
             --query Invalidation.Id --output text
+
+  # Date version, Colombia time: v2026.09.29, then v2026.09.29.2, .3... for more releases the
+  # same day. Only after a successful deploy, and not for manual runs of this workflow.
+  release:
+    name: Create GitHub release
+    needs: [backend, frontend]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the tag and the release
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Pick the next version
+        id: version
+        run: |
+          base="v$(TZ=America/Bogota date +%Y.%m.%d)"
+          tag="$base"
+          n=1
+          while gh api "repos/$GH_REPO/git/ref/tags/$tag" --silent 2>/dev/null; do
+            n=$((n + 1))
+            tag="$base.$n"
+          done
+          echo "Next release: $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --target "$GITHUB_SHA" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes

@@ -64,7 +64,7 @@ Details: @docs/architecture.md
 - **Never** delete files, resources or data without explicit confirmation. No `terraform destroy`, `rm -rf`, or deleting buckets/tables without asking.
 - Before a `terraform apply`, show the `plan` and wait for approval.
 - **Branches:** `development` is the long-lived integration branch; `main` is production. Branch from `development` and open PRs into `development`. Never push to `main` or `development` directly, and never delete `development`.
-- **Releases:** a PR from `development` to `main`, merged with a merge commit (no squash/rebase, so the branches don't drift). Every push to `main` runs `.github/workflows/deploy.yml` (tests, then Lambda + S3/CloudFront deploy).
+- **Releases:** a PR from `development` to `main`, merged with a merge commit (no squash/rebase, so the branches don't drift). Every push to `main` runs `.github/workflows/deploy.yml` (tests, then Lambda + S3/CloudFront deploy, then a GitHub release named after the date: `vYYYY.MM.DD`, `.2`, `.3`... for more releases the same day).
 - The repo is **public**: do not commit dataset data, PII or samples of real records.
 - **Production uses only Bedrock.** Hugging Face is for local development: send it only synthetic dataset records or test data, never secrets, credentials or real personal data.
 
