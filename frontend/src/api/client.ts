@@ -8,10 +8,32 @@ export type StreamEvent =
 
 export class ApiError extends Error {
   readonly status: number
-  constructor(status: number, message: string) {
+  /** The API's `detail` code, when it sent one (e.g. `rate_limited`). */
+  readonly code?: string
+  constructor(status: number, message: string, code?: string) {
     super(message)
     this.status = status
+    this.code = code
   }
+}
+
+export type LimitReason = 'rate_limited' | 'daily_budget_exhausted'
+
+/** Why the API refused a message because of a spend limit (HTTP 429), if that's the error. */
+export function limitReason(err: unknown): LimitReason | null {
+  if (!(err instanceof ApiError) || err.status !== 429) return null
+  return err.code === 'daily_budget_exhausted' ? 'daily_budget_exhausted' : 'rate_limited'
+}
+
+async function errorFrom(res: Response, what: string): Promise<ApiError> {
+  let code: string | undefined
+  try {
+    const body: { detail?: unknown } = await res.json()
+    if (typeof body.detail === 'string') code = body.detail
+  } catch {
+    // not JSON: no code
+  }
+  return new ApiError(res.status, `${what} failed: ${res.status}`, code)
 }
 
 export const MAX_TEXT_CHARS = 2000
@@ -53,7 +75,7 @@ export async function* sendMessage(
     body: JSON.stringify({ text, lang }),
     signal,
   })
-  if (!res.ok || !res.body) throw new ApiError(res.status, `send message failed: ${res.status}`)
+  if (!res.ok || !res.body) throw await errorFrom(res, 'send message')
 
   const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
   let buffer = ''

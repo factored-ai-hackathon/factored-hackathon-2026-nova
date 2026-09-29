@@ -13,6 +13,7 @@ The frontend and the backend both code against this file. Change it first, then 
 Errors:
 - Unknown session → `404`.
 - Empty text, text over 2,000 characters, or a `lang` other than `es`/`pt` → `422`.
+- Spend limits (deployed): too many messages from one visitor in the last hour → `429 {"detail":"rate_limited"}`; the day's model budget used up → `429 {"detail":"daily_budget_exhausted"}` (until 00:00 UTC). The model is not called.
 - Feedback for a `message_id` that was not recorded → `404`. `message_id` is the one from the `done` event. Rating again replaces the previous rating.
 
 `lang` on a message also updates the session language.
@@ -57,6 +58,9 @@ Names only; values go in `backend/.env` (gitignored). See `backend/.env.example`
 | `HF_BASE_URL` | backend | Default `https://router.huggingface.co/v1` |
 | `CORS_ORIGINS` | backend | Comma-separated, default `http://localhost:5173` |
 | `ORIGIN_VERIFY_SECRET` | backend | Deployed only (set by `infra/app`): requests without this `X-Origin-Verify` header get `403`. Unset locally |
+| `DAILY_BUDGET_USD` | backend | Max model spend per day (UTC), from the tokens each turn reports. Unset = no limit. Deployed: `5` |
+| `RATE_LIMIT_PER_HOUR` | backend | Max messages per visitor IP per hour. Unset = no limit. Deployed: `30` |
+| `LLM_PRICE_INPUT_PER_MTOK`, `LLM_PRICE_OUTPUT_PER_MTOK` | backend | Model price in $ per million tokens, to turn tokens into dollars. Defaults `1` / `5` (Claude Haiku 4.5) |
 | `INTERACTIONS_STORE` | backend | `jsonl` (default), `dynamodb` or `none` |
 | `INTERACTIONS_PATH` | backend | JSONL file for `jsonl`. Default `backend/.interactions/interactions.jsonl` |
 | `INTERACTIONS_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-chat-interactions` |

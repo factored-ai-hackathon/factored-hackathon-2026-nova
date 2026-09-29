@@ -45,9 +45,10 @@ resource "aws_iam_role_policy" "deploy" {
     Version = "2012-10-17"
     Statement = [
       {
+        # GetObject too: UpdateFunctionCode reads the zip from S3 with the caller's permissions.
         Sid      = "UploadLambdaPackage"
         Effect   = "Allow"
-        Action   = ["s3:PutObject"]
+        Action   = ["s3:PutObject", "s3:GetObject"]
         Resource = "${aws_s3_bucket.artifacts.arn}/${local.lambda_s3_key}"
       },
       {

@@ -30,7 +30,8 @@ resource "aws_s3_object" "lambda_package" {
   source = var.lambda_package_path
 
   lifecycle {
-    ignore_changes = [source, etag]
+    # Owned by the deploy workflow after the first apply (its uploads also drop the tags).
+    ignore_changes = all
   }
 }
 
@@ -117,6 +118,8 @@ resource "aws_lambda_function" "api" {
       INTERACTIONS_STORE    = "dynamodb"
       INTERACTIONS_TABLE    = aws_dynamodb_table.interactions.name
       INTERACTIONS_TTL_DAYS = tostring(var.interactions_ttl_days)
+      DAILY_BUDGET_USD      = tostring(var.daily_budget_usd)
+      RATE_LIMIT_PER_HOUR   = tostring(var.rate_limit_per_hour)
       ORIGIN_VERIFY_SECRET  = random_password.origin_verify.result
     }
   }
