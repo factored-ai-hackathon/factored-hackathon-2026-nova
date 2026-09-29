@@ -70,7 +70,7 @@ df.head()
 ```
 Or write SQL in the AWS console: **Athena** → workgroup `hackathon`.
 
-To rebuild the data model after changing SQL in `data/dbt/`, see [data/dbt/README.md](../data/dbt/README.md).
+To rebuild the data model after changing SQL in `data/dbt/`, see [data/dbt/README.md](../data/dbt/README.md): set `DBT_DEV_NAME` to your name and `uv run dbt build` writes to your own `latam_curated_dev_<name>`. `latam_curated` is only rebuilt by the data pipeline when changes reach `main`.
 
 ## If something fails
 | Message | Fix |

@@ -26,7 +26,7 @@
 organizers' bucket ──copy──▶ data-root (original CSV, never modified)
                                    │  Athena + dbt (data/dbt)
                                    ▼
-                          hackaton-data/curated (clean Parquet: dim_*, fact_interaction)
+                          hackaton-data/curated (clean Parquet: dim_*, fact_interaction, fact_transaction)
                                    │
                                    ▼
                           notebooks and models (ml/)
