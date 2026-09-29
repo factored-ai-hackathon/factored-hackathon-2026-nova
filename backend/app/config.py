@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     interactions_path: Path = BACKEND_DIR / ".interactions" / "interactions.jsonl"
     interactions_table: str = "fh26-chat-interactions"
     interactions_ttl_days: int = 30
+    # Chat sessions and their conversation history. memory: lost on restart and not shared between
+    # Lambda instances (local development); dynamodb: deployed.
+    sessions_store: Literal["memory", "dynamodb"] = "memory"
+    sessions_table: str = "fh26-chat-sessions"
+    session_ttl_hours: int = 24
+    # Messages kept per conversation (user + assistant). Bounds the item size and the input tokens.
+    max_history_messages: int = 40
     # Spend limits (see docs/api-contract.md). Unset = no limit (local development).
     daily_budget_usd: float | None = None
     rate_limit_per_hour: int | None = None
