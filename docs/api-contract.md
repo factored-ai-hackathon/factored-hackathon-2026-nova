@@ -56,6 +56,7 @@ Names only; values go in `backend/.env` (gitignored). See `backend/.env.example`
 | `HF_MODEL_ID` | backend | Default `openai/gpt-oss-20b` |
 | `HF_BASE_URL` | backend | Default `https://router.huggingface.co/v1` |
 | `CORS_ORIGINS` | backend | Comma-separated, default `http://localhost:5173` |
+| `ORIGIN_VERIFY_SECRET` | backend | Deployed only (set by `infra/app`): requests without this `X-Origin-Verify` header get `403`. Unset locally |
 | `INTERACTIONS_STORE` | backend | `jsonl` (default), `dynamodb` or `none` |
 | `INTERACTIONS_PATH` | backend | JSONL file for `jsonl`. Default `backend/.interactions/interactions.jsonl` |
 | `INTERACTIONS_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-chat-interactions` |

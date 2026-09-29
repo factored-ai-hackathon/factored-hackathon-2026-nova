@@ -18,7 +18,7 @@
 | Customer data for the agent | DynamoDB |
 | Contact center models | To be decided (scikit-learn), trained on `latam_curated` |
 | API | FastAPI |
-| Hosting | ECS containers, Lambda + SQS (cheapest option to be decided) |
+| Hosting | CloudFront + S3 (frontend), Lambda function URL with streaming (API), DynamoDB (interactions). See `infra/app` |
 | Infrastructure | Terraform |
 
 ## Data
@@ -43,4 +43,3 @@ Main tables: `call_center_interactions`, `call_transcripts`, `satisfaction_surve
 - The single customer flow for the demo
 - Which contact center models to build
 - When to hand over to a human
-- Cheapest hosting for the public demo link

@@ -4,7 +4,8 @@ on:
   pull_request:
     branches: [main, development]
   push:
-    branches: [main, development]
+    branches: [development] # main runs these through deploy.yml, before deploying
+  workflow_call:
 
 permissions:
   contents: read
