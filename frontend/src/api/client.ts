@@ -5,6 +5,8 @@ export type StreamEvent =
   | { type: 'token'; text: string }
   | { type: 'done'; messageId: string }
   | { type: 'error'; code: string; message: string }
+  /** Out-of-band message for the customer, e.g. the demo SMS with the verification code. */
+  | { type: 'notice'; kind: string; text: string }
 
 export class ApiError extends Error {
   readonly status: number
@@ -110,6 +112,8 @@ function parseEvent(block: string): StreamEvent | null {
       return { type: 'done', messageId: payload.message_id }
     case 'error':
       return { type: 'error', code: payload.code, message: payload.message }
+    case 'notice':
+      return { type: 'notice', kind: payload.kind, text: payload.text }
     default:
       return null
   }

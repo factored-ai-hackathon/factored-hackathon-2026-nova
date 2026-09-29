@@ -26,8 +26,12 @@ Server-Sent Events, one JSON object per `data:` line:
 | `token` | `{"text":"..."}` | Zero or more times, a piece of the reply, in order |
 | `done` | `{"message_id":"<uuid>"}` | Once, last event on success |
 | `error` | `{"code":"...","message":"..."}` | Once, last event on failure (e.g. `llm_error`) |
+| `notice` | `{"kind":"otp_demo","text":"..."}` | Zero or more times: a message for the customer outside the reply. `otp_demo` is the demo SMS with the identity verification code (there is no real SMS) |
 
 Every stream ends with exactly one `done` or one `error`.
+
+## Identity verification
+Before any personal data, the agent verifies the customer (`backend/app/agent/identity.py`, decision 22): document number → date of birth → 6-digit code (demo SMS as a `notice` event). The model can only ask to start it; the answers are handled in code, never sent to the model, and stored as placeholders in the history and the interaction log (`[identity verification input]`). 3 failures lock verification for the session; verification lasts 30 minutes. Demo customers: `docs/demo.md`.
 
 ## Interactions (metrics and feedback)
 Every turn is recorded before the last event (`done` or `error`) is sent: session, `message_id`, language, question and reply (card/account numbers and emails masked), model, input/output tokens, time to first token and total time, status and error code. Feedback is added to the same record. The backend also logs one JSON line per turn (`turn_metrics`) with the numbers only, no text.
@@ -62,6 +66,7 @@ Names only; values go in `backend/.env` (gitignored). See `backend/.env.example`
 | `SESSIONS_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-chat-sessions` |
 | `SESSION_TTL_HOURS` | backend | Hours without activity before a session expires (then `404`). Default `24` |
 | `MAX_HISTORY_MESSAGES` | backend | Messages kept per conversation (user + assistant). Default `40` |
+| `VERIFICATION_MAX_ATTEMPTS`, `OTP_TTL_SECONDS`, `VERIFIED_TTL_MINUTES` | backend | Identity verification. Defaults `3`, `300`, `30` |
 | `DAILY_BUDGET_USD` | backend | Max model spend per day (UTC), from the tokens each turn reports. Unset = no limit. Deployed: `5` |
 | `RATE_LIMIT_PER_HOUR` | backend | Max messages per visitor IP per hour. Unset = no limit. Deployed: `30` |
 | `LLM_PRICE_INPUT_PER_MTOK`, `LLM_PRICE_OUTPUT_PER_MTOK` | backend | Model price in $ per million tokens, to turn tokens into dollars. Defaults `1` / `5` (Claude Haiku 4.5) |

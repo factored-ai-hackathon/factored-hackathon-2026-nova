@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 from sse_starlette import EventSourceResponse
 
 from app import agent
-from app.agent import TokenUsage
+from app.agent import Notice, TokenUsage
 from app.config import get_settings
 from app.interactions import InteractionStore, Rating, Turn, get_interaction_store
 from app.limits import Limiter, client_ip_from, get_limiter
@@ -27,7 +27,7 @@ MAX_TEXT_CHARS = 2000
 
 MAX_COMMENT_CHARS = 500
 
-ReplyStreamer = Callable[[str, str, str, TokenUsage], AsyncIterator[str]]
+ReplyStreamer = Callable[[str, str, str, TokenUsage], AsyncIterator[str | Notice]]
 
 
 def get_reply_streamer() -> ReplyStreamer:
@@ -102,6 +102,10 @@ async def post_message(
         error_code: str | None = None
         try:
             async for piece in stream_reply(session_id, body.text, lang, usage):
+                if isinstance(piece, Notice):
+                    notice = {"kind": piece.kind, "text": piece.text}
+                    yield {"event": "notice", "data": json.dumps(notice, ensure_ascii=False)}
+                    continue
                 if first_token_ms is None:
                     first_token_ms = round((time.perf_counter() - started) * 1000)
                 reply.append(piece)
@@ -114,7 +118,8 @@ async def post_message(
             session_id=session_id,
             message_id=message_id,
             lang=lang,
-            user_text=body.text,
+            # Verification answers (document, date of birth, code) are never logged.
+            user_text="[identity verification input]" if usage.sensitive_input else body.text,
             reply_text="".join(reply),
             status="error" if error_code else "ok",
             error_code=error_code,

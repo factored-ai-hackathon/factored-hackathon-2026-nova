@@ -18,3 +18,8 @@ output "glue_databases" {
     curated = aws_glue_catalog_database.curated.name
   }
 }
+
+output "dbt_role_arn" {
+  description = "Set as the AWS_DBT_ROLE_ARN repository variable (used by .github/workflows/data.yml)."
+  value       = aws_iam_role.dbt.arn
+}

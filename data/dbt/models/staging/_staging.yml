@@ -33,3 +33,15 @@ models:
     columns:
       - name: customer_id
         data_tests: [unique, not_null]
+  - name: stg_products
+    description: Customer products (latest snapshot). Only the last 4 digits of the account/card number.
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]
+  - name: stg_transactions
+    description: Typed, deduplicated transactions (latest process_date wins). No coordinates.
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]

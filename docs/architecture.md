@@ -4,7 +4,7 @@
 
 ## What the agent does
 1. The customer writes in Spanish or Portuguese.
-2. **Identity check** (knowledge questions + one-time code). Before that, the agent only answers public questions (products, policies).
+2. **Identity check** (document number + date of birth, then a one-time code), enforced in code (`backend/app/agent/identity.py`). Before that, the agent only answers public questions (products, policies).
 3. After the check, the agent looks up **only that customer's** data.
 4. It tries to **solve the issue in this first contact**. If it can't, it **hands over to a human** with a summary.
 5. **Hooks** block forbidden actions; **guardrails** block access to other customers' data.
@@ -26,7 +26,7 @@
 organizers' bucket ──copy──▶ data-root (original CSV, never modified)
                                    │  Athena + dbt (data/dbt)
                                    ▼
-                          hackaton-data/curated (clean Parquet: dim_*, fact_interaction)
+                          hackaton-data/curated (clean Parquet: dim_*, fact_interaction, fact_transaction)
                                    │
                                    ▼
                           notebooks and models (ml/)

@@ -18,6 +18,8 @@ from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, Syst
 from langchain_core.messages.ai import UsageMetadata
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 
+from app.agent import identity
+
 MAX_ECHO_CHARS = 200
 
 REPLIES = {
@@ -62,12 +64,27 @@ def _usage(messages: list[BaseMessage], reply: str) -> UsageMetadata:
     )
 
 
+VERIFY_CALL_ID = "call_offline_verify"
+
+
 class OfflineChatModel(BaseChatModel):
     delay_seconds: float = 0.03  # between streamed pieces, to look like a real stream
+    tools_bound: bool = False
 
     @property
     def _llm_type(self) -> str:
         return "offline-fake"
+
+    def bind_tools(self, tools: Any, **kwargs: Any) -> "OfflineChatModel":
+        # Imitates the real model: asks to verify when the customer wants their own data.
+        return self.model_copy(update={"tools_bound": True})
+
+    def _asks_to_verify(self, messages: list[BaseMessage]) -> bool:
+        return (
+            self.tools_bound
+            and bool(messages)
+            and identity.looks_like_account_request(messages[-1].text)
+        )
 
     def _generate(
         self,
@@ -76,11 +93,23 @@ class OfflineChatModel(BaseChatModel):
         run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> ChatResult:
+        if self._asks_to_verify(messages):
+            call = {"name": identity.VERIFY_TOOL, "args": {}, "id": VERIFY_CALL_ID}
+            message = AIMessage("", tool_calls=[call], usage_metadata=_usage(messages, ""))
+            return ChatResult(generations=[ChatGeneration(message=message)])
         reply = _reply(messages)
         message = AIMessage(reply, usage_metadata=_usage(messages, reply))
         return ChatResult(generations=[ChatGeneration(message=message)])
 
     def _pieces(self, messages: list[BaseMessage]) -> Iterator[ChatGenerationChunk]:
+        if self._asks_to_verify(messages):
+            call = {"name": identity.VERIFY_TOOL, "args": "{}", "id": VERIFY_CALL_ID, "index": 0}
+            yield ChatGenerationChunk(
+                message=AIMessageChunk(
+                    "", tool_call_chunks=[call], usage_metadata=_usage(messages, "")
+                )
+            )
+            return
         reply = _reply(messages)
         for piece in re.findall(r"\S+\s*", reply):
             yield ChatGenerationChunk(message=AIMessageChunk(piece))
