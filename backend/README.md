@@ -34,7 +34,7 @@ No token or network needed. `HF_TOKEN=... uv run pytest -m live` runs the one li
 | `app/main.py` | App, CORS, `/health`, prod provider guard at startup |
 | `app/config.py` | Settings from env vars / `.env` |
 | `app/api/chat.py` | Sessions and SSE streaming (see the contract) |
-| `app/sessions.py` | In-memory session store behind an interface (DynamoDB later) |
+| `app/sessions.py` | Sessions and conversation history: in memory locally, DynamoDB deployed (`SESSIONS_STORE`) |
 | `app/interactions.py` | Records each turn (masked text, tokens, latency, errors) and its 👍/👎 feedback |
 | `app/llm.py` | Chat model per `LLM_PROVIDER` |
 | `app/agent/` | `stream_reply` seam, LangGraph graph, system prompts per language |

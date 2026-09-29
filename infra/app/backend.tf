@@ -77,6 +77,12 @@ resource "aws_iam_role_policy" "api" {
         )
       },
       {
+        Sid      = "ChatSessions"
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"]
+        Resource = aws_dynamodb_table.sessions.arn
+      },
+      {
         Sid      = "RecordInteractions"
         Effect   = "Allow"
         Action   = ["dynamodb:PutItem", "dynamodb:UpdateItem"]
@@ -115,6 +121,9 @@ resource "aws_lambda_function" "api" {
       APP_ENV               = "prod"
       LLM_PROVIDER          = "bedrock"
       BEDROCK_MODEL_ID      = var.bedrock_model_id
+      SESSIONS_STORE        = "dynamodb"
+      SESSIONS_TABLE        = aws_dynamodb_table.sessions.name
+      SESSION_TTL_HOURS     = tostring(var.session_ttl_hours)
       INTERACTIONS_STORE    = "dynamodb"
       INTERACTIONS_TABLE    = aws_dynamodb_table.interactions.name
       INTERACTIONS_TTL_DAYS = tostring(var.interactions_ttl_days)

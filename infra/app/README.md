@@ -7,7 +7,7 @@ browser ──https──▶ CloudFront ─┬─ /*            ─▶ S3 (front
                                └─ /v1/*, /health ─▶ Lambda function URL (streaming)
                                                       FastAPI + Lambda Web Adapter, arm64
                                                       ├─▶ Bedrock (Claude Haiku 4.5)
-                                                      └─▶ DynamoDB (chat interactions, TTL)
+                                                      └─▶ DynamoDB (sessions, interactions)
 ```
 
 - One origin for the browser, so no CORS. CloudFront adds a secret `X-Origin-Verify` header and the API rejects requests without it, so the public function URL can't be used directly.
@@ -43,5 +43,5 @@ If the deploy fails with `Not authorized to perform sts:AssumeRoleWithWebIdentit
 **Spend limits (decision 20):** the API stops calling Bedrock once the day's spend reaches `daily_budget_usd` ($5, about 2,000+ messages) and refuses a visitor after `rate_limit_per_hour` messages (30). Both answer `429` and Nova tells the customer. Change them in `terraform.tfvars` and apply. Replies are also capped by `LLM_MAX_TOKENS` (1024) and messages by 2,000 characters. `lambda_reserved_concurrency` can additionally cap parallel requests if the account's Lambda concurrency quota allows it.
 
 ## Known limits
-- Sessions and conversation memory are in memory per Lambda instance. A new instance (cold start, parallel users) starts a new conversation; the frontend recovers from the `404` automatically. Moving sessions to DynamoDB fixes it.
+- Sessions and their history live in DynamoDB (`fh26-chat-sessions`), shared by every Lambda instance. A session expires 24 h after its last message; the frontend then starts a new one automatically (`404`).
 - CloudFront waits up to 60 s for the API (`origin_read_timeout`), enough for a reply.
