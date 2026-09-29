@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     hf_token: SecretStr | None = None
     hf_model_id: str = "openai/gpt-oss-20b"
     hf_base_url: str = "https://router.huggingface.co/v1"
+    # Bedrock: Claude Haiku 4.5 through the US cross-Region inference profile (the bare model ID
+    # isn't supported on demand). Credentials come from the standard AWS chain (IAM role in prod).
+    bedrock_model_id: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    aws_region: str = "us-east-2"
+    llm_max_tokens: int = 1024
     cors_origins: str = "http://localhost:5173"
 
     @property

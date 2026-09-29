@@ -2,7 +2,8 @@
 
 - huggingface: local development only (HF Inference Providers, OpenAI-compatible router).
   Send it only synthetic or test text.
-- bedrock: production.
+- bedrock: production (Claude on Amazon Bedrock, Converse API). AWS credentials come from the
+  standard chain: the service's IAM role in production, your AWS profile locally.
 """
 
 from langchain_core.language_models import BaseChatModel
@@ -39,6 +40,11 @@ def get_chat_model(settings: Settings | None = None) -> BaseChatModel:
             timeout=60,
         )
 
-    # TODO(bedrock): return langchain_aws.ChatBedrockConverse(model=..., region_name=...)
-    # once the Bedrock model and IAM role are chosen. Add langchain-aws then.
-    raise NotImplementedError("LLM_PROVIDER=bedrock is not wired up yet")
+    from langchain_aws import ChatBedrockConverse
+
+    return ChatBedrockConverse(
+        model=settings.bedrock_model_id,
+        region_name=settings.aws_region,
+        temperature=0.3,
+        max_tokens=settings.llm_max_tokens,
+    )
