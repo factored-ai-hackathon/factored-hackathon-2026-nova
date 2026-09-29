@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     session_ttl_hours: int = 24
     # Messages kept per conversation (user + assistant). Bounds the item size and the input tokens.
     max_history_messages: int = 40
+    # Identity verification (app/agent/identity.py). demo: fictional customers (docs/demo.md).
+    customer_directory: Literal["demo"] = "demo"
+    verification_max_attempts: int = 3
+    otp_ttl_seconds: int = 300
+    verified_ttl_minutes: int = 30
     # Spend limits (see docs/api-contract.md). Unset = no limit (local development).
     daily_budget_usd: float | None = None
     rate_limit_per_hour: int | None = None

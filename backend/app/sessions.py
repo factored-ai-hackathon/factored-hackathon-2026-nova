@@ -32,6 +32,7 @@ class Session:
     lang: Lang
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     messages: list[ChatMessage] = field(default_factory=list)
+    auth: dict = field(default_factory=dict)  # identity verification state
 
 
 class SessionStore(Protocol):
@@ -39,8 +40,11 @@ class SessionStore(Protocol):
     async def get(self, session_id: str) -> Session | None: ...
     async def set_lang(self, session_id: str, lang: Lang) -> None: ...
 
-    async def save_messages(self, session_id: str, lang: Lang, messages: list[ChatMessage]) -> None:
-        """Replace the conversation history (creating the session if it doesn't exist)."""
+    async def save_messages(
+        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None = None
+    ) -> None:
+        """Replace the conversation history and verification state (creating the session if it
+        doesn't exist)."""
         ...
 
 
@@ -62,9 +66,12 @@ class InMemorySessionStore:
     async def set_lang(self, session_id: str, lang: Lang) -> None:
         self._sessions[session_id].lang = lang
 
-    async def save_messages(self, session_id: str, lang: Lang, messages: list[ChatMessage]) -> None:
+    async def save_messages(
+        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None = None
+    ) -> None:
         session = self._sessions.setdefault(session_id, Session(id=session_id, lang=lang))
         session.messages = list(messages[-self.max_messages :])
+        session.auth = dict(auth or {})
 
 
 class DynamoSessionStore:
@@ -102,6 +109,7 @@ class DynamoSessionStore:
             lang=item["lang"],
             created_at=datetime.fromisoformat(item["created_at"]),
             messages=[ChatMessage(**m) for m in json.loads(item.get("messages", "[]"))],
+            auth=json.loads(item.get("auth_state", "{}")),
         )
 
     def _set_lang(self, session_id: str, lang: Lang) -> None:
@@ -111,16 +119,20 @@ class DynamoSessionStore:
             ExpressionAttributeValues={":lang": lang, ":exp": self._expires_at()},
         )
 
-    def _save_messages(self, session_id: str, lang: Lang, messages: list[ChatMessage]) -> None:
+    def _save_messages(
+        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None
+    ) -> None:
         kept = [{"role": m.role, "content": m.content} for m in messages[-self.max_messages :]]
         self.table.update_item(
             Key={"session_id": session_id},
             UpdateExpression=(
-                "SET messages = :m, lang = if_not_exists(lang, :lang), expires_at = :exp, "
-                "created_at = if_not_exists(created_at, :now)"
+                "SET messages = :m, auth_state = :auth, lang = if_not_exists(lang, :lang), "
+                "expires_at = :exp, created_at = if_not_exists(created_at, :now)"
             ),
             ExpressionAttributeValues={
                 ":m": json.dumps(kept, ensure_ascii=False),
+                # "auth" is a DynamoDB reserved word, hence auth_state.
+                ":auth": json.dumps(auth or {}),
                 ":lang": lang,
                 ":exp": self._expires_at(),
                 ":now": datetime.now(UTC).isoformat(),
@@ -136,8 +148,10 @@ class DynamoSessionStore:
     async def set_lang(self, session_id: str, lang: Lang) -> None:
         await asyncio.to_thread(self._set_lang, session_id, lang)
 
-    async def save_messages(self, session_id: str, lang: Lang, messages: list[ChatMessage]) -> None:
-        await asyncio.to_thread(self._save_messages, session_id, lang, messages)
+    async def save_messages(
+        self, session_id: str, lang: Lang, messages: list[ChatMessage], auth: dict | None = None
+    ) -> None:
+        await asyncio.to_thread(self._save_messages, session_id, lang, messages, auth)
 
 
 def build_session_store(settings: Settings) -> SessionStore:

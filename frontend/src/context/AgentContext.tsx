@@ -168,6 +168,17 @@ export function AgentProvider({ children }: { children: ReactNode }) {
             }),
             agentContext: { ...prev.agentContext, status: 'responding' },
           }));
+        }, (noticeText) => {
+          // e.g. the demo SMS with the verification code, shown as a system message
+          setConversation((prev) => ({
+            ...prev,
+            messages: [...prev.messages, {
+              id: `msg-notice-${Date.now()}`,
+              role: 'system',
+              content: `📱 ${noticeText}`,
+              timestamp: new Date().toISOString(),
+            }],
+          }));
         });
 
         const agentMsg: ConversationMessage = {
