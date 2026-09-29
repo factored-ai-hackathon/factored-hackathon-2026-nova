@@ -28,3 +28,7 @@ output "github_variables" {
     APP_URL                    = "https://${aws_cloudfront_distribution.app.domain_name}"
   }
 }
+
+output "demo_customers_table" {
+  value = aws_dynamodb_table.demo_customers.name
+}

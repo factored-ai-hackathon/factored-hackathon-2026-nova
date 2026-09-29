@@ -42,7 +42,12 @@ class Settings(BaseSettings):
     # Messages kept per conversation (user + assistant). Bounds the item size and the input tokens.
     max_history_messages: int = 40
     # Identity verification (app/agent/identity.py). demo: fictional customers (docs/demo.md).
-    customer_directory: Literal["demo"] = "demo"
+    # dynamodb: customers loaded from the dataset (data/scripts/load_demo_data.py).
+    customer_directory: Literal["demo", "dynamodb"] = "demo"
+    customers_table: str = "fh26-demo-customers"
+    # Demo web login (app/api/auth.py): one password for every customer, published in docs/demo.md
+    # (the dataset is synthetic; the code sent to the phone is what proves identity).
+    demo_password: str = "Nova2026"
     verification_max_attempts: int = 3
     otp_ttl_seconds: int = 300
     verified_ttl_minutes: int = 30

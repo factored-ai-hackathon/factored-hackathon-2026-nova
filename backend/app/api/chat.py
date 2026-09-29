@@ -13,6 +13,16 @@ from sse_starlette import EventSourceResponse
 
 from app import agent
 from app.agent import Notice, TokenUsage
+from app.agent.identity import (
+    SESSION_CUSTOMER,
+    CustomerDirectory,
+    IdentityVerifier,
+    get_customer_directory,
+    is_verified,
+    session_auth,
+)
+from app.api.auth import get_verifier
+from app.api.demo import CUSTOMER_ID_PATTERN
 from app.config import get_settings
 from app.interactions import InteractionStore, Rating, Turn, get_interaction_store
 from app.limits import Limiter, client_ip_from, get_limiter
@@ -36,6 +46,12 @@ def get_reply_streamer() -> ReplyStreamer:
 
 class CreateSessionRequest(BaseModel):
     lang: Lang = "es"
+    # The customer logged in to the demo web session (POST /v1/demo/login). Only that customer can
+    # then be verified in the chat. It grants nothing by itself: verification is still required.
+    customer_id: str | None = Field(default=None, pattern=CUSTOMER_ID_PATTERN)
+    # A new conversation for someone already logged in: the session the login created. While that
+    # session is verified, the new one is too (same customer, same expiry); else it's just bound.
+    from_session_id: str | None = Field(default=None, max_length=64)
 
 
 class SessionResponse(BaseModel):
@@ -64,11 +80,25 @@ class FeedbackRequest(BaseModel):
 Store = Annotated[SessionStore, Depends(get_session_store)]
 Interactions = Annotated[InteractionStore, Depends(get_interaction_store)]
 Limits = Annotated[Limiter, Depends(get_limiter)]
+Directory = Annotated[CustomerDirectory, Depends(get_customer_directory)]
 
 
 @router.post("/sessions", status_code=status.HTTP_201_CREATED)
-async def create_session(store: Store, body: CreateSessionRequest | None = None) -> SessionResponse:
-    session = await store.create((body or CreateSessionRequest()).lang)
+async def create_session(
+    store: Store,
+    directory: Directory,
+    verifier: Annotated[IdentityVerifier, Depends(get_verifier)],
+    body: CreateSessionRequest | None = None,
+) -> SessionResponse:
+    body = body or CreateSessionRequest()
+    if body.customer_id is not None and await directory.find_by_id(body.customer_id) is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "customer_not_found")
+    auth = session_auth(body.customer_id)
+    if body.from_session_id and (source := await store.get(body.from_session_id)):
+        same_customer = body.customer_id in (None, source.auth.get(SESSION_CUSTOMER))
+        if same_customer and is_verified(source.auth, verifier.now()):
+            auth = {k: v for k, v in source.auth.items() if k != "failures"}
+    session = await store.create(body.lang, auth)
     return SessionResponse(session_id=session.id, lang=session.lang)
 
 
