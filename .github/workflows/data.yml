@@ -1,0 +1,56 @@
+name: Data pipeline
+
+# Builds the production data model: dbt --target prod -> latam_curated (Athena).
+# Runs when a merge to main changes the data model, or by hand (Actions -> Run workflow).
+# Models and their tests run together (dbt build): a failing test stops the models that
+# depend on it, so broken data never replaces the published tables.
+# Everyone else builds in their own schema (--target dev, see data/dbt/README.md).
+on:
+  push:
+    branches: [main]
+    paths: ["data/dbt/**", "uv.lock", "pyproject.toml", ".github/workflows/data.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # OIDC: assume the dbt role without AWS keys
+
+concurrency:
+  group: data-prod
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: dbt build (prod)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: data/dbt
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DBT_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: dbt build
+        run: uv run dbt build --target prod
+
+      - name: Keep the run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-run-${{ github.run_id }}
+          path: |
+            data/dbt/target/run_results.json
+            data/dbt/logs/dbt.log
+          retention-days: 30
