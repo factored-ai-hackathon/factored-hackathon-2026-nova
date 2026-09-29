@@ -17,7 +17,13 @@ data/local/
 *.tfvars
 !*.tfvars.example
 crash.log
+tfplan
+*.tfplan
 .terraform.tfstate.lock.info
+
+# Build outputs
+backend/build/
+frontend/dist/
 
 # Chat interactions recorded locally (questions and replies)
 .interactions/

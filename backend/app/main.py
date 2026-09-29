@@ -1,10 +1,12 @@
 """FastAPI app: CORS, health check and chat routes."""
 
+import hmac
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.chat import router as chat_router
 from app.config import get_settings
@@ -28,6 +30,20 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+
+ORIGIN_VERIFY_HEADER = "X-Origin-Verify"
+
+
+@app.middleware("http")
+async def require_cloudfront(request: Request, call_next):
+    """Deployed, only requests that came through CloudFront (which adds the secret) get in."""
+    secret = get_settings().origin_verify_secret
+    if secret is not None:
+        sent = request.headers.get(ORIGIN_VERIFY_HEADER, "")
+        if not hmac.compare_digest(sent, secret.get_secret_value()):
+            return JSONResponse({"detail": "forbidden"}, status_code=403)
+    return await call_next(request)
 
 
 @app.get("/health")

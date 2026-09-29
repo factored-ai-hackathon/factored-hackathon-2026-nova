@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-2"
     llm_max_tokens: int = 1024
     cors_origins: str = "http://localhost:5173"
+    # Deployed: CloudFront adds this secret as the X-Origin-Verify header, so the public Lambda
+    # function URL rejects requests that skip CloudFront. Unset locally (no check).
+    origin_verify_secret: SecretStr | None = None
     # Where each turn and its feedback are recorded (see docs/api-contract.md). Use dynamodb when
     # deployed: the jsonl file lives on local disk.
     interactions_store: Literal["jsonl", "dynamodb", "none"] = "jsonl"
