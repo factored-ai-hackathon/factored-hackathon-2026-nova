@@ -1,5 +1,5 @@
 // Chat API client. Contract: docs/api-contract.md
-import type { Lang } from '../i18n'
+import type { Language as Lang } from '../types'
 
 export type StreamEvent =
   | { type: 'token'; text: string }
@@ -17,10 +17,8 @@ export class ApiError extends Error {
 export const MAX_TEXT_CHARS = 2000
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-const MOCK = import.meta.env.VITE_MOCK === '1'
 
 export async function createSession(lang: Lang): Promise<string> {
-  if (MOCK) return `mock-${crypto.randomUUID()}`
   const res = await fetch(`${BASE_URL}/v1/chat/sessions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -38,10 +36,6 @@ export async function* sendMessage(
   lang: Lang,
   signal?: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
-  if (MOCK) {
-    yield* mockStream(text, lang, signal)
-    return
-  }
   const res = await fetch(`${BASE_URL}/v1/chat/sessions/${sessionId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
@@ -86,26 +80,4 @@ function parseEvent(block: string): StreamEvent | null {
     default:
       return null
   }
-}
-
-const MOCK_REPLIES: Record<Lang, string> = {
-  es: 'Esta es una respuesta simulada (modo mock). Todavía no puedo consultar datos de tu cuenta, pero puedo ayudarte con preguntas generales.',
-  pt: 'Esta é uma resposta simulada (modo mock). Ainda não posso consultar dados da sua conta, mas posso ajudar com perguntas gerais.',
-}
-
-async function* mockStream(
-  text: string,
-  lang: Lang,
-  signal?: AbortSignal,
-): AsyncGenerator<StreamEvent> {
-  if (text.toLowerCase().includes('error')) {
-    yield { type: 'error', code: 'mock_error', message: 'mock error' }
-    return
-  }
-  for (const word of MOCK_REPLIES[lang].split(/(?<= )/)) {
-    if (signal?.aborted) return
-    await new Promise((r) => setTimeout(r, 40))
-    yield { type: 'token', text: word }
-  }
-  yield { type: 'done', messageId: crypto.randomUUID() }
 }
