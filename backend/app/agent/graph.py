@@ -101,7 +101,7 @@ def build_graph(
 def default_verifier() -> identity.IdentityVerifier:
     settings = get_settings()
     return identity.IdentityVerifier(
-        identity.DemoCustomerDirectory(),
+        identity.get_customer_directory(),
         max_attempts=settings.verification_max_attempts,
         otp_ttl_seconds=settings.otp_ttl_seconds,
         verified_ttl_seconds=settings.verified_ttl_minutes * 60,

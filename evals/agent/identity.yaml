@@ -18,7 +18,7 @@ cases:
     lang: pt
     steps:
       - {say: "Quero ver o extrato da minha conta", step: awaiting_document}
-      - {say: "123.456.789-00", step: awaiting_birth_date}
+      - {say: "30.123.456", step: awaiting_birth_date}
       - {say: "02/11/1985", step: awaiting_otp, notice: true}
       - {say: "{otp}", step: verified}
   - id: es-public-question-no-verification

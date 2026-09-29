@@ -8,12 +8,15 @@ from app import agent
 from app.agent import Notice, TokenUsage
 from app.agent.graph import build_graph
 from app.agent.identity import (
+    INDEX_KEY,
+    SESSION_CUSTOMER,
     DemoCustomerDirectory,
     IdentityVerifier,
     is_verified,
     parse_birth_date,
     parse_document,
     parse_otp,
+    session_auth,
 )
 from app.api.chat import get_reply_streamer
 from app.fake_llm import OfflineChatModel
@@ -48,8 +51,10 @@ def verifier(clock: Clock | None = None, **kwargs) -> IdentityVerifier:
         ("1020304050", "1020304050"),
         ("mi documento es 1.020.304.050", "1020304050"),
         ("123.456.789-00", "12345678900"),
+        ("mi pasaporte es ab-12345", "AB12345"),  # passports have letters
         ("12345", None),
         ("no sé", None),
+        ("abcdefgh", None),
     ],
 )
 def test_parse_document(text, expected):
@@ -254,3 +259,112 @@ def test_api_sends_the_code_as_a_notice_and_never_logs_answers(interactions):
 def test_history_messages_are_langchain_messages(model):
     # guard for _to_langchain: user placeholders stay HumanMessage
     assert isinstance(agent._to_langchain([agent.ChatMessage("user", "x")])[0], HumanMessage)
+
+
+# --- session bound to the logged-in customer ---------------------------------------------------
+
+
+ANA = {"document": "30123456", "birth_date": "02/11/1985"}  # the other fictional customer
+
+
+async def test_session_only_verifies_the_logged_in_customer():
+    v = verifier()
+    auth = (await v.start(session_auth("demo-002"), "es")).auth  # logged in as Ana
+    auth = (await v.handle(auth, MIGUEL["document"], "es")).auth
+    r = await v.handle(auth, MIGUEL["birth_date"], "es")  # Miguel's real data
+    assert r.auth["step"] == "awaiting_document" and "no coinciden" in r.reply
+    assert not r.notices  # no code is sent
+    assert r.auth[SESSION_CUSTOMER] == "demo-002"  # the binding survives failures
+
+    auth = (await v.handle(r.auth, "cancelar", "es")).auth
+    assert auth[SESSION_CUSTOMER] == "demo-002"  # and cancelling
+    auth = (await v.start(auth, "es")).auth
+    auth = (await v.handle(auth, ANA["document"], "es")).auth
+    auth = (await v.handle(auth, ANA["birth_date"], "es")).auth
+    r = await v.handle(auth, CODE, "es")
+    assert r.auth["step"] == "verified" and r.auth["customer_id"] == "demo-002"
+
+
+async def test_binding_survives_the_lock():
+    v = verifier()
+    auth = (await v.start(session_auth("demo-001"), "es")).auth
+    for _ in range(3):
+        auth = (await v.handle(auth, MIGUEL["document"], "es")).auth
+        auth = (await v.handle(auth, "01/01/2000", "es")).auth
+    assert auth["step"] == "locked" and auth[SESSION_CUSTOMER] == "demo-001"
+
+
+async def test_chat_session_is_bound_to_the_logged_in_customer(client):
+    r = client.post("/v1/chat/sessions", json={"lang": "es", "customer_id": "demo-001"})
+    assert r.status_code == 201
+    session = await get_session_store().get(r.json()["session_id"])
+    assert session.auth == {SESSION_CUSTOMER: "demo-001"}
+
+    r = client.post("/v1/chat/sessions", json={"customer_id": "nobody"})
+    assert r.status_code == 404
+    unbound = client.post("/v1/chat/sessions").json()["session_id"]
+    assert (await get_session_store().get(unbound)).auth == {}
+
+
+# --- DynamoDB directory ------------------------------------------------------------------------
+
+
+class FakeCustomersTable:
+    """Just enough of a boto3 Table for DynamoCustomerDirectory."""
+
+    def __init__(self, profiles, index=None):
+        self.profiles = profiles
+        self.index = index  # the index item's attributes
+
+    def query(self, IndexName, KeyConditionExpression, Limit):
+        assert IndexName == "by-document"
+        document = KeyConditionExpression.get_expression()["values"][1]
+        return {"Items": [p for p in self.profiles if p["document_number"] == document][:Limit]}
+
+    def get_item(self, Key):
+        if Key == INDEX_KEY:
+            return {"Item": {**INDEX_KEY, **self.index}} if self.index else {}
+        assert Key["sk"] == "PROFILE"
+        found = [p for p in self.profiles if p["customer_id"] == Key["customer_id"]]
+        return {"Item": found[0]} if found else {}
+
+
+async def test_dynamo_directory_finds_customers_by_document_and_id():
+    from app.agent.identity import DynamoCustomerDirectory
+
+    table = FakeCustomersTable(
+        [
+            {
+                "customer_id": "C1",
+                "sk": "PROFILE",
+                "first_name": "Lucía",
+                "document_number": "80123456",
+                "birth_date": "1988-03-09",
+                "phone_last4": "5521",
+                "country": "Colombia",
+                "document_type": "Pasaporte",
+            }
+        ],
+        index={"customer_ids": ["C1"], "scenarios": {"past_due": ["C1"]}},
+    )
+    directory = DynamoCustomerDirectory(table)
+    index = await directory.demo_index()
+    assert index.pool == ["C1"] and index.scenarios == {"past_due": ["C1"]}
+    empty = await DynamoCustomerDirectory(FakeCustomersTable([])).demo_index()
+    assert empty.pool == [] and empty.scenarios == {}
+
+    by_document = await directory.find_by_document("80123456")
+    assert by_document is not None
+    assert by_document.customer_id == "C1"
+    assert by_document.birth_date == date(1988, 3, 9)
+    assert (by_document.country, by_document.document_type) == ("Colombia", "Pasaporte")
+    assert (await directory.find_by_id("C1")) == by_document
+    assert await directory.find_by_document("999999") is None
+    assert await directory.find_by_id("nope") is None
+
+
+def test_build_customer_directory_defaults_to_demo():
+    from app.agent.identity import build_customer_directory
+    from app.config import Settings
+
+    assert isinstance(build_customer_directory(Settings()), DemoCustomerDirectory)

@@ -7,6 +7,8 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
+  useRef,
   type ReactNode,
 } from 'react';
 import type { Conversation, ConversationMessage, Rating, Transaction, AgentChatRequest } from '../types';
@@ -135,7 +137,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
 
       try {
         const request: AgentChatRequest = {
-          customer_id: customer?.id ?? 'demo-001',
+          customer_id: customer?.id ?? '', // empty: a session not bound to a customer
           message: text,
           conversation_id: conversation.id,
           language,
@@ -228,6 +230,17 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     },
     [customer, language, conversation.id, transactionContext]
   );
+
+  // Another customer logged in (or logged out): the chat session belonged to the previous one.
+  const customerId = customer?.id;
+  const previousCustomerId = useRef(customerId);
+  useEffect(() => {
+    if (previousCustomerId.current === customerId) return;
+    previousCustomerId.current = customerId;
+    agentService.startForCustomer(customer?.sessionId);
+    setConversation(freshConversation(language, customer?.name));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a customer change resets
+  }, [customerId]);
 
   const resetConversation = useCallback(() => {
     agentService.resetConversation();

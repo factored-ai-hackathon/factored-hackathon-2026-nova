@@ -1,4 +1,4 @@
-"""FastAPI app: CORS, health check and chat routes."""
+"""FastAPI app: CORS, health check, login, chat and demo routes."""
 
 import hmac
 import logging
@@ -8,7 +8,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
+from app.api.demo import router as demo_router
 from app.config import get_settings
 from app.llm import ensure_allowed_provider
 
@@ -51,4 +53,6 @@ async def health() -> dict[str, str]:
     return {"status": "ok", "llm_provider": get_settings().llm_provider}
 
 
+app.include_router(auth_router)
 app.include_router(chat_router)
+app.include_router(demo_router)

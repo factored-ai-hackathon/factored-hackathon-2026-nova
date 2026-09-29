@@ -6,11 +6,17 @@ The frontend and the backend both code against this file. Change it first, then 
 | Endpoint | Request | Response |
 |---|---|---|
 | `GET /health` | – | `200 {"status":"ok","llm_provider":"huggingface"}` |
-| `POST /v1/chat/sessions` | `{"lang":"es"\|"pt"}` (optional, default `es`) | `201 {"session_id":"<uuid>","lang":"es"}` |
+| `POST /v1/auth/login` | `{"country","document_type","document_number","password","lang"}` | `200 {"login_id","phone_last4","code_expires_in":300,"demo_sms":"..."}` |
+| `POST /v1/auth/verify` | `{"login_id","code":"123456"}` | `200 {"session_id","customer":{"customer_id","first_name","country","document_type","document_last4"}}` |
+| `GET /v1/demo/scenarios` | – | `200 {"password","scenarios":[{"key","customer":{"customer_id","first_name","country","document_type","document_number","birth_date","phone_last4"}}]}` |
+| `GET /v1/demo/customers/{customer_id}` | – | `200 {"customer_id",...}` (same fields as a scenario's customer) |
+| `POST /v1/chat/sessions` | `{"lang":"es"\|"pt","customer_id":"...","from_session_id":"..."}` (all optional; default `es`) | `201 {"session_id":"<uuid>","lang":"es"}` |
 | `POST /v1/chat/sessions/{id}/messages` | `{"text":"...","lang":"es"\|"pt"}` | `200 text/event-stream` (see below) |
 | `POST /v1/chat/sessions/{id}/messages/{message_id}/feedback` | `{"rating":"up"\|"down","comment":"..."}` (`comment` optional, max 500 chars) | `204` |
 
 Errors:
+- Login: any wrong data (password, document, country, document type, or a customer without a mobile phone) → `401 {"detail":"invalid_credentials"}`, the same for all. Verify: wrong code → `401 {"detail":"wrong_code"}`; expired code, 3 wrong codes, or an unknown `login_id` → `401 {"detail":"login_expired"}` (log in again). Login attempts count toward the per-visitor rate limit (`429`).
+- Demo: a `customer_id` that isn't in the directory → `404 {"detail":"customer_not_found"}` (also for a new session with that `customer_id`); characters other than letters, digits, `-`, `_` (or over 64) → `422`. No customers loaded → `503 {"detail":"no_demo_customers"}`.
 - Unknown or expired session (24 h without activity) → `404`.
 - Empty text, text over 2,000 characters, or a `lang` other than `es`/`pt` → `422`.
 - Spend limits (deployed): too many messages from one visitor in the last hour → `429 {"detail":"rate_limited"}`; the day's model budget used up → `429 {"detail":"daily_budget_exhausted"}` (until 00:00 UTC). The model is not called.
@@ -29,6 +35,15 @@ Server-Sent Events, one JSON object per `data:` line:
 | `notice` | `{"kind":"otp_demo","text":"..."}` | Zero or more times: a message for the customer outside the reply. `otp_demo` is the demo SMS with the identity verification code (there is no real SMS) |
 
 Every stream ends with exactly one `done` or one `error`.
+
+## Web login (decision 26)
+1. `POST /v1/auth/login` checks the document (letters and digits only, uppercase, so `1.020.304.050` works), its country and type, and the password. Every customer shares the demo password (`DEMO_PASSWORD`, published in `docs/demo.md`: the dataset is synthetic). It creates the **chat session** and sends a 6-digit code to the phone: there is no real SMS, so its text comes back as `demo_sms`.
+2. `POST /v1/auth/verify` with the code (3 tries, 5 minutes). The chat session (`session_id` = `login_id`) is now **verified** for this customer: Nova answers without asking again. Verification lasts `VERIFIED_TTL_MINUTES`; after that Nova verifies again in the chat (document, date of birth, code), and only as this customer.
+
+The session id is the only credential the web app keeps. A new conversation for the same customer: `POST /v1/chat/sessions` with `customer_id` and `from_session_id` (the login's session); while that session is verified, the new one is too, with the same expiry. Otherwise the new session is only **bound** to `customer_id`: verification in the chat only succeeds as that customer (someone else's correct data fails like wrong data). Binding only restricts, so it grants nothing by itself.
+
+## Demo panel
+`GET /v1/demo/scenarios` returns the demo password and one customer per scenario (`random`, `declined_transaction`, `open_complaint`, `past_due`; see `data/scripts/load_demo_data.py`), picked again on every call. `GET /v1/demo/customers/{id}` returns any customer of the dataset. They show what the customer would know (document, date of birth); logging in still needs the code.
 
 ## Identity verification
 Before any personal data, the agent verifies the customer (`backend/app/agent/identity.py`, decision 22): document number → date of birth → 6-digit code (demo SMS as a `notice` event). The model can only ask to start it; the answers are handled in code, never sent to the model, and stored as placeholders in the history and the interaction log (`[identity verification input]`). 3 failures lock verification for the session; verification lasts 30 minutes. Demo customers: `docs/demo.md`.
@@ -66,6 +81,9 @@ Names only; values go in `backend/.env` (gitignored). See `backend/.env.example`
 | `SESSIONS_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-chat-sessions` |
 | `SESSION_TTL_HOURS` | backend | Hours without activity before a session expires (then `404`). Default `24` |
 | `MAX_HISTORY_MESSAGES` | backend | Messages kept per conversation (user + assistant). Default `40` |
+| `CUSTOMER_DIRECTORY` | backend | `demo` (default: 2 fictional customers) or `dynamodb` (deployed: the whole dataset, loaded by `data/scripts/load_demo_data.py`) |
+| `DEMO_PASSWORD` | backend | The password every demo customer logs in with. Default `Nova2026` (public, documented) |
+| `CUSTOMERS_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-demo-customers` |
 | `VERIFICATION_MAX_ATTEMPTS`, `OTP_TTL_SECONDS`, `VERIFIED_TTL_MINUTES` | backend | Identity verification. Defaults `3`, `300`, `30` |
 | `DAILY_BUDGET_USD` | backend | Max model spend per day (UTC), from the tokens each turn reports. Unset = no limit. Deployed: `5` |
 | `RATE_LIMIT_PER_HOUR` | backend | Max messages per visitor IP per hour. Unset = no limit. Deployed: `30` |

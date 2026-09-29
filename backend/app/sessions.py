@@ -36,7 +36,10 @@ class Session:
 
 
 class SessionStore(Protocol):
-    async def create(self, lang: Lang) -> Session: ...
+    async def create(self, lang: Lang, auth: dict | None = None) -> Session:
+        """New session; `auth` is its initial verification state (the logged-in customer)."""
+        ...
+
     async def get(self, session_id: str) -> Session | None: ...
     async def set_lang(self, session_id: str, lang: Lang) -> None: ...
 
@@ -55,8 +58,8 @@ class InMemorySessionStore:
         self._sessions: dict[str, Session] = {}
         self.max_messages = max_messages
 
-    async def create(self, lang: Lang) -> Session:
-        session = Session(id=str(uuid.uuid4()), lang=lang)
+    async def create(self, lang: Lang, auth: dict | None = None) -> Session:
+        session = Session(id=str(uuid.uuid4()), lang=lang, auth=dict(auth or {}))
         self._sessions[session.id] = session
         return session
 
@@ -85,14 +88,15 @@ class DynamoSessionStore:
     def _expires_at(self) -> int:
         return int(time.time()) + self.ttl_seconds
 
-    def _create(self, lang: Lang) -> Session:
-        session = Session(id=str(uuid.uuid4()), lang=lang)
+    def _create(self, lang: Lang, auth: dict | None) -> Session:
+        session = Session(id=str(uuid.uuid4()), lang=lang, auth=dict(auth or {}))
         self.table.put_item(
             Item={
                 "session_id": session.id,
                 "lang": lang,
                 "created_at": session.created_at.isoformat(),
                 "messages": "[]",
+                "auth_state": json.dumps(session.auth),
                 "expires_at": self._expires_at(),
             },
             ConditionExpression="attribute_not_exists(session_id)",
@@ -139,8 +143,8 @@ class DynamoSessionStore:
             },
         )
 
-    async def create(self, lang: Lang) -> Session:
-        return await asyncio.to_thread(self._create, lang)
+    async def create(self, lang: Lang, auth: dict | None = None) -> Session:
+        return await asyncio.to_thread(self._create, lang, auth)
 
     async def get(self, session_id: str) -> Session | None:
         return await asyncio.to_thread(self._get, session_id)
