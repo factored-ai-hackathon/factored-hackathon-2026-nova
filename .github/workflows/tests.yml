@@ -8,14 +8,58 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read # paths-filter lists the PR's changed files through the API
 
 concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
 
+# Which jobs run depends on the changed files:
+#   frontend/**  -> Frontend
+#   backend/**   -> Backend + Evaluation (evals exercise the backend agent)
+#   evals/**     -> Evaluation
+#   docs/** and Markdown files anywhere -> nothing
+#   anything else (infra/, data/, ml/, .github/, root files) -> everything
+# Skipped jobs count as passed, so they work with required status checks.
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      evals: ${{ steps.filter.outputs.evals }}
+      other: ${{ steps.filter.outputs.other }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # A file counts for a filter only if it matches every pattern in it.
+          predicate-quantifier: every
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - '!**/*.md'
+            backend:
+              - 'backend/**'
+              - '!**/*.md'
+            evals:
+              - 'evals/**'
+              - '!**/*.md'
+            other:
+              - '**'
+              - '!frontend/**'
+              - '!backend/**'
+              - '!evals/**'
+              - '!docs/**'
+              - '!**/*.md'
+
   backend:
     name: Backend
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.other == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,6 +84,11 @@ jobs:
 
   evaluation:
     name: Evaluation
+    needs: changes
+    if: >-
+      needs.changes.outputs.backend == 'true' ||
+      needs.changes.outputs.evals == 'true' ||
+      needs.changes.outputs.other == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -62,6 +111,8 @@ jobs:
 
   frontend:
     name: Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.other == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
