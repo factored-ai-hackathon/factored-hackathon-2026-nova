@@ -1,0 +1,127 @@
+name: Deploy
+
+# Pushing to main (merging a PR) tests and deploys the app to AWS, then creates a GitHub
+# release (date version, notes generated from the merged PRs).
+# Infrastructure comes from infra/app (Terraform, applied by hand); this workflow only ships code.
+# Repository variables come from `terraform -chdir=infra/app output github_variables`.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # OIDC: assume the deploy role without AWS keys
+  pull-requests: read # needed by tests.yml
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  backend:
+    name: Deploy API (Lambda)
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Build Lambda package
+        run: backend/scripts/build_lambda.sh
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload and update function code
+        run: |
+          aws s3 cp backend/build/lambda.zip "s3://${{ vars.ARTIFACTS_BUCKET }}/backend/lambda.zip"
+          aws lambda update-function-code \
+            --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}" \
+            --s3-bucket "${{ vars.ARTIFACTS_BUCKET }}" \
+            --s3-key backend/lambda.zip \
+            --query LastUpdateStatus --output text
+          aws lambda wait function-updated-v2 --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}"
+
+      - name: Smoke test
+        run: curl --fail --silent --show-error --retry 5 --retry-all-errors "${{ vars.APP_URL }}/health"
+
+  frontend:
+    name: Deploy web (S3 + CloudFront)
+    needs: tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # VITE_API_URL stays empty: CloudFront serves the API on the same origin (/v1/*).
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Hashed assets are cached for a year; index.html is always revalidated.
+      - name: Upload and invalidate
+        run: |
+          aws s3 sync dist "s3://${{ vars.WEB_BUCKET }}" --delete --exclude "*.map" \
+            --exclude index.html --cache-control "public,max-age=31536000,immutable"
+          aws s3 cp dist/index.html "s3://${{ vars.WEB_BUCKET }}/index.html" \
+            --cache-control "no-cache"
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" --paths "/*" \
+            --query Invalidation.Id --output text
+
+  # Date version, Colombia time: v2026.09.29, then v2026.09.29.2, .3... for more releases the
+  # same day. Only after a successful deploy, and not for manual runs of this workflow.
+  release:
+    name: Create GitHub release
+    needs: [backend, frontend]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the tag and the release
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Pick the next version
+        id: version
+        run: |
+          base="v$(TZ=America/Bogota date +%Y.%m.%d)"
+          tag="$base"
+          n=1
+          while gh api "repos/$GH_REPO/git/ref/tags/$tag" --silent 2>/dev/null; do
+            n=$((n + 1))
+            tag="$base.$n"
+          done
+          echo "Next release: $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --target "$GITHUB_SHA" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes
