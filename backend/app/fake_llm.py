@@ -5,6 +5,7 @@ the whole app (sessions, streaming, interactions, feedback) runs anywhere. Refus
 """
 
 import asyncio
+import json
 import re
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
@@ -14,7 +15,13 @@ from langchain_core.callbacks import (
     CallbackManagerForLLMRun,
 )
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, SystemMessage
+from langchain_core.messages import (
+    AIMessage,
+    AIMessageChunk,
+    BaseMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langchain_core.messages.ai import UsageMetadata
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 
@@ -48,8 +55,13 @@ def _lang(messages: list[BaseMessage]) -> str:
 
 
 def _reply(messages: list[BaseMessage]) -> str:
-    last = messages[-1].text if messages else ""
-    echo = " ".join(last.split())[:MAX_ECHO_CHARS]
+    last = messages[-1] if messages else None
+    if isinstance(last, ToolMessage):  # after an account tool: show what it returned
+        data = last.text[:600] + ("…" if len(last.text) > 600 else "")
+        intro = TOOL_REPLIES[_lang(messages)].format(tool=last.name)
+        return f"{intro}\n\n```\n{data}\n```"
+    text = last.text if last else ""
+    echo = " ".join(text.split())[:MAX_ECHO_CHARS]
     return REPLIES[_lang(messages)].format(echo=echo)
 
 
@@ -66,25 +78,50 @@ def _usage(messages: list[BaseMessage], reply: str) -> UsageMetadata:
 
 VERIFY_CALL_ID = "call_offline_verify"
 
+# Which account tool the offline model calls for a request (first match wins).
+_ACCOUNT_TOOL_WORDS = (
+    ("get_my_complaints", ("queja", "reclam", "caso", "pqr")),
+    ("get_my_transactions", ("movim", "transac", "rechaz", "recus", "extrat", "compra")),
+    ("get_my_products", ("saldo", "cuenta", "tarjeta", "conta", "cart", "producto", "limite")),
+)
+
+TOOL_REPLIES = {
+    "es": "**Modo sin conexión**: consulté tus datos con `{tool}` y encontré esto:",
+    "pt": "**Modo offline**: consultei seus dados com `{tool}` e encontrei isto:",
+}
+
 
 class OfflineChatModel(BaseChatModel):
     delay_seconds: float = 0.03  # between streamed pieces, to look like a real stream
-    tools_bound: bool = False
+    bound_tools: tuple[str, ...] = ()
 
     @property
     def _llm_type(self) -> str:
         return "offline-fake"
 
     def bind_tools(self, tools: Any, **kwargs: Any) -> "OfflineChatModel":
-        # Imitates the real model: asks to verify when the customer wants their own data.
-        return self.model_copy(update={"tools_bound": True})
+        # Imitates the real model: asks to verify when the customer wants their own data, and once
+        # verified, calls the account tool that fits the request.
+        names = tuple(getattr(t, "name", str(t)) for t in tools)
+        return self.model_copy(update={"bound_tools": names})
 
-    def _asks_to_verify(self, messages: list[BaseMessage]) -> bool:
-        return (
-            self.tools_bound
-            and bool(messages)
-            and identity.looks_like_account_request(messages[-1].text)
-        )
+    def _tool_call(self, messages: list[BaseMessage]) -> dict | None:
+        if not messages or isinstance(messages[-1], ToolMessage):
+            return None
+        last = messages[-1].text
+        if identity.VERIFY_TOOL in self.bound_tools and identity.looks_like_account_request(last):
+            return {"name": identity.VERIFY_TOOL, "args": {}, "id": VERIFY_CALL_ID}
+        normalized = identity.normalize_text(last)
+        for name, words in _ACCOUNT_TOOL_WORDS:
+            if name in self.bound_tools and any(w in normalized for w in words):
+                args = (
+                    {"status": "declined"}
+                    if name == "get_my_transactions"
+                    and ("rechaz" in normalized or "recus" in normalized)
+                    else {}
+                )
+                return {"name": name, "args": args, "id": f"call_offline_{name}"}
+        return None
 
     def _generate(
         self,
@@ -93,8 +130,7 @@ class OfflineChatModel(BaseChatModel):
         run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> ChatResult:
-        if self._asks_to_verify(messages):
-            call = {"name": identity.VERIFY_TOOL, "args": {}, "id": VERIFY_CALL_ID}
+        if call := self._tool_call(messages):
             message = AIMessage("", tool_calls=[call], usage_metadata=_usage(messages, ""))
             return ChatResult(generations=[ChatGeneration(message=message)])
         reply = _reply(messages)
@@ -102,11 +138,11 @@ class OfflineChatModel(BaseChatModel):
         return ChatResult(generations=[ChatGeneration(message=message)])
 
     def _pieces(self, messages: list[BaseMessage]) -> Iterator[ChatGenerationChunk]:
-        if self._asks_to_verify(messages):
-            call = {"name": identity.VERIFY_TOOL, "args": "{}", "id": VERIFY_CALL_ID, "index": 0}
+        if call := self._tool_call(messages):
+            chunk = {**call, "args": json.dumps(call["args"]), "index": 0}
             yield ChatGenerationChunk(
                 message=AIMessageChunk(
-                    "", tool_call_chunks=[call], usage_metadata=_usage(messages, "")
+                    "", tool_call_chunks=[chunk], usage_metadata=_usage(messages, "")
                 )
             )
             return

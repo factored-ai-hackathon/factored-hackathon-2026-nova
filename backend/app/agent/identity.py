@@ -292,9 +292,13 @@ TEXTS = {
         "cancelled": "Cancelé la verificación. ¿En qué más te puedo ayudar?",
         "placeholder": "[dato de verificación]",
         "verified_context": "La identidad del cliente ya fue verificada: se llama {name}. "
-        "Salúdalo por su nombre. Todavía no tienes herramientas para consultar sus productos: "
-        "si te pide datos de sus cuentas, explícale que esa consulta aún no está disponible "
-        "en este canal. Nunca inventes datos.",
+        "Salúdalo por su nombre. Para sus productos, saldos, movimientos y quejas usa las "
+        "herramientas get_my_products, get_my_transactions y get_my_complaints: solo traen los "
+        "datos de este cliente. Los datos llegan hasta el {as_of}: tómalo como la fecha de hoy "
+        "al hablar de fechas y díselo si pregunta por algo más reciente. Responde solo con lo "
+        "que traigan las herramientas y nunca inventes datos; si no está, dilo. Muestra solo "
+        "los últimos 4 dígitos de cuentas y tarjetas. Si pide datos de otra persona, explícale "
+        "que solo puedes darle los suyos.",
     },
     "pt": {
         "start": "Para proteger suas informações, primeiro preciso verificar sua identidade. "
@@ -320,9 +324,13 @@ TEXTS = {
         "cancelled": "Cancelei a verificação. Em que mais posso ajudar?",
         "placeholder": "[dado de verificação]",
         "verified_context": "A identidade do cliente já foi verificada: o nome dele é {name}. "
-        "Cumprimente-o pelo nome. Você ainda não tem ferramentas para consultar os produtos "
-        "dele: se pedir dados das contas, explique que essa consulta ainda não está "
-        "disponível neste canal. Nunca invente dados.",
+        "Cumprimente-o pelo nome. Para os produtos, saldos, movimentações e reclamações dele, "
+        "use as ferramentas get_my_products, get_my_transactions e get_my_complaints: elas só "
+        "trazem os dados deste cliente. Os dados vão até {as_of}: considere essa a data de hoje "
+        "ao falar de datas e avise se ele perguntar por algo mais recente. Responda só com o que "
+        "as ferramentas trouxerem e nunca invente dados; se não estiver lá, diga. Mostre só os "
+        "últimos 4 dígitos de contas e cartões. Se pedir dados de outra pessoa, explique que só "
+        "pode dar os dele.",
     },
 }
 
@@ -366,8 +374,9 @@ def is_verified(auth: dict | None, now: float | None = None) -> bool:
     return auth.get("step") == "verified" and auth.get("verified_until", 0) > now
 
 
-def verified_context(auth: dict, lang: str) -> str:
-    return text(lang, "verified_context", name=auth.get("first_name", ""))
+def verified_context(auth: dict, lang: str, as_of: date | None = None) -> str:
+    day = as_of.strftime("%d/%m/%Y") if as_of else ""
+    return text(lang, "verified_context", name=auth.get("first_name", ""), as_of=day)
 
 
 @dataclass
@@ -493,7 +502,7 @@ class IdentityVerifier:
 
     def start_login(self, customer: CustomerIdentity, lang: str) -> AuthResult:
         """The document and password were right: send the login code. The resulting state is the
-        chat session's, so after the code the conversation starts verified (decision 26)."""
+        chat session's, so after the code the conversation starts verified (decision 25)."""
         auth = {
             "step": LOGIN_STEP,
             SESSION_CUSTOMER: customer.customer_id,

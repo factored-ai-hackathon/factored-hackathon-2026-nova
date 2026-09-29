@@ -24,10 +24,20 @@ export interface Customer {
   sessionId?: string;
 }
 
+export type AccountType =
+  | 'checking'
+  | 'savings'
+  | 'credit'
+  | 'debit'
+  | 'loan'
+  | 'investment'
+  | 'insurance';
+
 export interface Account {
   id: string;
   customerId: string;
-  type: 'checking' | 'savings' | 'credit';
+  type: AccountType;
+  status?: 'active' | 'blocked' | 'closed' | 'suspended';
   currency: string;
   balance: number;
   availableBalance: number;
@@ -61,7 +71,7 @@ export type TransactionCategory =
   | 'online'
   | 'other';
 
-export type TransactionStatus = 'completed' | 'pending' | 'failed' | 'disputed';
+export type TransactionStatus = 'completed' | 'pending' | 'failed' | 'disputed' | 'reversed';
 
 export interface Transaction {
   id: string;
