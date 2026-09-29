@@ -4,10 +4,11 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessageChunk, HumanMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage
 from langgraph.graph.state import CompiledStateGraph
 
 from app.agent.graph import build_graph
+from app.sessions import ChatMessage, get_session_store
 
 _graph: CompiledStateGraph | None = None
 
@@ -25,7 +26,7 @@ class TokenUsage:
 
 
 def set_chat_model(model: BaseChatModel) -> None:
-    """Rebuild the graph around a given model (tests use a fake one). Resets memory."""
+    """Rebuild the graph around a given model (tests use a fake one)."""
     global _graph
     _graph = build_graph(model)
 
@@ -39,16 +40,30 @@ def _get_graph() -> CompiledStateGraph:
     return _graph
 
 
+def _to_langchain(messages: list[ChatMessage]) -> list[BaseMessage]:
+    return [HumanMessage(m.content) if m.role == "user" else AIMessage(m.content) for m in messages]
+
+
 async def stream_reply(
     session_id: str, text: str, lang: str, usage: TokenUsage | None = None
 ) -> AsyncIterator[str]:
+    """Stream the reply to `text`. The conversation history lives in the session store, so any
+    instance can continue any conversation; the turn is saved once the reply is complete."""
     graph = _get_graph()
-    config = {"configurable": {"thread_id": session_id}}
-    inputs = {"messages": [HumanMessage(text)], "lang": lang}
-    async for chunk, metadata in graph.astream(inputs, config, stream_mode="messages"):
+    store = get_session_store()
+    session = await store.get(session_id)
+    history = session.messages if session else []
+    inputs = {"messages": [*_to_langchain(history), HumanMessage(text)], "lang": lang}
+
+    reply: list[str] = []
+    async for chunk, metadata in graph.astream(inputs, stream_mode="messages"):
         if metadata.get("langgraph_node") != "respond" or not isinstance(chunk, AIMessageChunk):
             continue
         if usage is not None and chunk.usage_metadata:
             usage.add(chunk.usage_metadata)
         if piece := chunk.text:
+            reply.append(piece)
             yield piece
+
+    turn = [ChatMessage("user", text), ChatMessage("assistant", "".join(reply))]
+    await store.save_messages(session_id, lang, [*history, *turn])

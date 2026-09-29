@@ -70,6 +70,12 @@ variable "rate_limit_per_hour" {
   default     = 30
 }
 
+variable "session_ttl_hours" {
+  description = "Hours without activity before a chat session and its history expire."
+  type        = number
+  default     = 24
+}
+
 variable "interactions_ttl_days" {
   description = "Days before a recorded chat turn is deleted by DynamoDB TTL."
   type        = number

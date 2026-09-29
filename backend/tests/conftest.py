@@ -9,6 +9,7 @@ from app import agent
 from app.api.chat import get_reply_streamer
 from app.interactions import MemoryInteractionStore, get_interaction_store
 from app.main import app
+from app.sessions import get_session_store
 
 
 def parse_sse(body: str) -> list[tuple[str, dict]]:
@@ -35,6 +36,14 @@ async def echo_reply(session_id: str, text: str, lang: str, usage=None):
         usage.add({"input_tokens": 10, "output_tokens": 3})
     for word in text.split(" "):
         yield word + " "
+
+
+@pytest.fixture(autouse=True)
+def fresh_sessions():
+    """Each test starts with an empty in-memory session store (the agent's memory)."""
+    get_session_store.cache_clear()
+    yield
+    get_session_store.cache_clear()
 
 
 @pytest.fixture(autouse=True)

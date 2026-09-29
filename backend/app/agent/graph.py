@@ -10,7 +10,6 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.base import BaseCheckpointSaver
-from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
@@ -43,5 +42,6 @@ def build_graph(
     graph.add_node("respond", respond)
     graph.add_edge(START, "respond")
     graph.add_edge("respond", END)
-    # TODO: replace InMemorySaver with a persistent checkpointer when sessions move to DynamoDB.
-    return graph.compile(checkpointer=checkpointer or InMemorySaver())
+    # No checkpointer by default: stream_reply loads and saves the conversation through the session
+    # store (DynamoDB when deployed), so the graph itself is stateless.
+    return graph.compile(checkpointer=checkpointer)

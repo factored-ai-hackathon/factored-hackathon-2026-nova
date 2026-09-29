@@ -7,6 +7,10 @@ output "lambda_function_name" {
   value = aws_lambda_function.api.function_name
 }
 
+output "sessions_table" {
+  value = aws_dynamodb_table.sessions.name
+}
+
 output "interactions_table" {
   value = aws_dynamodb_table.interactions.name
 }
