@@ -6,13 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    // Proxy to backend API — configure VITE_API_URL in .env
-    proxy: process.env.VITE_API_URL ? {
-      '/api': {
-        target: process.env.VITE_API_URL,
-        changeOrigin: true,
-      },
-    } : undefined,
+    // The FastAPI backend runs on :8000 (see backend/README.md).
+    proxy: {
+      '/v1': 'http://localhost:8000',
+      '/health': 'http://localhost:8000',
+    },
   },
   build: {
     outDir: 'dist',

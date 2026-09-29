@@ -26,7 +26,7 @@ Challenge details and timeline: @docs/challenge.md
 
 ## Architecture (summary)
 - Agent built with **LangGraph** (router / admin graph that enforces the security steps in code) and **LangChain** (models, tools, prompts)
-- LLM provider chosen by config: **Amazon Bedrock** (Claude) in production; **OpenRouter** (free models) for local development only
+- LLM provider chosen by config: **Amazon Bedrock** (Claude) in production; **Hugging Face Inference Providers** (free tier) for local development only
 - **Identity verification** (KBA + OTP) before revealing any personal data
 - **RAG** over a knowledge base of products/policies
 - **Query tools** over DynamoDB
@@ -65,7 +65,7 @@ Details: @docs/architecture.md
 - Before a `terraform apply`, show the `plan` and wait for approval.
 - Work on branches and open PRs; no direct pushes to `main`.
 - The repo is **public**: do not commit dataset data, PII or samples of real records.
-- **Production uses only Bedrock.** OpenRouter is for local development: send it only synthetic dataset records or test data, never secrets, credentials or real personal data.
+- **Production uses only Bedrock.** Hugging Face is for local development: send it only synthetic dataset records or test data, never secrets, credentials or real personal data.
 
 ## Commands
 - Setup (Mac and Windows): see `docs/setup.md`
@@ -73,9 +73,11 @@ Details: @docs/architecture.md
 - Run any Python tool: `uv run <tool>` (e.g. `uv run jupyter lab`)
 - Build the data model: `uv run dbt build` (from `data/dbt`)
 - Add a library: `uv add <package>` (updates `pyproject.toml` and `uv.lock`; commit both)
-- Tests: `TODO`
-- Agent evals: `TODO` (in `evals/`)
-- Run locally: `TODO`
+- Tests (from `backend/`, no token needed): `uv run pytest` and `uv run ruff check`
+- Frontend checks (from `frontend/`): `npm run build` and `npm run lint`
+- Agent evals (from `backend/`): `uv run pytest ../evals/agent` (fake model by default; `EVAL_LIVE=1` uses the real one)
+- Run locally: `uv run uvicorn app.main:app --reload --reload-dir app` (from `backend/`) and `npm run dev` (from `frontend/`), then open http://localhost:5173
+- Chat API contract: `docs/api-contract.md`
 - Terraform (data lake): `terraform -chdir=infra/data-lake plan`
 
 # AWS Guidance

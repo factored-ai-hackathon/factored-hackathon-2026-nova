@@ -1,15 +1,9 @@
 // ============================================================
-// Agent Service — mock implementation
-// Replace the mock functions with real fetch() calls when
-// the FastAPI backend is ready. The function signatures and
-// return types must NOT change.
-//
-// Expected backend endpoint:
-//   POST /api/agent/chat          → AgentChatResponse
-//   GET  /api/agent/conversation/:id → Conversation
-//   GET  /api/agent/status/:id    → AgentContext
-//
-// Full contract: docs/frontend-agent-api-contract.md
+// Agent Service
+// Real mode (default): talks to the FastAPI backend through
+// src/api/client.ts (contract: docs/api-contract.md) and streams
+// the reply token by token.
+// Mock mode (VITE_MOCK=1): keyword-based replies, no backend.
 // ============================================================
 
 import type {
@@ -23,6 +17,12 @@ import type {
 } from '../types';
 import { mockConversation, mockAgentContext } from '../data/mockData';
 import { t } from '../i18n/translations';
+import * as api from '../api/client';
+
+const USE_MOCK = import.meta.env.VITE_MOCK === '1';
+
+// Backend session for the current conversation (real mode only)
+let sessionId: string | null = null;
 
 // In-memory conversation store (mock only)
 let currentConversation: Conversation = { ...mockConversation, messages: [...mockConversation.messages] };
@@ -110,9 +110,73 @@ const portugueseResponses: Partial<Record<Intent, { message: string; action: str
 
 /**
  * Send a message to the agent and get a response.
- * Replace the body of this function with a real fetch() when backend is ready.
+ * In real mode, `onToken` receives the reply text accumulated so far while it streams.
  */
-export async function sendMessage(request: AgentChatRequest): Promise<AgentChatResponse> {
+export async function sendMessage(
+  request: AgentChatRequest,
+  onToken?: (textSoFar: string) => void,
+): Promise<AgentChatResponse> {
+  return USE_MOCK ? mockSendMessage(request) : backendSendMessage(request, onToken);
+}
+
+async function backendSendMessage(
+  request: AgentChatRequest,
+  onToken?: (textSoFar: string) => void,
+): Promise<AgentChatResponse> {
+  const text = withTransactionContext(request);
+  let reply: string;
+  try {
+    reply = await streamReply(text, request.language, onToken);
+  } catch (err) {
+    // The backend keeps sessions in memory; after a restart, start a new one once.
+    if (!(err instanceof api.ApiError && err.status === 404)) throw err;
+    sessionId = null;
+    reply = await streamReply(text, request.language, onToken);
+  }
+
+  // The MVP backend returns only text; intent/sentiment/escalation come later.
+  return {
+    conversation_id: sessionId!,
+    message: reply,
+    intent: null,
+    sentiment: 'neutral',
+    confidence: 0,
+    status: 'idle',
+    requires_human: false,
+    recommended_action: null,
+    suggested_actions: [],
+  };
+}
+
+async function streamReply(
+  text: string,
+  language: AgentChatRequest['language'],
+  onToken?: (textSoFar: string) => void,
+): Promise<string> {
+  sessionId ??= await api.createSession(language);
+  let reply = '';
+  for await (const event of api.sendMessage(sessionId, text, language)) {
+    if (event.type === 'token') {
+      reply += event.text;
+      onToken?.(reply);
+    } else if (event.type === 'error') {
+      throw new Error(`agent error: ${event.code}`);
+    } else {
+      return reply;
+    }
+  }
+  throw new Error('stream ended without done/error');
+}
+
+// The chat API only takes text, so the selected transaction travels as a prefix.
+function withTransactionContext(request: AgentChatRequest): string {
+  const txn = request.transaction_context;
+  if (!txn) return request.message;
+  const label = request.language === 'pt' ? 'Transação selecionada' : 'Transacción seleccionada';
+  return `[${label}: ${txn.merchant}, ${txn.amount} COP, ${txn.date}]\n${request.message}`;
+}
+
+async function mockSendMessage(request: AgentChatRequest): Promise<AgentChatResponse> {
   await delay(800 + Math.random() * 700); // simulate 0.8–1.5 s latency
 
   const conversationId = request.conversation_id ?? generateConversationId();
@@ -213,6 +277,7 @@ export async function getAgentStatus(): Promise<AgentContext> {
  * Reset conversation (e.g. after escalation or resolution).
  */
 export function resetConversation(): void {
+  sessionId = null;
   currentConversation = {
     ...mockConversation,
     messages: [...mockConversation.messages],

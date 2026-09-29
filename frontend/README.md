@@ -1,15 +1,29 @@
-# NovaBank frontend draft
+# NovaBank frontend
 
-Customer-facing banking demo and AI contact-center UI. All banking data and login are simulated; there are no real transactions or backend connections. Owners: Esteban, Miguel.
+Customer-facing banking demo with the Nova AI assistant (Spanish and Portuguese). Banking data and login are simulated; the Nova chat talks to the real backend. Owners: Esteban, Miguel.
+
+Vite + React + TypeScript. Chat API contract: [docs/api-contract.md](../docs/api-contract.md).
 
 ## Run locally
 
+Needs Node.js 20.19+ (Mac: `brew install node`, Windows: `winget install OpenJS.NodeJS.LTS`).
+
 ```sh
+cd frontend
 npm install
-npm run dev
+npm run dev              # http://localhost:5173, proxies /v1 to the backend on :8000
 ```
 
-Use any email-shaped value and a non-empty password on the demo login screen. To validate the frontend:
+Start the backend first (see [backend/README.md](../backend/README.md)). No backend? Use the mock agent:
+
+```sh
+VITE_MOCK=1 npm run dev                                # Mac
+$env:VITE_MOCK="1"; npm run dev                        # Windows PowerShell
+```
+
+Use any email-shaped value and a non-empty password on the demo login screen. Optional settings go in `frontend/.env.local` (see `.env.example`). `VITE_*` values are bundled into the app, so never put secrets there.
+
+## Checks
 
 ```sh
 npm run build
@@ -19,10 +33,14 @@ npm run lint
 
 ## Demo flow
 
-Login → dashboard → transaction details → ask Nova → review the full conversation and safe agent metadata → try the mocked human escalation controls. The dashboard also opens Nova from its floating assistant button.
+Login → dashboard → transaction details → ask Nova → review the full conversation and agent metadata → try the mocked human escalation controls. The dashboard also opens Nova from its floating assistant button.
 
 ## Frontend/backend boundary
 
-Presentation components call the typed mock services in `src/services/`; mock customer, account, card, and transaction data is in `src/data/`. Replace the service implementations when the backend is ready. The proposed request/response fields and EDD metadata are documented in [docs/agent-api-contract.md](docs/agent-api-contract.md). Transaction context is forwarded when the customer asks Nova about a selected transaction. Internal chain-of-thought is not part of the UI contract.
+| Path | What |
+|---|---|
+| `src/api/client.ts` | Create a session, POST a message and read the SSE stream (`fetch` + `ReadableStream`) |
+| `src/services/agentService.ts` | What the UI calls. Real mode streams replies from the backend; `VITE_MOCK=1` uses keyword-based mock replies |
+| `src/services/authService.ts`, `src/data/` | Mock login, customer, account, card and transaction data |
 
-Spanish and Portuguese are represented by the `Language` type and translation catalog. The mock agent returns localized responses for common demo intents. Some banking labels and dashboard content remain Spanish-only in this draft.
+The MVP backend returns only the reply text, so intent, sentiment and confidence show as empty in real mode. When the customer asks Nova about a selected transaction, its merchant, amount and date are sent as a prefix of the message. The proposed richer contract (intent, sentiment, escalation) is in [docs/agent-api-contract.md](docs/agent-api-contract.md).

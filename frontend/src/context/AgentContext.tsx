@@ -9,7 +9,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
-import type { Conversation, Transaction, AgentChatRequest } from '../types';
+import type { Conversation, ConversationMessage, Transaction, AgentChatRequest } from '../types';
 import { mockConversation, mockInitialAgentMessage } from '../data/mockData';
 import * as agentService from '../services/agentService';
 import { useApp } from './AppContext';
@@ -144,11 +144,29 @@ export function AgentProvider({ children }: { children: ReactNode }) {
           } : {}),
         };
 
-        const response = await agentService.sendMessage(request);
+        // Replace the streaming reply in place, or append it the first time.
+        const agentMsgId = `msg-a-${Date.now()}`;
+        const withAgentMsg = (messages: ConversationMessage[], agentMsg: ConversationMessage) =>
+          messages.some((m) => m.id === agentMsgId)
+            ? messages.map((m) => (m.id === agentMsgId ? agentMsg : m))
+            : [...messages, agentMsg];
 
-        const agentMsg = {
-          id: `msg-a-${Date.now()}`,
-          role: 'agent' as const,
+        const response = await agentService.sendMessage(request, (textSoFar) => {
+          setConversation((prev) => ({
+            ...prev,
+            messages: withAgentMsg(prev.messages, {
+              id: agentMsgId,
+              role: 'agent',
+              content: textSoFar,
+              timestamp: new Date().toISOString(),
+            }),
+            agentContext: { ...prev.agentContext, status: 'responding' },
+          }));
+        });
+
+        const agentMsg: ConversationMessage = {
+          id: agentMsgId,
+          role: 'agent',
           content: response.message,
           timestamp: new Date().toISOString(),
           suggestedActions: response.suggested_actions,
@@ -157,7 +175,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
         setConversation((prev) => ({
           ...prev,
           id: response.conversation_id,
-          messages: [...prev.messages, agentMsg],
+          messages: withAgentMsg(prev.messages, agentMsg),
           agentContext: {
             intent: response.intent,
             sentiment: response.sentiment,

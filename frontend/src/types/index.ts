@@ -143,7 +143,7 @@ export interface AgentChatRequest {
 export interface AgentChatResponse {
   conversation_id: string;
   message: string;
-  intent: Intent;
+  intent: Intent | null;
   sentiment: Sentiment;
   confidence: number;
   status: AgentStatus;
