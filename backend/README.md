@@ -8,11 +8,13 @@ Separate uv project from the root data/ML one, so the image stays small. API con
 cd backend
 uv sync
 cp .env.example .env        # then set HF_TOKEN (see below)
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.main:app --reload --reload-dir app
 ```
 API on http://localhost:8000 (interactive docs at `/docs`). Start the frontend too (see `frontend/README.md`).
 
 **Local LLM:** create a personal Hugging Face token (fine-grained, permission "Make calls to Inference Providers") and put it in `backend/.env` as `HF_TOKEN`. The free tier is only $0.10 of credits per month, so chat sparingly. Send only test text, never real customer data. Production uses Bedrock; with `APP_ENV=prod` the app refuses to start with any other provider.
+
+**Bedrock:** `LLM_PROVIDER=bedrock` uses Claude Haiku 4.5 (`BEDROCK_MODEL_ID`, default `us.anthropic.claude-haiku-4-5-20251001-v1:0`, a US cross-Region inference profile) in `AWS_REGION` (default `us-east-2`). AWS credentials come from the standard chain: the service's IAM role in production, your AWS profile locally (`AWS_PROFILE=hackathon`). The account needs model access for Claude Haiku 4.5, and the role needs `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream` on the inference profile and the model in the US Regions it routes to. `BEDROCK_LIVE=1 uv run pytest -m live` sends one test message.
 
 Without `HF_TOKEN` the API still runs, but each message ends with an `error` event.
 

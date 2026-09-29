@@ -76,7 +76,7 @@ Details: @docs/architecture.md
 - Tests (from `backend/`, no token needed): `uv run pytest` and `uv run ruff check`
 - Frontend checks (from `frontend/`): `npm run build` and `npm run lint`
 - Agent evals (from `backend/`): `uv run pytest ../evals/agent` (fake model by default; `EVAL_LIVE=1` uses the real one)
-- Run locally: `uv run uvicorn app.main:app --reload` (from `backend/`) and `npm run dev` (from `frontend/`), then open http://localhost:5173
+- Run locally: `uv run uvicorn app.main:app --reload --reload-dir app` (from `backend/`) and `npm run dev` (from `frontend/`), then open http://localhost:5173
 - Chat API contract: `docs/api-contract.md`
 - Terraform (data lake): `terraform -chdir=infra/data-lake plan`
 
