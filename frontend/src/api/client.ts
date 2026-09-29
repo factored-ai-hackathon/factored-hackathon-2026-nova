@@ -29,6 +29,17 @@ export async function createSession(lang: Lang): Promise<string> {
   return body.session_id
 }
 
+export type Rating = 'up' | 'down'
+
+export async function sendFeedback(sessionId: string, messageId: string, rating: Rating): Promise<void> {
+  const res = await fetch(`${BASE_URL}/v1/chat/sessions/${sessionId}/messages/${messageId}/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rating }),
+  })
+  if (!res.ok) throw new ApiError(res.status, `send feedback failed: ${res.status}`)
+}
+
 /** POST a message and yield the SSE events (EventSource can't POST, so we read the body). */
 export async function* sendMessage(
   sessionId: string,

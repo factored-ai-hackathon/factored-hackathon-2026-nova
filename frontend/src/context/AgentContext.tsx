@@ -9,7 +9,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
-import type { Conversation, ConversationMessage, Transaction, AgentChatRequest } from '../types';
+import type { Conversation, ConversationMessage, Rating, Transaction, AgentChatRequest } from '../types';
 import { mockConversation, mockInitialAgentMessage } from '../data/mockData';
 import * as agentService from '../services/agentService';
 import { useApp } from './AppContext';
@@ -28,6 +28,7 @@ interface AgentContextValue {
   closeFullView: () => void;
   sendMessage: (text: string, transaction?: Transaction) => Promise<void>;
   resetConversation: () => void;
+  rateMessage: (messageId: string, rating: Rating) => Promise<void>;
 }
 
 const AgentCtx = createContext<AgentContextValue | null>(null);
@@ -174,6 +175,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
           content: response.message,
           timestamp: new Date().toISOString(),
           suggestedActions: response.suggested_actions,
+          serverMessageId: response.message_id,
         };
 
         setConversation((prev) => ({
@@ -217,6 +219,27 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     setIsStreaming(false);
   }, [customer?.name, language]);
 
+  const rateMessage = useCallback(
+    async (messageId: string, rating: Rating) => {
+      const message = conversation.messages.find((m) => m.id === messageId);
+      if (!message?.serverMessageId) return;
+      const setFeedback = (feedback: Rating | undefined) =>
+        setConversation((prev) => ({
+          ...prev,
+          messages: prev.messages.map((m) => (m.id === messageId ? { ...m, feedback } : m)),
+        }));
+      const previous = message.feedback;
+      setFeedback(rating); // optimistic
+      try {
+        await agentService.sendFeedback(conversation.id, message.serverMessageId, rating);
+      } catch (err) {
+        console.error(err);
+        setFeedback(previous);
+      }
+    },
+    [conversation.id, conversation.messages]
+  );
+
   return (
     <AgentCtx.Provider
       value={{
@@ -231,6 +254,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
         closeFullView,
         sendMessage,
         resetConversation,
+        rateMessage,
       }}
     >
       {children}

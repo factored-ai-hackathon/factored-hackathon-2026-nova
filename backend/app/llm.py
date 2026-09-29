@@ -2,6 +2,7 @@
 
 - huggingface: local development only (HF Inference Providers, OpenAI-compatible router).
   Send it only synthetic or test text.
+- fake: local development without network, token or AWS (fixed replies, app/fake_llm.py).
 - bedrock: production (Claude on Amazon Bedrock, Converse API). AWS credentials come from the
   standard chain: the service's IAM role in production, your AWS profile locally.
 """
@@ -22,9 +23,22 @@ def ensure_allowed_provider(settings: Settings) -> None:
         )
 
 
+def model_id(settings: Settings) -> str:
+    return {
+        "bedrock": settings.bedrock_model_id,
+        "huggingface": settings.hf_model_id,
+        "fake": "fake",
+    }[settings.llm_provider]
+
+
 def get_chat_model(settings: Settings | None = None) -> BaseChatModel:
     settings = settings or get_settings()
     ensure_allowed_provider(settings)
+
+    if settings.llm_provider == "fake":
+        from app.fake_llm import OfflineChatModel
+
+        return OfflineChatModel()
 
     if settings.llm_provider == "huggingface":
         if settings.hf_token is None:

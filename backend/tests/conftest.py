@@ -7,6 +7,7 @@ from langchain_core.messages import AIMessage
 
 from app import agent
 from app.api.chat import get_reply_streamer
+from app.interactions import MemoryInteractionStore, get_interaction_store
 from app.main import app
 
 
@@ -29,9 +30,20 @@ def fake_model(*replies: str) -> GenericFakeChatModel:
     return GenericFakeChatModel(messages=iter([AIMessage(r) for r in replies]))
 
 
-async def echo_reply(session_id: str, text: str, lang: str):
+async def echo_reply(session_id: str, text: str, lang: str, usage=None):
+    if usage is not None:
+        usage.add({"input_tokens": 10, "output_tokens": 3})
     for word in text.split(" "):
         yield word + " "
+
+
+@pytest.fixture(autouse=True)
+def interactions():
+    """Every test records interactions in memory, never in backend/.interactions."""
+    store = MemoryInteractionStore()
+    app.dependency_overrides[get_interaction_store] = lambda: store
+    yield store
+    app.dependency_overrides.pop(get_interaction_store, None)
 
 
 @pytest.fixture
@@ -39,7 +51,7 @@ def client():
     app.dependency_overrides[get_reply_streamer] = lambda: echo_reply
     with TestClient(app) as c:
         yield c
-    app.dependency_overrides.clear()
+    app.dependency_overrides.pop(get_reply_streamer, None)
 
 
 @pytest.fixture

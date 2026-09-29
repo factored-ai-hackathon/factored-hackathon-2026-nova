@@ -5,6 +5,7 @@ import {
   Send,
 } from 'lucide-react';
 import { MessageContent } from './MessageContent';
+import { FeedbackButtons } from './FeedbackButtons';
 import { useAgent } from '../../context/AgentContext';
 import { useApp } from '../../context/AppContext';
 import { t } from '../../i18n/translations';
@@ -76,6 +77,7 @@ function MessageRow({ message, onSuggestedAction, language }: MessageRowProps & 
           <MessageContent role={message.role} content={message.content} />
         </div>
         <span className="msg-time">{formatTime(message.timestamp, language === 'pt' ? 'pt-BR' : 'es-CO')}</span>
+        <FeedbackButtons message={message} language={language} />
         {message.role === 'agent' && message.suggestedActions && message.suggestedActions.length > 0 && (
           <div className="suggested-actions" role="group" aria-label={t('agent.suggestedActions', language)}>
             {message.suggestedActions.map((action) => (
