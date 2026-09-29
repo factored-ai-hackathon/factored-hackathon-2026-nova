@@ -38,6 +38,7 @@ class FakeTable:
         v = ExpressionAttributeValues
         if ":m" in v:
             item["messages"] = v[":m"]
+            item["auth_state"] = v[":auth"]
             item.setdefault("lang", v[":lang"])
             item.setdefault("created_at", v[":now"])
         if "SET lang = :lang" in UpdateExpression:

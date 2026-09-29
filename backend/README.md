@@ -37,7 +37,7 @@ No token or network needed. `HF_TOKEN=... uv run pytest -m live` runs the one li
 | `app/sessions.py` | Sessions and conversation history: in memory locally, DynamoDB deployed (`SESSIONS_STORE`) |
 | `app/interactions.py` | Records each turn (masked text, tokens, latency, errors) and its 👍/👎 feedback |
 | `app/llm.py` | Chat model per `LLM_PROVIDER` |
-| `app/agent/` | `stream_reply` seam, LangGraph graph, system prompts per language |
+| `app/agent/` | `stream_reply` seam, LangGraph graph (route → respond / auth_gate), identity verification (`identity.py`), system prompts per language |
 
 ## Interactions and feedback
 Every chat turn and its 👍/👎 rating are recorded (contract: `docs/api-contract.md`). Locally they go to `backend/.interactions/interactions.jsonl` (gitignored); deployed, to DynamoDB (`INTERACTIONS_STORE=dynamodb`). Card/account numbers and emails are masked before storing. Replies rated 👎 are candidates for new cases in `evals/agent/smoke.yaml`.
@@ -47,4 +47,4 @@ Quick look at the local file:
 tail -n 5 .interactions/interactions.jsonl
 ```
 
-The next graph nodes (`classify_turn`, `auth_gate`, `answer_public`, `handoff`) are marked with TODOs in `app/agent/graph.py`.
+Identity verification: `docs/demo.md` has the fictional demo customers (works offline with `LLM_PROVIDER=fake`). Next graph nodes (`answer_public`, account data tools, `handoff`) are TODOs in `app/agent/graph.py`.

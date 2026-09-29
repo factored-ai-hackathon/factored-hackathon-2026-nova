@@ -111,28 +111,31 @@ const portugueseResponses: Partial<Record<Intent, { message: string; action: str
 
 /**
  * Send a message to the agent and get a response.
- * In real mode, `onToken` receives the reply text accumulated so far while it streams.
+ * In real mode, `onToken` receives the reply text accumulated so far while it streams, and
+ * `onNotice` out-of-band messages (the demo SMS with the identity verification code).
  */
 export async function sendMessage(
   request: AgentChatRequest,
   onToken?: (textSoFar: string) => void,
+  onNotice?: (text: string) => void,
 ): Promise<AgentChatResponse> {
-  return USE_MOCK ? mockSendMessage(request) : backendSendMessage(request, onToken);
+  return USE_MOCK ? mockSendMessage(request) : backendSendMessage(request, onToken, onNotice);
 }
 
 async function backendSendMessage(
   request: AgentChatRequest,
   onToken?: (textSoFar: string) => void,
+  onNotice?: (text: string) => void,
 ): Promise<AgentChatResponse> {
   const text = withTransactionContext(request);
   let reply: { text: string; messageId: string };
   try {
-    reply = await streamReply(text, request.language, onToken);
+    reply = await streamReply(text, request.language, onToken, onNotice);
   } catch (err) {
     // The backend keeps sessions in memory; after a restart, start a new one once.
     if (!(err instanceof api.ApiError && err.status === 404)) throw err;
     sessionId = null;
-    reply = await streamReply(text, request.language, onToken);
+    reply = await streamReply(text, request.language, onToken, onNotice);
   }
 
   // The MVP backend returns only text; intent/sentiment/escalation come later.
@@ -154,6 +157,7 @@ async function streamReply(
   text: string,
   language: AgentChatRequest['language'],
   onToken?: (textSoFar: string) => void,
+  onNotice?: (text: string) => void,
 ): Promise<{ text: string; messageId: string }> {
   sessionId ??= await api.createSession(language);
   let reply = '';
@@ -161,6 +165,8 @@ async function streamReply(
     if (event.type === 'token') {
       reply += event.text;
       onToken?.(reply);
+    } else if (event.type === 'notice') {
+      onNotice?.(event.text);
     } else if (event.type === 'error') {
       throw new Error(`agent error: ${event.code}`);
     } else {
