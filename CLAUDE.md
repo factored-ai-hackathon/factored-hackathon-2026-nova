@@ -63,7 +63,8 @@ Details: @docs/architecture.md
 - **Never** write secrets, tokens, account IDs or credentials in code, docs or commits. Use `.env` (ignored by git) or environment variables / Secrets Manager; document only the variable *name*.
 - **Never** delete files, resources or data without explicit confirmation. No `terraform destroy`, `rm -rf`, or deleting buckets/tables without asking.
 - Before a `terraform apply`, show the `plan` and wait for approval.
-- Work on branches and open PRs; no direct pushes to `main`.
+- **Branches:** `development` is the long-lived integration branch; `main` is production. Branch from `development` and open PRs into `development`. Never push to `main` or `development` directly, and never delete `development`.
+- **Releases:** a PR from `development` to `main`, merged with a merge commit (no squash/rebase, so the branches don't drift). Every push to `main` runs `.github/workflows/deploy.yml` (tests, then Lambda + S3/CloudFront deploy).
 - The repo is **public**: do not commit dataset data, PII or samples of real records.
 - **Production uses only Bedrock.** Hugging Face is for local development: send it only synthetic dataset records or test data, never secrets, credentials or real personal data.
 
@@ -74,7 +75,7 @@ Details: @docs/architecture.md
 - Build the data model: `uv run dbt build` (from `data/dbt`)
 - Add a library: `uv add <package>` (updates `pyproject.toml` and `uv.lock`; commit both)
 - Tests (from `backend/`, no token needed): `uv run pytest` and `uv run ruff check`
-- Frontend checks (from `frontend/`): `npm run build` and `npm run lint`
+- Frontend checks (from `frontend/`): `npm run build`, `npm test` and `npm run lint`
 - Agent evals (from `backend/`): `uv run pytest ../evals/agent` (fake model by default; `EVAL_LIVE=1` uses the real one)
 - Run locally: `uv run uvicorn app.main:app --reload --reload-dir app` (from `backend/`) and `npm run dev` (from `frontend/`), then open http://localhost:5173
 - Chat API contract: `docs/api-contract.md`
