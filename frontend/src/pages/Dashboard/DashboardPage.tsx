@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Send,
   ArrowUpRight,
@@ -15,7 +15,8 @@ import { AgentPanel } from '../../components/agent/AgentPanel';
 import { useApp } from '../../context/AppContext';
 import { useAgent } from '../../context/AgentContext';
 import { mockAccounts, mockTransactions } from '../../data/mockData';
-import { formatCurrency } from '../../utils/format';
+import { formatCurrency, formatDate } from '../../utils/format';
+import { loadOverview, type AccountsOverview } from '../../services/accountService';
 import { t, type TranslationKey } from '../../i18n/translations';
 import type { Transaction, Account } from '../../types';
 import '../../styles/dashboard.css';
@@ -42,16 +43,33 @@ const MOCK_NOTIFICATIONS = [
   },
 ];
 
+const ACCOUNT_ICONS: Record<Account['type'], string> = {
+  checking: '🏦',
+  savings: '🏛️',
+  credit: '💳',
+  debit: '💳',
+  loan: '🏠',
+  investment: '📈',
+  insurance: '🛡️',
+};
+
+interface Notice {
+  id: string;
+  title: string;
+  body: string;
+  type: 'info' | 'warning';
+}
+
 function AccountCard({ account }: { account: Account }) {
   const { language } = useApp();
   const locale = language === 'pt' ? 'pt-BR' : 'es-CO';
-  const isCredit = account.type === 'credit';
+  const isCredit = account.balance < 0;
   const label = t(`account.${account.type}`, language);
 
   return (
     <div className="account-item" tabIndex={0} role="button" aria-label={`${label}, ${t('dashboard.balance', language)} ${formatCurrency(account.balance, account.currency, locale)}`}>
       <div className="account-icon" aria-hidden="true">
-        {account.type === 'checking' ? '🏦' : account.type === 'savings' ? '🏛️' : '💳'}
+        {ACCOUNT_ICONS[account.type]}
       </div>
       <div className="account-details">
         <div className="account-name">{label}</div>
@@ -69,19 +87,81 @@ function AccountCard({ account }: { account: Account }) {
   );
 }
 
+/** Notifications from the customer's own data: open complaints and the latest declined payment. */
+function realNotices(overview: AccountsOverview | null, language: 'es' | 'pt', locale: string): Notice[] {
+  if (!overview) return [];
+  const notices: Notice[] = [];
+  if (overview.openComplaints > 0) {
+    notices.push({
+      id: 'complaints',
+      type: 'info',
+      title: t('dashboard.complaintsTitle', language),
+      body: t('dashboard.complaintsBody', language).replace('{n}', String(overview.openComplaints)),
+    });
+  }
+  const declined = overview.transactions.find((txn) => txn.status === 'failed');
+  if (declined) {
+    notices.push({
+      id: 'declined',
+      type: 'warning',
+      title: t('dashboard.declinedTitle', language),
+      body: `${declined.merchant} · ${formatCurrency(Math.abs(declined.amount), declined.currency, locale)}`,
+    });
+  }
+  return notices;
+}
+
 export function DashboardPage() {
   const { customer, language } = useApp();
   const { isOpen, isFullView, openAgent } = useAgent();
   const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
 
   const locale = language === 'pt' ? 'pt-BR' : 'es-CO';
-  const primaryAccount = mockAccounts[0];
-  const recentTransactions = mockTransactions.slice(0, 5);
 
-  // Total balance across all non-credit accounts
-  const totalBalance = mockAccounts
-    .filter((a) => a.type !== 'credit')
+  // Logged in with the real login: the customer's accounts from the dataset. Mock mode (no chat
+  // session): the fictional mock data.
+  const sessionId = customer?.sessionId;
+  const [overview, setOverview] = useState<AccountsOverview | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  useEffect(() => {
+    if (!sessionId || !customer) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const loaded = await loadOverview(sessionId, customer.id, language);
+        if (!cancelled) {
+          setOverview(loaded);
+          setLoadFailed(false);
+        }
+      } catch {
+        if (!cancelled) setLoadFailed(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, customer, language]);
+
+  const real = Boolean(sessionId);
+  const accounts = real ? (overview?.accounts ?? []) : mockAccounts;
+  const recentTransactions = (real ? (overview?.transactions ?? []) : mockTransactions).slice(0, 5);
+  const loading = real && !overview && !loadFailed;
+
+  const primaryAccount =
+    accounts.find((a) => a.type === 'checking' || a.type === 'savings') ?? accounts[0];
+  const currency = primaryAccount?.currency ?? 'COP';
+  // Total balance across the accounts with money in them (not cards or loans), in their currency
+  const totalBalance = accounts
+    .filter((a) => a.balance > 0 && a.type !== 'insurance' && a.currency === currency)
     .reduce((sum, a) => sum + a.balance, 0);
+
+  const notices: Notice[] = real
+    ? realNotices(overview, language, locale)
+    : MOCK_NOTIFICATIONS.map((n) => ({
+        ...n,
+        title: t(n.title as TranslationKey, language),
+        body: t(n.body as TranslationKey, language),
+      }));
 
   return (
     <div className="app-shell">
@@ -95,25 +175,29 @@ export function DashboardPage() {
               {t('dashboard.welcome', language)}, {customer?.name.split(' ')[0]} 👋
             </h2>
             <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)', marginTop: 4 }}>
-              {new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
+              {overview
+                ? `${t('dashboard.dataAsOf', language)} ${formatDate(`${overview.dataAsOf}T12:00:00`, locale)}`
+                : new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
+            {loading && <p className="dashboard-status" role="status">{t('dashboard.loading', language)}</p>}
+            {loadFailed && <p className="dashboard-status" role="alert">{t('dashboard.loadError', language)}</p>}
           </div>
 
           <div className="dashboard-grid">
             {/* Balance card */}
             <div className="balance-card card">
               <div className="balance-label">{t('dashboard.balance', language)}</div>
-              <div className="balance-amount">{formatCurrency(totalBalance, primaryAccount.currency, locale)}</div>
+              <div className="balance-amount">{formatCurrency(totalBalance, currency, locale)}</div>
               <div className="balance-row">
                 <div className="balance-sub">
                   <span className="balance-sub-label">{t('dashboard.available', language)}</span>
                   <span className="balance-sub-value">
-                    {formatCurrency(primaryAccount.availableBalance, primaryAccount.currency, locale)}
+                    {formatCurrency(primaryAccount?.availableBalance ?? 0, currency, locale)}
                   </span>
                 </div>
                 <div className="balance-sub">
                   <span className="balance-sub-label">{t('dashboard.mainAccount', language)}</span>
-                  <span className="balance-sub-value">{primaryAccount.number}</span>
+                  <span className="balance-sub-value">{primaryAccount?.number ?? '—'}</span>
                 </div>
               </div>
             </div>
@@ -142,7 +226,7 @@ export function DashboardPage() {
                 <button className="card-action">{t('dashboard.viewAll', language)}</button>
               </div>
               <div className="account-list">
-                {mockAccounts.map((account) => (
+                {accounts.map((account) => (
                   <AccountCard key={account.id} account={account} />
                 ))}
               </div>
@@ -154,11 +238,11 @@ export function DashboardPage() {
                 <span className="card-title">{t('dashboard.notifications', language)}</span>
               </div>
               <div className="notification-list">
-                {MOCK_NOTIFICATIONS.map((n) => (
+                {notices.map((n) => (
                   <div key={n.id} className={`notification-item ${n.type}`} role="article">
                     <div className="notification-content">
-                      <div className="notification-title">{t(n.title as TranslationKey, language)}</div>
-                      <div className="notification-body">{t(n.body as TranslationKey, language)}</div>
+                      <div className="notification-title">{n.title}</div>
+                      <div className="notification-body">{n.body}</div>
                     </div>
                   </div>
                 ))}

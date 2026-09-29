@@ -1,5 +1,5 @@
 // ============================================================
-// Auth Service — web login (docs/demo.md, decision 26)
+// Auth Service — web login (docs/demo.md, decision 25)
 // 1. Document + password → a 6-digit code "sent" to the phone
 //    (a demo SMS: the backend returns its text).
 // 2. The code → logged in, with a chat session already verified.

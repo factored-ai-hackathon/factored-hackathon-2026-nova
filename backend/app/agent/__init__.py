@@ -77,6 +77,7 @@ async def stream_reply(
 
     reply: list[str] = []
     sensitive = False
+    step = None  # graph step of the model call being streamed
     async for mode, payload in graph.astream(inputs, stream_mode=["messages", "updates"]):
         if mode == "messages":
             chunk, metadata = payload
@@ -85,6 +86,10 @@ async def stream_reply(
             if usage is not None and chunk.usage_metadata:
                 usage.add(chunk.usage_metadata)
             if piece := chunk.text:
+                # A second model call in the same turn (after account tools): new paragraph.
+                if reply and metadata.get("langgraph_step") != step:
+                    piece = "\n\n" + piece
+                step = metadata.get("langgraph_step")
                 reply.append(piece)
                 yield piece
         else:

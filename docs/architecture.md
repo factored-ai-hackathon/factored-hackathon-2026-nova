@@ -5,7 +5,7 @@
 ## What the agent does
 1. The customer writes in Spanish or Portuguese.
 2. **Identity check**, enforced in code (`backend/app/agent/identity.py`): the web login (document + password, then a one-time code by SMS) creates the chat session already verified; if that expires, Nova verifies again in the chat (document + date of birth + code), only as the logged-in customer. Before that, the agent only answers public questions (products, policies).
-3. After the check, the agent looks up **only that customer's** data.
+3. After the check, the agent looks up **only that customer's** data with tools (products, transactions, complaints) that take no customer id: the backend uses the verified session's (`backend/app/agent/account_tools.py`).
 4. It tries to **solve the issue in this first contact**. If it can't, it **hands over to a human** with a summary.
 5. **Hooks** block forbidden actions; **guardrails** block access to other customers' data.
 

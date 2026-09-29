@@ -226,6 +226,12 @@
 }
 
 /* ------ Dashboard grid ------------------------------------ */
+.dashboard-status {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -459,6 +465,7 @@
 .txn-status-badge.pending { background: #fef9c3; color: #92400e; }
 .txn-status-badge.failed { background: #fed7d7; color: #9b2c2c; }
 .txn-status-badge.disputed { background: #fed7e2; color: #97266d; }
+.txn-status-badge.reversed { background: #e2e8f0; color: #4a5568; }
 
 /* ------ Quick actions ------------------------------------- */
 .quick-actions-grid {

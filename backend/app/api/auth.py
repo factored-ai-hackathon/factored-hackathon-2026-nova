@@ -1,4 +1,4 @@
-"""Web login: document + password, then a 6-digit code sent to the customer's phone (decision 26).
+"""Web login: document + password, then a 6-digit code sent to the customer's phone (decision 25).
 
 There are no real accounts: every customer shares the demo password (settings.demo_password,
 published in docs/demo.md), and the code is shown as a demo SMS (`demo_sms`) because no real SMS
