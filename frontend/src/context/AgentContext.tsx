@@ -12,6 +12,7 @@ import {
 import type { Conversation, ConversationMessage, Rating, Transaction, AgentChatRequest } from '../types';
 import { mockConversation, mockInitialAgentMessage } from '../data/mockData';
 import * as agentService from '../services/agentService';
+import { limitReason } from '../api/client';
 import { useApp } from './AppContext';
 import { t } from '../i18n/translations';
 
@@ -193,13 +194,18 @@ export function AgentProvider({ children }: { children: ReactNode }) {
             transactionContext: activeTransaction,
           },
         }));
-      } catch {
+      } catch (err) {
+        const reason = limitReason(err);
+        const errorKey =
+          reason === 'daily_budget_exhausted' ? 'agent.limit.budget'
+          : reason === 'rate_limited' ? 'agent.limit.rate'
+          : 'agent.error';
         setConversation((prev) => ({
           ...prev,
           messages: [...prev.messages, {
             id: `msg-error-${Date.now()}`,
             role: 'agent',
-            content: t('agent.error', language),
+            content: t(errorKey, language),
             timestamp: new Date().toISOString(),
           }],
           agentContext: { ...prev.agentContext, status: 'action_required' },

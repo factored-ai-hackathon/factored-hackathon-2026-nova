@@ -40,7 +40,7 @@ If the deploy fails with `Not authorized to perform sts:AssumeRoleWithWebIdentit
 | CloudWatch Logs (14-day retention) | Cents |
 | Bedrock Claude Haiku 4.5 | $1 / $5 per million input / output tokens; the only cost that grows with use |
 
-To cap Bedrock spend, set `lambda_reserved_concurrency` (e.g. 5) if the account's Lambda concurrency quota allows it. Replies are limited by `LLM_MAX_TOKENS` (1024) and messages by 2,000 characters.
+**Spend limits (decision 20):** the API stops calling Bedrock once the day's spend reaches `daily_budget_usd` ($5, about 2,000+ messages) and refuses a visitor after `rate_limit_per_hour` messages (30). Both answer `429` and Nova tells the customer. Change them in `terraform.tfvars` and apply. Replies are also capped by `LLM_MAX_TOKENS` (1024) and messages by 2,000 characters. `lambda_reserved_concurrency` can additionally cap parallel requests if the account's Lambda concurrency quota allows it.
 
 ## Known limits
 - Sessions and conversation memory are in memory per Lambda instance. A new instance (cold start, parallel users) starts a new conversation; the frontend recovers from the `404` automatically. Moving sessions to DynamoDB fixes it.

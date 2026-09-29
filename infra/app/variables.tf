@@ -58,6 +58,18 @@ variable "lwa_layer_version" {
   default     = 30
 }
 
+variable "daily_budget_usd" {
+  description = "Max Bedrock spend per day (UTC) for the public chat. Once reached, the API answers 429 until the next day."
+  type        = number
+  default     = 5
+}
+
+variable "rate_limit_per_hour" {
+  description = "Max chat messages per visitor (IP) per hour."
+  type        = number
+  default     = 30
+}
+
 variable "interactions_ttl_days" {
   description = "Days before a recorded chat turn is deleted by DynamoDB TTL."
   type        = number

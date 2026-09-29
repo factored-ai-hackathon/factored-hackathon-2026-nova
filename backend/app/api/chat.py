@@ -7,7 +7,7 @@ import uuid
 from collections.abc import AsyncIterator, Callable
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field, field_validator
 from sse_starlette import EventSourceResponse
 
@@ -15,6 +15,7 @@ from app import agent
 from app.agent import TokenUsage
 from app.config import get_settings
 from app.interactions import InteractionStore, Rating, Turn, get_interaction_store
+from app.limits import Limiter, client_ip_from, get_limiter
 from app.llm import model_id
 from app.sessions import Lang, SessionStore, get_session_store
 
@@ -62,6 +63,7 @@ class FeedbackRequest(BaseModel):
 
 Store = Annotated[SessionStore, Depends(get_session_store)]
 Interactions = Annotated[InteractionStore, Depends(get_interaction_store)]
+Limits = Annotated[Limiter, Depends(get_limiter)]
 
 
 @router.post("/sessions", status_code=status.HTTP_201_CREATED)
@@ -74,13 +76,19 @@ async def create_session(store: Store, body: CreateSessionRequest | None = None)
 async def post_message(
     session_id: str,
     body: MessageRequest,
+    request: Request,
     store: Store,
     interactions: Interactions,
+    limits: Limits,
     stream_reply: Annotated[ReplyStreamer, Depends(get_reply_streamer)],
 ) -> EventSourceResponse:
     session = await store.get(session_id)
     if session is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "session not found")
+    client_ip = client_ip_from(request.headers, request.client.host if request.client else None)
+    if refused := await limits.check(client_ip):
+        logger.warning("turn refused: %s", refused)
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, refused)
     if body.lang and body.lang != session.lang:
         await store.set_lang(session_id, body.lang)
     lang = body.lang or session.lang
@@ -117,6 +125,10 @@ async def post_message(
             total_ms=round((time.perf_counter() - started) * 1000),
         )
         await record_turn(interactions, turn)
+        try:
+            await limits.charge(usage.input_tokens, usage.output_tokens)
+        except Exception:
+            logger.exception("could not charge the daily budget for %s", message_id)
 
         if error_code:
             error = {"code": error_code, "message": "The assistant could not reply. Try again."}

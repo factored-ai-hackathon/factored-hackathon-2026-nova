@@ -3,5 +3,7 @@ aws_profile = "hackathon"
 
 # Optional overrides
 # region                      = "us-east-2"
+# daily_budget_usd            = 5    # $ per day of Bedrock for the public chat
+# rate_limit_per_hour         = 30   # messages per visitor per hour
 # lambda_reserved_concurrency = 5
 # create_github_oidc_provider = false   # if the account already has token.actions.githubusercontent.com

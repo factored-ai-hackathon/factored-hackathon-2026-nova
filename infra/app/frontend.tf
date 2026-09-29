@@ -72,9 +72,27 @@ data "aws_cloudfront_cache_policy" "disabled" {
   name = "Managed-CachingDisabled"
 }
 
-# Sends everything but Host to the function URL (it must see its own host name).
-data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
-  name = "Managed-AllViewerExceptHostHeader"
+# Only what the API needs. Not Host: the function URL must see its own host name.
+# CloudFront-Viewer-Address is the visitor's IP, set by CloudFront (visitors can't fake it),
+# used for the per-visitor rate limit.
+resource "aws_cloudfront_origin_request_policy" "api" {
+  name    = "${var.prefix}-chat-api"
+  comment = "Chat API: content headers and the viewer IP"
+
+  cookies_config {
+    cookie_behavior = "none"
+  }
+
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = ["Accept", "Content-Type", "CloudFront-Viewer-Address"]
+    }
+  }
+
+  query_strings_config {
+    query_string_behavior = "all"
+  }
 }
 
 locals {
@@ -138,7 +156,7 @@ resource "aws_cloudfront_distribution" "app" {
       allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
       cached_methods           = ["GET", "HEAD"]
       cache_policy_id          = data.aws_cloudfront_cache_policy.disabled.id
-      origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+      origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
       compress                 = false # keep the SSE stream flowing token by token
     }
   }
