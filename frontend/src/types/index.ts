@@ -17,6 +17,11 @@ export interface Customer {
   memberSince: string; // ISO date string
   status: 'active' | 'blocked' | 'suspended';
   segment: 'standard' | 'premium' | 'vip';
+  country?: string;
+  documentType?: string;
+  documentLast4?: string;
+  /** Chat session created by the login, already verified for this customer (real mode only). */
+  sessionId?: string;
 }
 
 export interface Account {

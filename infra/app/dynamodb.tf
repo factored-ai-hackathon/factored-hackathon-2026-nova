@@ -38,3 +38,35 @@ resource "aws_dynamodb_table" "sessions" {
     enabled        = true
   }
 }
+
+# Demo customers loaded from the dataset by data/scripts/load_demo_data.py (decision 24). One
+# partition per customer: PROFILE (identity for verification), PRODUCT#, TXN#, COMPLAINT# items.
+# The document index only holds PROFILE items (sparse), so the agent can look customers up by
+# document without scanning. The dataset is fully synthetic. No TTL: reloaded on demand.
+resource "aws_dynamodb_table" "demo_customers" {
+  name         = "${var.prefix}-demo-customers"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "customer_id"
+  range_key    = "sk"
+
+  attribute {
+    name = "customer_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "sk"
+    type = "S"
+  }
+
+  attribute {
+    name = "document_number"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "by-document"
+    hash_key        = "document_number"
+    projection_type = "ALL"
+  }
+}

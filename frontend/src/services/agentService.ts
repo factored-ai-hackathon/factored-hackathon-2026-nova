@@ -24,6 +24,8 @@ const USE_MOCK = import.meta.env.VITE_MOCK === '1';
 
 // Backend session for the current conversation (real mode only)
 let sessionId: string | null = null;
+// The session the login created (verified): new conversations inherit its verification.
+let loginSession: string | null = null;
 
 // In-memory conversation store (mock only)
 let currentConversation: Conversation = { ...mockConversation, messages: [...mockConversation.messages] };
@@ -130,12 +132,12 @@ async function backendSendMessage(
   const text = withTransactionContext(request);
   let reply: { text: string; messageId: string };
   try {
-    reply = await streamReply(text, request.language, onToken, onNotice);
+    reply = await streamReply(text, request, onToken, onNotice);
   } catch (err) {
     // The backend keeps sessions in memory; after a restart, start a new one once.
     if (!(err instanceof api.ApiError && err.status === 404)) throw err;
     sessionId = null;
-    reply = await streamReply(text, request.language, onToken, onNotice);
+    reply = await streamReply(text, request, onToken, onNotice);
   }
 
   // The MVP backend returns only text; intent/sentiment/escalation come later.
@@ -155,11 +157,12 @@ async function backendSendMessage(
 
 async function streamReply(
   text: string,
-  language: AgentChatRequest['language'],
+  { language, customer_id }: AgentChatRequest,
   onToken?: (textSoFar: string) => void,
   onNotice?: (text: string) => void,
 ): Promise<{ text: string; messageId: string }> {
-  sessionId ??= await api.createSession(language);
+  // Bound to the logged-in customer: only that customer can pass identity verification.
+  sessionId ??= await api.createSession(language, customer_id, loginSession ?? undefined);
   let reply = '';
   for await (const event of api.sendMessage(sessionId, text, language)) {
     if (event.type === 'token') {
@@ -292,6 +295,17 @@ export async function getAgentStatus(): Promise<AgentContext> {
 /**
  * Reset conversation (e.g. after escalation or resolution).
  */
+/**
+ * Another customer logged in (or logged out). `loginSessionId` is the chat session the login
+ * created, already verified: the conversation continues there.
+ */
+export function startForCustomer(loginSessionId?: string): void {
+  loginSession = loginSessionId ?? null;
+  resetConversation();
+  sessionId = loginSession;
+}
+
+/** New conversation. With a login, the backend copies its verification to the new session. */
 export function resetConversation(): void {
   sessionId = null;
   currentConversation = {

@@ -65,6 +65,12 @@ async def test_dynamo_session_lifecycle():
     assert await store.get("unknown") is None
 
 
+async def test_dynamo_session_keeps_its_initial_verification_state():
+    store = dynamo_store()
+    session = await store.create("es", {"session_customer_id": "C1"})
+    assert (await store.get(session.id)).auth == {"session_customer_id": "C1"}
+
+
 async def test_expired_session_is_gone_even_before_ttl_deletes_it():
     table = FakeTable()
     store = dynamo_store(table)

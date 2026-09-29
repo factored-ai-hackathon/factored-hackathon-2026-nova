@@ -88,6 +88,12 @@ resource "aws_iam_role_policy" "api" {
         Action   = ["dynamodb:PutItem", "dynamodb:UpdateItem"]
         Resource = aws_dynamodb_table.interactions.arn
       },
+      {
+        Sid      = "ReadDemoCustomers"
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:Query"]
+        Resource = [aws_dynamodb_table.demo_customers.arn, "${aws_dynamodb_table.demo_customers.arn}/index/by-document"]
+      },
     ]
   })
 }
@@ -126,6 +132,8 @@ resource "aws_lambda_function" "api" {
       SESSION_TTL_HOURS     = tostring(var.session_ttl_hours)
       INTERACTIONS_STORE    = "dynamodb"
       INTERACTIONS_TABLE    = aws_dynamodb_table.interactions.name
+      CUSTOMER_DIRECTORY    = "dynamodb"
+      CUSTOMERS_TABLE       = aws_dynamodb_table.demo_customers.name
       INTERACTIONS_TTL_DAYS = tostring(var.interactions_ttl_days)
       DAILY_BUDGET_USD      = tostring(var.daily_budget_usd)
       RATE_LIMIT_PER_HOUR   = tostring(var.rate_limit_per_hour)
