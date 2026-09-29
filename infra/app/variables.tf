@@ -77,9 +77,9 @@ variable "cloudfront_price_class" {
 }
 
 variable "github_repo" {
-  description = "owner/name of the repository allowed to deploy (from the main branch only)."
+  description = "Repository allowed to deploy (from the main branch only), as it appears in the GitHub OIDC `sub` claim. This organization uses immutable IDs: owner@owner_id/repo@repo_id (public GitHub IDs, not secrets). They protect against a deleted and re-created repo with the same name."
   type        = string
-  default     = "factored-ai-hackathon/factored-hackathon-2026"
+  default     = "factored-ai-hackathon@332501550/factored-hackathon-2026@1382401057"
 }
 
 variable "create_github_oidc_provider" {
