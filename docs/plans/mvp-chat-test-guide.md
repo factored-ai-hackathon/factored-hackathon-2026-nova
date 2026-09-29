@@ -52,7 +52,7 @@ This is the baseline. If it's red here, the problem isn't the model.
 Terminal 1:
 ```bash
 cd backend
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.main:app --reload --reload-dir app
 ```
 ✅ `Uvicorn running on http://127.0.0.1:8000`. Keep this terminal visible: **errors from the model are logged here**.
 
