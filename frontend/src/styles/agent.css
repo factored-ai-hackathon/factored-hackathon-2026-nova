@@ -726,3 +726,40 @@
   background: #f0f4f8;
   font-size: 0.95em;
 }
+
+/* Feedback under agent replies */
+.msg-feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
+.feedback-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.feedback-btn:hover {
+  border-color: var(--color-border);
+  color: var(--color-primary);
+}
+
+.feedback-btn.selected {
+  background: var(--color-primary);
+  color: white;
+}
+
+.feedback-thanks {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}

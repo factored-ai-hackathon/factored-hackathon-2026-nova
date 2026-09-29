@@ -7,6 +7,7 @@
 // ============================================================
 
 import type {
+  Rating,
   AgentChatRequest,
   AgentChatResponse,
   AgentContext,
@@ -124,7 +125,7 @@ async function backendSendMessage(
   onToken?: (textSoFar: string) => void,
 ): Promise<AgentChatResponse> {
   const text = withTransactionContext(request);
-  let reply: string;
+  let reply: { text: string; messageId: string };
   try {
     reply = await streamReply(text, request.language, onToken);
   } catch (err) {
@@ -137,7 +138,8 @@ async function backendSendMessage(
   // The MVP backend returns only text; intent/sentiment/escalation come later.
   return {
     conversation_id: sessionId!,
-    message: reply,
+    message: reply.text,
+    message_id: reply.messageId,
     intent: null,
     sentiment: 'neutral',
     confidence: 0,
@@ -152,7 +154,7 @@ async function streamReply(
   text: string,
   language: AgentChatRequest['language'],
   onToken?: (textSoFar: string) => void,
-): Promise<string> {
+): Promise<{ text: string; messageId: string }> {
   sessionId ??= await api.createSession(language);
   let reply = '';
   for await (const event of api.sendMessage(sessionId, text, language)) {
@@ -162,10 +164,18 @@ async function streamReply(
     } else if (event.type === 'error') {
       throw new Error(`agent error: ${event.code}`);
     } else {
-      return reply;
+      return { text: reply, messageId: event.messageId };
     }
   }
   throw new Error('stream ended without done/error');
+}
+
+/**
+ * Rate an agent reply. `conversationId` is the backend session. No-op in mock mode.
+ */
+export async function sendFeedback(conversationId: string, messageId: string, rating: Rating): Promise<void> {
+  if (USE_MOCK) return;
+  await api.sendFeedback(conversationId, messageId, rating);
 }
 
 // The chat API only takes text, so the selected transaction travels as a prefix.

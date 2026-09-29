@@ -19,6 +19,9 @@ data/local/
 crash.log
 .terraform.tfstate.lock.info
 
+# Chat interactions recorded locally (questions and replies)
+.interactions/
+
 # Secrets
 .env
 .env.*

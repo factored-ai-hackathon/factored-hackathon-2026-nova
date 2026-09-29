@@ -107,12 +107,16 @@ export interface AgentContext {
 
 export type MessageRole = 'user' | 'agent' | 'system';
 
+export type Rating = 'up' | 'down';
+
 export interface ConversationMessage {
   id: string;
   role: MessageRole;
   content: string;
   timestamp: string; // ISO datetime string
   suggestedActions?: string[];
+  serverMessageId?: string; // backend message_id, needed to send feedback
+  feedback?: Rating;
 }
 
 export interface Conversation {
@@ -150,4 +154,5 @@ export interface AgentChatResponse {
   requires_human: boolean;
   recommended_action: string | null;
   suggested_actions: string[];
+  message_id?: string; // absent in mock mode
 }

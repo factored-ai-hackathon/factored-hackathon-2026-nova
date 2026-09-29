@@ -60,7 +60,7 @@ def test_stream_error_event(client):
     from app.api.chat import get_reply_streamer
     from app.main import app
 
-    async def failing(session_id, text, lang):
+    async def failing(session_id, text, lang, usage=None):
         yield "partial "
         raise RuntimeError("boom")
 

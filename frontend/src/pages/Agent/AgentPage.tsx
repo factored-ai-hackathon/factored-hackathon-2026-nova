@@ -3,6 +3,7 @@ import { ArrowLeft, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AgentContextPanel } from '../../components/agent/AgentContextPanel';
 import { MessageContent } from '../../components/agent/MessageContent';
+import { FeedbackButtons } from '../../components/agent/FeedbackButtons';
 import { useAgent } from '../../context/AgentContext';
 import { useApp } from '../../context/AppContext';
 import { t } from '../../i18n/translations';
@@ -131,6 +132,7 @@ function FullMessageRow({ message, onSuggestedAction, language }: FullMessageRow
           <MessageContent role={message.role} content={message.content} />
         </div>
         <span className="msg-time">{formatTime(message.timestamp, language === 'pt' ? 'pt-BR' : 'es-CO')}</span>
+        <FeedbackButtons message={message} language={language} />
         {message.role === 'agent' && message.suggestedActions && message.suggestedActions.length > 0 && (
           <div className="suggested-actions">
             {message.suggestedActions.map((action) => (
