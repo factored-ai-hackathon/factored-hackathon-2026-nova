@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend + agent evals
+    name: Backend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -34,10 +34,31 @@ jobs:
       - name: Lint
         run: uv run ruff check
 
-      # testpaths in pyproject.toml include ../evals/agent. Live tests are skipped
-      # without HF_TOKEN / BEDROCK_LIVE, so no secrets are needed here.
-      - name: Tests and smoke evals
-        run: uv run pytest
+      # Live tests are skipped without HF_TOKEN / BEDROCK_LIVE, so no secrets are needed.
+      - name: Unit tests
+        run: uv run pytest tests
+
+  evaluation:
+    name: Evaluation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      # Smoke evals (ES/PT) with a fake model; EVAL_LIVE is not set, so no provider is called.
+      # -c keeps backend/pyproject.toml as the pytest config (pythonpath, asyncio mode).
+      - name: Agent smoke evals
+        run: uv run pytest -c pyproject.toml ../evals/agent
 
   frontend:
     name: Frontend
