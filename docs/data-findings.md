@@ -32,7 +32,7 @@ What the LATAM Bank data actually shows, from queries on `latam_curated` (Sep 27
 | Every transcript's text has line breaks, so Athena split 171k transcripts into ~925k broken rows | Read transcripts from a Parquet copy (`data/scripts/convert_transcripts.py`) |
 | Complaints never link to interactions (`origin_interaction_id` is empty on all 67,095) | Complaints are analysed on their own (`stg_complaints`) |
 | `contact_reason` repeats `reason_category` for complaints | Use `reason_category` |
-| Real counts differ from the dataset summary: 686,296 interactions (not 800k), 171,321 transcripts (not 200k) | Use the real counts in slides |
+| Real counts differ from the dataset summary: 686,296 interactions (not 800k), 171,321 transcripts (not 200k), 4,425,008 transactions (not 5M); 400,000 products as announced | Use the real counts in slides |
 | No orphaned keys between interactions, customers, agents and dates (tests pass) | Nothing needed |
 
 ## What it means for the project (for the team to decide)

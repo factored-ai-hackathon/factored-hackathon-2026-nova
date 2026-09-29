@@ -21,3 +21,9 @@ variable "athena_scan_limit_gb" {
   type        = number
   default     = 10
 }
+
+variable "github_repo" {
+  description = "Repository allowed to build the production data model (main branch only), as it appears in the GitHub OIDC `sub` claim (this organization uses immutable IDs: owner@id/repo@id, public GitHub IDs)."
+  type        = string
+  default     = "factored-ai-hackathon@332501550/factored-hackathon-2026@1382401057"
+}

@@ -63,3 +63,74 @@ models:
           TRUE when resolved and no repeat contact from the same customer about the
           same reason_category within var('fcr_window_days') days. NULL when it
           can't be judged (missing data, or too close to the end of the dataset).
+
+  - name: dim_product
+    description: >
+      One row per customer product (accounts, cards, loans), latest snapshot. Only the last 4
+      digits of the account/card number are kept.
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: Orphaned keys are expected in this dataset, so this test warns instead of failing.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+              config:
+                severity: warn
+      - name: product_status
+        description: Warns on new values (the dataset announces schema evolution).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Active', 'Blocked', 'Closed', 'Suspended']
+              config:
+                severity: warn
+
+  - name: fact_transaction
+    description: >
+      One row per financial transaction with the product used. Source of the customer's
+      movements in the demo and of decline/fraud/dispute analysis.
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+              config:
+                severity: warn
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_id
+              config:
+                severity: warn
+      - name: date_day
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+              config:
+                severity: warn
+      - name: transaction_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Approved', 'Declined', 'Pending', 'Reversed']
+              config:
+                severity: warn
+      - name: transaction_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Deposit', 'Withdrawal', 'Transfer', 'Payment', 'Purchase', 'Adjustment']
+              config:
+                severity: warn
