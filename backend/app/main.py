@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.accounts import router as accounts_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.demo import router as demo_router
@@ -54,5 +55,6 @@ async def health() -> dict[str, str]:
 
 
 app.include_router(auth_router)
+app.include_router(accounts_router)
 app.include_router(chat_router)
 app.include_router(demo_router)

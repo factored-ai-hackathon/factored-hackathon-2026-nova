@@ -10,12 +10,14 @@ The frontend and the backend both code against this file. Change it first, then 
 | `POST /v1/auth/verify` | `{"login_id","code":"123456"}` | `200 {"session_id","customer":{"customer_id","first_name","country","document_type","document_last4"}}` |
 | `GET /v1/demo/scenarios` | – | `200 {"password","scenarios":[{"key","customer":{"customer_id","first_name","country","document_type","document_number","birth_date","phone_last4"}}]}` |
 | `GET /v1/demo/customers/{customer_id}` | – | `200 {"customer_id",...}` (same fields as a scenario's customer) |
+| `POST /v1/accounts/overview` | `{"session_id"}` (a verified chat session, from the login) | `200 {"data_as_of","products":[...],"recent_transactions":[...],"open_complaints":0}` |
 | `POST /v1/chat/sessions` | `{"lang":"es"\|"pt","customer_id":"...","from_session_id":"..."}` (all optional; default `es`) | `201 {"session_id":"<uuid>","lang":"es"}` |
 | `POST /v1/chat/sessions/{id}/messages` | `{"text":"...","lang":"es"\|"pt"}` | `200 text/event-stream` (see below) |
 | `POST /v1/chat/sessions/{id}/messages/{message_id}/feedback` | `{"rating":"up"\|"down","comment":"..."}` (`comment` optional, max 500 chars) | `204` |
 
 Errors:
 - Login: any wrong data (password, document, country, document type, or a customer without a mobile phone) → `401 {"detail":"invalid_credentials"}`, the same for all. Verify: wrong code → `401 {"detail":"wrong_code"}`; expired code, 3 wrong codes, or an unknown `login_id` → `401 {"detail":"login_expired"}` (log in again). Login attempts count toward the per-visitor rate limit (`429`).
+- Accounts overview: a session that doesn't exist or isn't verified (or whose verification expired) → `401 {"detail":"not_verified"}`.
 - Demo: a `customer_id` that isn't in the directory → `404 {"detail":"customer_not_found"}` (also for a new session with that `customer_id`); characters other than letters, digits, `-`, `_` (or over 64) → `422`. No customers loaded → `503 {"detail":"no_demo_customers"}`.
 - Unknown or expired session (24 h without activity) → `404`.
 - Empty text, text over 2,000 characters, or a `lang` other than `es`/`pt` → `422`.
@@ -36,7 +38,7 @@ Server-Sent Events, one JSON object per `data:` line:
 
 Every stream ends with exactly one `done` or one `error`.
 
-## Web login (decision 26)
+## Web login (decision 25)
 1. `POST /v1/auth/login` checks the document (letters and digits only, uppercase, so `1.020.304.050` works), its country and type, and the password. Every customer shares the demo password (`DEMO_PASSWORD`, published in `docs/demo.md`: the dataset is synthetic). It creates the **chat session** and sends a 6-digit code to the phone: there is no real SMS, so its text comes back as `demo_sms`.
 2. `POST /v1/auth/verify` with the code (3 tries, 5 minutes). The chat session (`session_id` = `login_id`) is now **verified** for this customer: Nova answers without asking again. Verification lasts `VERIFIED_TTL_MINUTES`; after that Nova verifies again in the chat (document, date of birth, code), and only as this customer.
 
@@ -44,6 +46,11 @@ The session id is the only credential the web app keeps. A new conversation for 
 
 ## Demo panel
 `GET /v1/demo/scenarios` returns the demo password and one customer per scenario (`random`, `declined_transaction`, `open_complaint`, `past_due`; see `data/scripts/load_demo_data.py`), picked again on every call. `GET /v1/demo/customers/{id}` returns any customer of the dataset. They show what the customer would know (document, date of birth); logging in still needs the code.
+
+## Account tools (decision 26)
+Once the chat session is verified, the model can call `get_my_products`, `get_my_transactions` (`days` 1-365, `status`, `search`, `limit` ≤ 50) and `get_my_complaints` (`status` all/open/closed) (`backend/app/agent/account_tools.py`). None takes a customer id: the backend uses the verified session's customer, so no prompt can reach another customer's data. They read the customer's partition of the demo-customers table (`backend/app/agent/account_data.py`) and return only banking-app fields. Dates are relative to the dataset's last day (`DATA_AS_OF_DATE`). At most 3 tool rounds per turn. Without verification, a tool call starts identity verification instead and reads nothing.
+
+The web app's home page reads the same data through `POST /v1/accounts/overview` (products, the last 30 days' transactions up to 10, open complaints count), also only for the verified session's customer. The session id goes in the body so CloudFront's origin request policy passes it unchanged.
 
 ## Identity verification
 Before any personal data, the agent verifies the customer (`backend/app/agent/identity.py`, decision 22): document number → date of birth → 6-digit code (demo SMS as a `notice` event). The model can only ask to start it; the answers are handled in code, never sent to the model, and stored as placeholders in the history and the interaction log (`[identity verification input]`). 3 failures lock verification for the session; verification lasts 30 minutes. Demo customers: `docs/demo.md`.
@@ -82,6 +89,7 @@ Names only; values go in `backend/.env` (gitignored). See `backend/.env.example`
 | `SESSION_TTL_HOURS` | backend | Hours without activity before a session expires (then `404`). Default `24` |
 | `MAX_HISTORY_MESSAGES` | backend | Messages kept per conversation (user + assistant). Default `40` |
 | `CUSTOMER_DIRECTORY` | backend | `demo` (default: 2 fictional customers) or `dynamodb` (deployed: the whole dataset, loaded by `data/scripts/load_demo_data.py`) |
+| `DATA_AS_OF_DATE` | backend | "Today" for the account tools: the dataset's last day. Default `2026-06-17` |
 | `DEMO_PASSWORD` | backend | The password every demo customer logs in with. Default `Nova2026` (public, documented) |
 | `CUSTOMERS_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-demo-customers` |
 | `VERIFICATION_MAX_ATTEMPTS`, `OTP_TTL_SECONDS`, `VERIFIED_TTL_MINUTES` | backend | Identity verification. Defaults `3`, `300`, `30` |

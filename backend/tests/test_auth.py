@@ -1,4 +1,4 @@
-"""Web login (document + password + code) and the demo panel. See app/api/auth.py, decision 26."""
+"""Web login (document + password + code) and the demo panel. See app/api/auth.py, decision 25."""
 
 import pytest
 

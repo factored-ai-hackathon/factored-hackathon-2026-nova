@@ -1,4 +1,4 @@
-"""Demo panel: the test customers the judges log in with (docs/demo.md, decision 26).
+"""Demo panel: the test customers the judges log in with (docs/demo.md, decision 25).
 
 The dataset is synthetic, so the panel shows what a person would know about themselves: the
 document to log in with (plus the shared demo password) and the date of birth that Nova asks for
