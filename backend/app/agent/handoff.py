@@ -72,8 +72,10 @@ def build_case(
     evidence: list[dict],
     transcript: list[dict],
     verified: bool,
+    intent: dict | None = None,
 ) -> dict:
-    """The case the human agent receives. Facts and evidence come from code, not the model."""
+    """The case the human agent receives. Facts and evidence come from code, not the model; the
+    intent comes from the classifier (app/agent/intent.py), also in code."""
     questions = args.get("open_questions") or []
     if isinstance(questions, str):
         questions = [questions]
@@ -92,6 +94,7 @@ def build_case(
             "first_name": auth.get("first_name") if verified else None,
             "logged_in_customer_id": auth.get("session_customer_id"),
         },
+        "intent": intent,
         "evidence": evidence[-MAX_EVIDENCE:],
         "transcript": transcript[-MAX_TRANSCRIPT_MESSAGES:],
         "messages": [],  # after the handoff: customer, agent and system messages
@@ -104,7 +107,10 @@ def case_summary(case: dict) -> dict:
     return {
         k: case.get(k)
         for k in ("case_id", "status", "created_at", "reason", "summary", "lang", "agent_name")
-    } | {"customer": case.get("verified_facts", {}).get("first_name")}
+    } | {
+        "customer": case.get("verified_facts", {}).get("first_name"),
+        "intent": (case.get("intent") or {}).get("label"),
+    }
 
 
 # --- storage ------------------------------------------------------------------------------------

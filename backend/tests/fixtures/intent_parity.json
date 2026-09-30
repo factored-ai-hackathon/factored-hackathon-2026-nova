@@ -1,0 +1,410 @@
+[
+ {
+  "text": "buenas, me podrias decir cuanta plata me queda en la caja de ahorro?",
+  "proba": {
+   "commercial": 0.14351270199775795,
+   "complaint": 0.09791405396408542,
+   "other": 0.09942355132593958,
+   "product": 0.05274664950044303,
+   "retention": 0.10291871993899264,
+   "technical": 0.059341414042785555,
+   "transactional": 0.4441429092299959
+  }
+ },
+ {
+  "text": "Buenos dias, deposité un cheque el lunes, ya está disponible?",
+  "proba": {
+   "commercial": 0.004824642613909483,
+   "complaint": 0.03300047742942609,
+   "other": 0.8349509599566292,
+   "product": 0.012304696054752115,
+   "retention": 0.0031610440656835888,
+   "technical": 0.029633698281469226,
+   "transactional": 0.08212448159813
+  }
+ },
+ {
+  "text": "me confundi de numero de cuenta al transferir, se puede revertir?",
+  "proba": {
+   "commercial": 0.12923685628896872,
+   "complaint": 0.04882907797339412,
+   "other": 0.008575058936752141,
+   "product": 0.4255518831037895,
+   "retention": 0.031235597374323496,
+   "technical": 0.1324595350942674,
+   "transactional": 0.22411199122850456
+  }
+ },
+ {
+  "text": "la caja de ahorro paga algun rendimiento?",
+  "proba": {
+   "commercial": 0.18344005620136256,
+   "complaint": 0.04078895216623203,
+   "other": 0.04477883546124188,
+   "product": 0.1504067002190206,
+   "retention": 0.12620195649731653,
+   "technical": 0.18851369160016354,
+   "transactional": 0.265869807854663
+  }
+ },
+ {
+  "text": "el credito que tengo es a tasa fija?",
+  "proba": {
+   "commercial": 0.03908973193731328,
+   "complaint": 0.07491304392994798,
+   "other": 0.05630396774749834,
+   "product": 0.7600495021591398,
+   "retention": 0.021440402493566393,
+   "technical": 0.011709937787750662,
+   "transactional": 0.03649341394478352
+  }
+ },
+ {
+  "text": "Hace 45 días hice un reclamo y sigo sin respuesta, esto es un chiste",
+  "proba": {
+   "commercial": 0.002352019693812702,
+   "complaint": 0.9181430531850305,
+   "other": 0.07115817924686721,
+   "product": 0.0007175330819821792,
+   "retention": 0.00027753996213688735,
+   "technical": 0.00344442040414356,
+   "transactional": 0.003907254426026905
+  }
+ },
+ {
+  "text": "quiero poner una denuncia formal contra el banco",
+  "proba": {
+   "commercial": 0.017713200605164143,
+   "complaint": 0.7231898719637088,
+   "other": 0.00371599554575523,
+   "product": 0.00514081341930466,
+   "retention": 0.1954296459275674,
+   "technical": 0.027777834106123042,
+   "transactional": 0.027032638432376712
+  }
+ },
+ {
+  "text": "La pagina se queda cargando y no pasa nada",
+  "proba": {
+   "commercial": 0.005755452643616269,
+   "complaint": 0.0692412023033204,
+   "other": 0.04575194005243066,
+   "product": 0.028284945136327518,
+   "retention": 0.017371749483121826,
+   "technical": 0.7796244753352345,
+   "transactional": 0.053970235045948826
+  }
+ },
+ {
+  "text": "no me deja inscribir una cuenta de terceros, dice error inesperado",
+  "proba": {
+   "commercial": 0.08708960646583823,
+   "complaint": 0.24790456032521252,
+   "other": 0.07201981244510228,
+   "product": 0.021605862448708452,
+   "retention": 0.10840442560765451,
+   "technical": 0.2805492929353825,
+   "transactional": 0.1824264397721015
+  }
+ },
+ {
+  "text": "vi en instagram una promo de 0% de interes, como aplico",
+  "proba": {
+   "commercial": 0.7535213254871458,
+   "complaint": 0.05354055179174076,
+   "other": 0.005414224442302581,
+   "product": 0.12759945613918613,
+   "retention": 0.007649276265515726,
+   "technical": 0.029373500300689855,
+   "transactional": 0.022901665573419286
+  }
+ },
+ {
+  "text": "cuanta plata me prestan si gano 800 mil al mes",
+  "proba": {
+   "commercial": 0.6439059876211444,
+   "complaint": 0.06357883156427581,
+   "other": 0.11771810593711497,
+   "product": 0.07577164836961173,
+   "retention": 0.022955104372026306,
+   "technical": 0.01868282830775352,
+   "transactional": 0.057387493828073316
+  }
+ },
+ {
+  "text": "si no me bonifican la comision me voy a otro banco",
+  "proba": {
+   "commercial": 0.00012298662866450154,
+   "complaint": 0.0013406633808667938,
+   "other": 0.0005943302143938875,
+   "product": 0.00024777730764031255,
+   "retention": 0.9944266902501526,
+   "technical": 0.003084004392904998,
+   "transactional": 0.00018354782537689275
+  }
+ },
+ {
+  "text": "voy a mover mi sueldo a otro banco, que tramite hago",
+  "proba": {
+   "commercial": 0.008767268858029257,
+   "complaint": 0.04619030421416173,
+   "other": 0.01519365775099554,
+   "product": 0.0060201711494167545,
+   "retention": 0.6404998847772857,
+   "technical": 0.02207362258202134,
+   "transactional": 0.2612550906680898
+  }
+ },
+ {
+  "text": "buenas buenas",
+  "proba": {
+   "commercial": 0.0020416601768385788,
+   "complaint": 0.0015528262061985738,
+   "other": 0.9922648184336532,
+   "product": 0.0011228066154972181,
+   "retention": 0.000616729486403793,
+   "technical": 0.0015183371240283141,
+   "transactional": 0.0008828219573802891
+  }
+ },
+ {
+  "text": "cuanto es 15 por 23?",
+  "proba": {
+   "commercial": 0.007522753897875662,
+   "complaint": 0.010050249890449421,
+   "other": 0.027555493993006584,
+   "product": 0.7874143497807619,
+   "retention": 0.006713985981895241,
+   "technical": 0.00870721661229946,
+   "transactional": 0.15203594984371196
+  }
+ },
+ {
+  "text": "oi, quanto tenho de saldo na conta corrente?",
+  "proba": {
+   "commercial": 0.0010958521232294158,
+   "complaint": 0.00020636949798855065,
+   "other": 0.004150230720723805,
+   "product": 0.0030570183832676796,
+   "retention": 0.002039748063714735,
+   "technical": 0.0005542614067082916,
+   "transactional": 0.9888965198043675
+  }
+ },
+ {
+  "text": "Bom dia, depositei um cheque segunda, ja ta disponivel?",
+  "proba": {
+   "commercial": 0.012339701045868429,
+   "complaint": 0.034689711143561876,
+   "other": 0.7656762183998351,
+   "product": 0.04313585008758576,
+   "retention": 0.0035895461943449094,
+   "technical": 0.011456095745468593,
+   "transactional": 0.12911287738333527
+  }
+ },
+ {
+  "text": "errei a chave pix na transferencia, da pra estornar?",
+  "proba": {
+   "commercial": 0.0025559225300571787,
+   "complaint": 0.010760302410708267,
+   "other": 0.014630372093103432,
+   "product": 0.007245650758400808,
+   "retention": 0.002344580063534659,
+   "technical": 0.04215237230910144,
+   "transactional": 0.9203107998350942
+  }
+ },
+ {
+  "text": "a conta rende alguma coisa?",
+  "proba": {
+   "commercial": 0.05453365566356559,
+   "complaint": 0.11086654708964883,
+   "other": 0.09763166859161392,
+   "product": 0.4999464552451573,
+   "retention": 0.16909215363762375,
+   "technical": 0.014646855829878484,
+   "transactional": 0.05328266394251204
+  }
+ },
+ {
+  "text": "meu emprestimo e taxa pre-fixada?",
+  "proba": {
+   "commercial": 0.10988139799915284,
+   "complaint": 0.017765180506679846,
+   "other": 0.011996686055678045,
+   "product": 0.8333931754427236,
+   "retention": 0.009658139866228245,
+   "technical": 0.006181047401862976,
+   "transactional": 0.011124372727674548
+  }
+ },
+ {
+  "text": "fiz uma reclamacao faz 45 dias e ate agora nada, que piada",
+  "proba": {
+   "commercial": 0.001723850467001302,
+   "complaint": 0.5579465811340503,
+   "other": 0.41805276771764077,
+   "product": 0.002585980663544015,
+   "retention": 0.0006171497460410241,
+   "technical": 0.0073579625045810965,
+   "transactional": 0.011715707767141368
+  }
+ },
+ {
+  "text": "vou abrir reclamacao no Reclame Aqui e no Procon",
+  "proba": {
+   "commercial": 0.03020467702441047,
+   "complaint": 0.772346497960228,
+   "other": 0.07502294571517977,
+   "product": 0.003555270373298977,
+   "retention": 0.07322769123346175,
+   "technical": 0.03831381849946737,
+   "transactional": 0.007329099193953552
+  }
+ },
+ {
+  "text": "a pagina fica carregando e nao acontece nada",
+  "proba": {
+   "commercial": 0.005852603334114418,
+   "complaint": 0.021880395307875534,
+   "other": 0.08300241310241692,
+   "product": 0.017152097680205945,
+   "retention": 0.010322343243962478,
+   "technical": 0.844219828395795,
+   "transactional": 0.017570318935629776
+  }
+ },
+ {
+  "text": "nao deixa cadastrar favorecido, diz erro inesperado",
+  "proba": {
+   "commercial": 0.0021419886921628566,
+   "complaint": 0.017544103666062724,
+   "other": 0.07670773375364523,
+   "product": 0.001368760613085918,
+   "retention": 0.027163417666689258,
+   "technical": 0.8590975145479373,
+   "transactional": 0.015976481060416676
+  }
+ },
+ {
+  "text": "vi no instagram uma promo de juros zero, como participo",
+  "proba": {
+   "commercial": 0.8509422582255843,
+   "complaint": 0.050014912927092016,
+   "other": 0.03148554330934096,
+   "product": 0.0374569913792985,
+   "retention": 0.00641064569097225,
+   "technical": 0.011757317416928752,
+   "transactional": 0.011932331050782896
+  }
+ },
+ {
+  "text": "quanto vcs me emprestam se eu ganho 3 mil por mes",
+  "proba": {
+   "commercial": 0.1167425817598661,
+   "complaint": 0.10147342189946144,
+   "other": 0.011381222133428156,
+   "product": 0.5688600275260357,
+   "retention": 0.026461963287884537,
+   "technical": 0.01138688324453392,
+   "transactional": 0.16369390014879012
+  }
+ },
+ {
+  "text": "se nao isentarem a tarifa vou pra outro banco",
+  "proba": {
+   "commercial": 0.00017188451076021493,
+   "complaint": 0.0019486994655182447,
+   "other": 0.0010430536133704269,
+   "product": 0.0023164458123857367,
+   "retention": 0.9921100463459902,
+   "technical": 0.0013010850430997484,
+   "transactional": 0.0011087852088753811
+  }
+ },
+ {
+  "text": "vou fazer portabilidade do salario, qual o processo",
+  "proba": {
+   "commercial": 0.012466629451925447,
+   "complaint": 0.0029721414803527395,
+   "other": 0.017837136161510996,
+   "product": 0.005748544840488846,
+   "retention": 0.9359697805958571,
+   "technical": 0.01127540192338135,
+   "transactional": 0.013730365546483311
+  }
+ },
+ {
+  "text": "e ai, blz?",
+  "proba": {
+   "commercial": 0.0061839380962308,
+   "complaint": 0.012920462530149583,
+   "other": 0.9313802841970156,
+   "product": 0.01419003762409301,
+   "retention": 0.006026702584195981,
+   "technical": 0.019704865842248377,
+   "transactional": 0.00959370912606665
+  }
+ },
+ {
+  "text": "quanto e 15 vezes 23?",
+  "proba": {
+   "commercial": 0.03421957735801348,
+   "complaint": 0.020528340555631994,
+   "other": 0.0635126496253175,
+   "product": 0.1462520695605436,
+   "retention": 0.003689810591770145,
+   "technical": 0.004375357499568157,
+   "transactional": 0.7274221948091552
+  }
+ },
+ {
+  "text": "",
+  "proba": {
+   "commercial": 0.02410994467854054,
+   "complaint": 0.022298784328155564,
+   "other": 0.8739044419374167,
+   "product": 0.020064732225733965,
+   "retention": 0.011105314301181253,
+   "technical": 0.028801459114816328,
+   "transactional": 0.019715323414155717
+  }
+ },
+ {
+  "text": "!!!",
+  "proba": {
+   "commercial": 0.02410994467854054,
+   "complaint": 0.022298784328155564,
+   "other": 0.8739044419374167,
+   "product": 0.020064732225733965,
+   "retention": 0.011105314301181253,
+   "technical": 0.028801459114816328,
+   "transactional": 0.019715323414155717
+  }
+ },
+ {
+  "text": "ÁÉÍÓÚ ñ ç ãõ",
+  "proba": {
+   "commercial": 0.035793832412948735,
+   "complaint": 0.11719106505863319,
+   "other": 0.4807045492086688,
+   "product": 0.04678517164559911,
+   "retention": 0.06303563971404072,
+   "technical": 0.2165635015445226,
+   "transactional": 0.03992624041558702
+  }
+ },
+ {
+  "text": "saldo saldo saldo",
+  "proba": {
+   "commercial": 0.00011859192231784184,
+   "complaint": 8.91783194630056e-05,
+   "other": 0.00187959846399279,
+   "product": 1.9922927420796203e-05,
+   "retention": 6.711544666231987e-05,
+   "technical": 0.00019942694648156616,
+   "transactional": 0.9976261659736618
+  }
+ }
+]

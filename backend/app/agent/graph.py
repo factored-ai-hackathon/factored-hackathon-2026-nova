@@ -6,6 +6,10 @@ START -> route -> respond (model) -> END
                     └──────────────────────────────────────────────────────────┘
                -> auth_gate (a verification step is pending: the model is skipped) -> END
 
+Every message the model sees is also classified in code (app/agent/intent.py, the learned
+component): the conversation's intent goes into the case, and for the reasons a first contact
+rarely solves (complaints, retention) the turn's prompt tells the model to offer a human sooner.
+
 Security steps are enforced here, in code: identity verification lives in auth_gate
 (app/agent/identity.py), and the model can only ask for it. The account tools are bound only
 when the session is verified, and account_tools runs them for the session's customer
@@ -23,7 +27,7 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.agent import handoff, identity
+from app.agent import handoff, identity, intent
 from app.agent.account_data import AccountData, get_account_data
 from app.agent.account_tools import ACCOUNT_TOOL_NAMES, ACCOUNT_TOOLS, run_account_tool
 from app.config import get_settings
@@ -45,6 +49,7 @@ class ChatState(MessagesState):
     session_id: str
     case: dict  # human handoff state and the evidence gathered (app/agent/handoff.py)
     handoff_notice: str  # case id, when this turn handed the conversation over
+    turn_intent: dict  # the classifier's reading of this turn's message (app/agent/intent.py)
 
 
 # Account tool rounds per turn; after that the model has to answer with what it has.
@@ -86,6 +91,13 @@ def build_graph(
         # The system prompt is added per turn (not stored), so a language switch applies at once.
         auth, lang = state.get("auth"), state["lang"]
         prompt = system_prompt(lang)
+        # The customer's latest message (after account tools the last message is a tool result).
+        said = next((m.text for m in reversed(state["messages"]) if m.type == "human"), "")
+        seen = intent.classify(said)
+        if extra := intent.hint(seen, lang):
+            prompt += "\n\n" + extra
+        case = state.get("case") or {}
+        case = {**case, "intent": intent.update(case.get("intent"), seen)}
         if identity.is_verified(auth, verifier.now()):
             prompt += "\n\n" + identity.verified_context(auth, lang, as_of)
             # Verified: the account tools, only for this customer (see account_tools).
@@ -94,7 +106,7 @@ def build_graph(
         else:
             llm = model_with_verify
         reply = await llm.ainvoke([SystemMessage(prompt), *state["messages"]], config)
-        return {"messages": [reply]}
+        return {"messages": [reply], "case": case, "turn_intent": seen.as_dict()}
 
     def after_respond(state: ChatState) -> str:
         calls = getattr(state["messages"][-1], "tool_calls", None) or []
@@ -158,6 +170,7 @@ def build_graph(
             evidence=case_state.get("evidence", []),
             transcript=transcript,
             verified=identity.is_verified(auth, verifier.now()),
+            intent=case_state.get("intent"),
         )
         await cases.create(new_case)
         case_id = new_case["case_id"]

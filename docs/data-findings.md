@@ -38,8 +38,17 @@ What the LATAM Bank data actually shows, from queries on `latam_curated` (Sep 27
 ## What it means for the project (for the team to decide)
 1. A model that predicts resolution would mostly learn "complaints resolve less"; SQL already shows that. Weak ML story.
 2. **Complaints are the biggest opportunity** (43% vs ~90% for product questions): a strong, data-backed candidate for the demo flow.
-3. ML that adds value: **understanding the customer's message** (intent/reason classification in Spanish and Portuguese), trained and evaluated on the 171k transcripts with detected intents and topics.
-4. Next checks: Técnico and Transaccional rates; complaints on their own (`sla_breached`, `resolution_days`, status, priority).
+3. ML that adds value: **understanding the customer's message** (intent/reason classification in Spanish and Portuguese). ~~Trained on the 171k transcripts~~: checked Sep 30, the transcripts can't train it (next section); built on team-written phrases instead (decision 29, `ml/README.md`).
+4. Checked Sep 30: complaints on their own (`sla_breached` ~20%, `resolution_days` ~15.6 for every priority, category and case type) and fraud (next section) have no learnable pattern either.
+
+## What the data can't teach (checked Sep 30)
+| Target | Finding |
+|---|---|
+| Reason from `call_transcripts.customer_text` | Only 42 distinct texts in 171,321 transcripts, each spread over all 6 reasons in the same proportions; `detected_intents` is `consulta_general` or empty everywhere |
+| Resolution from the transcript text | 76-77% for every text |
+| `is_fraud` | 0.1% positives, flat by amount, channel, hour, merchant category and type; `fraud_score` > 40 is always fraud, below 30 almost never |
+| Complaint SLA breach / resolution days | Same ~20% / ~15.6 days for every priority, category and case type |
+| Resolution from the customer's contact history | 76-77% whatever the number or outcome of previous contacts |
 
 ## Reproduce
 Athena console → workgroup `hackathon`, for example:
