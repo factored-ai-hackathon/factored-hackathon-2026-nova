@@ -144,6 +144,9 @@ export function DemoPanel({ language, onUse }: Props) {
         </div>
       </form>
       {found && <ul className="demo-customers">{card(found)}</ul>}
+      <p className="demo-console-link">
+        <a href="/asesor" target="_blank" rel="noopener noreferrer">{t('console.open', language)} ↗</a>
+      </p>
       {error && <p className="form-error" role="alert">{error}</p>}
     </section>
   );

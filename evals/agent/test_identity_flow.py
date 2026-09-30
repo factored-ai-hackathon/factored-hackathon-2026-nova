@@ -57,7 +57,8 @@ async def test_identity_case(case):
 
             auth = (await get_session_store().get(session_id)).auth
             where = f"step {i} ({said!r}) -> {reply!r}"
-            assert auth.get("step", "none") == step["step"], where
+            expected = step["step"] if isinstance(step["step"], list) else [step["step"]]
+            assert auth.get("step", "none") in expected, where
             assert bool(notices) == step.get("notice", False), where
             assert detect_lang(reply) in (lang, None), where
             assert not asks_for_secret(reply), where

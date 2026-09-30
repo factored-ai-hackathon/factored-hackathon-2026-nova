@@ -23,7 +23,7 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.agent import identity
+from app.agent import handoff, identity
 from app.agent.account_data import AccountData, get_account_data
 from app.agent.account_tools import ACCOUNT_TOOL_NAMES, ACCOUNT_TOOLS, run_account_tool
 from app.config import get_settings
@@ -42,6 +42,9 @@ class ChatState(MessagesState):
     notices: list[str]  # out-of-band messages for the customer (the demo SMS)
     sensitive_input: bool  # the customer's message was a verification answer
     tool_rounds: int  # account tool calls answered this turn
+    session_id: str
+    case: dict  # human handoff state and the evidence gathered (app/agent/handoff.py)
+    handoff_notice: str  # case id, when this turn handed the conversation over
 
 
 # Account tool rounds per turn; after that the model has to answer with what it has.
@@ -60,14 +63,22 @@ def build_graph(
     checkpointer: BaseCheckpointSaver | None = None,
     verifier: identity.IdentityVerifier | None = None,
     account_data: AccountData | None = None,
+    case_store: handoff.CaseStore | None = None,
 ) -> CompiledStateGraph:
     verifier = verifier or default_verifier()
     data = account_data or get_account_data()
+    cases = case_store or handoff.get_case_store()
     as_of = get_settings().data_as_of_date
-    model_with_verify = _with_tools(model, [identity.start_identity_verification])
-    model_with_accounts = _with_tools(model, ACCOUNT_TOOLS)
+    # Handing over to a person is always possible, verified or not.
+    model_with_verify = _with_tools(
+        model, [identity.start_identity_verification, handoff.request_human_agent]
+    )
+    model_with_accounts = _with_tools(model, [*ACCOUNT_TOOLS, handoff.request_human_agent])
 
     def route(state: ChatState) -> str:
+        # An open case: the human handles the conversation, the model stays out.
+        if handoff.is_open(state.get("case")):
+            return "human_queue"
         # A pending verification step consumes the message in code: the model never sees it.
         return "auth_gate" if identity.in_progress(state.get("auth")) else "respond"
 
@@ -89,6 +100,8 @@ def build_graph(
         calls = getattr(state["messages"][-1], "tool_calls", None) or []
         if not calls:
             return END
+        if any(c["name"] == handoff.HANDOFF_TOOL for c in calls):
+            return "handoff"
         if identity.is_verified(state.get("auth"), verifier.now()) and all(
             c["name"] in ACCOUNT_TOOL_NAMES for c in calls
         ):
@@ -102,6 +115,8 @@ def build_graph(
         from the session, never from the model's arguments."""
         auth = state.get("auth") or {}
         verified = identity.is_verified(auth, verifier.now())  # again: it may expire mid-turn
+        case = state.get("case") or {}
+        evidence = list(case.get("evidence", []))
         results = []
         for call in state["messages"][-1].tool_calls:
             if not verified:
@@ -116,8 +131,62 @@ def build_graph(
                 as_of=as_of,
             )
             results.append(ToolMessage(content, tool_call_id=call["id"], name=call["name"]))
+            evidence.append(handoff.evidence_entry(call["name"], call.get("args") or {}, content))
         rounds = state.get("tool_rounds", 0) + 1
-        return {"messages": results, "tool_rounds": rounds if verified else MAX_TOOL_ROUNDS}
+        return {
+            "messages": results,
+            "tool_rounds": rounds if verified else MAX_TOOL_ROUNDS,
+            "case": {**case, "evidence": evidence[-handoff.MAX_EVIDENCE :]},
+        }
+
+    async def handoff_node(state: ChatState) -> dict:
+        """Open a case for a human agent: the model's summary plus facts and evidence from code."""
+        call = next(
+            c for c in state["messages"][-1].tool_calls if c["name"] == handoff.HANDOFF_TOOL
+        )
+        auth, case_state = state.get("auth") or {}, state.get("case") or {}
+        transcript = [
+            {"role": "customer" if m.type == "human" else "assistant", "text": m.text}
+            for m in state["messages"][:-1]
+            if m.type in ("human", "ai") and m.text
+        ]
+        new_case = handoff.build_case(
+            session_id=state.get("session_id", ""),
+            lang=state["lang"],
+            args=call.get("args") or {},
+            auth=auth,
+            evidence=case_state.get("evidence", []),
+            transcript=transcript,
+            verified=identity.is_verified(auth, verifier.now()),
+        )
+        await cases.create(new_case)
+        case_id = new_case["case_id"]
+        return {
+            "messages": [AIMessage(handoff.text(state["lang"], "handed_over", case_id=case_id))],
+            "case": {
+                **case_state,
+                "handoff": {"case_id": case_id, "status": "waiting"},
+                "last_case_id": case_id,
+            },
+            "handoff_notice": case_id,
+        }
+
+    async def human_queue(state: ChatState) -> dict:
+        """A case is open: the customer's message goes to the human agent, not the model."""
+        case_state = state.get("case") or {}
+        case_id = case_state["handoff"]["case_id"]
+        stored = await cases.add_message(case_id, "customer", state["messages"][-1].text)
+        lang = state["lang"]
+        if stored is None or stored["status"] not in handoff.OPEN_STATUSES:
+            # Closed meanwhile: back to the bot from the next message.
+            closed = {**case_state, "handoff": None}
+            return {
+                "messages": [AIMessage(handoff.text(lang, "closed", case_id=case_id))],
+                "case": closed,
+            }
+        if stored["status"] == "waiting":
+            return {"messages": [AIMessage(handoff.text(lang, "queued", case_id=case_id))]}
+        return {"messages": []}  # an agent is on it: their reply comes through the console
 
     async def auth_gate(state: ChatState) -> dict:
         auth, lang = state.get("auth") or {}, state["lang"]
@@ -134,14 +203,19 @@ def build_graph(
 
     graph = StateGraph(ChatState)
     # TODO(answer_public): RAG over products and policies for public questions.
-    # TODO(handoff): hand over to a human with a summary for ambiguous or high-risk cases.
     graph.add_node("respond", respond)
     graph.add_node("auth_gate", auth_gate)
     graph.add_node("account_tools", account_tools)
-    graph.add_conditional_edges(START, route, ["auth_gate", "respond"])
-    graph.add_conditional_edges("respond", after_respond, ["auth_gate", "account_tools", END])
+    graph.add_node("handoff", handoff_node)
+    graph.add_node("human_queue", human_queue)
+    graph.add_conditional_edges(START, route, ["auth_gate", "respond", "human_queue"])
+    graph.add_conditional_edges(
+        "respond", after_respond, ["auth_gate", "account_tools", "handoff", END]
+    )
     graph.add_edge("account_tools", "respond")
     graph.add_edge("auth_gate", END)
+    graph.add_edge("handoff", END)
+    graph.add_edge("human_queue", END)
     # No checkpointer by default: stream_reply loads and saves the conversation through the session
     # store (DynamoDB when deployed), so the graph itself is stateless.
     return graph.compile(checkpointer=checkpointer)

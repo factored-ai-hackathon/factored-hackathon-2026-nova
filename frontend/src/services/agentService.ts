@@ -119,7 +119,7 @@ const portugueseResponses: Partial<Record<Intent, { message: string; action: str
 export async function sendMessage(
   request: AgentChatRequest,
   onToken?: (textSoFar: string) => void,
-  onNotice?: (text: string) => void,
+  onNotice?: (text: string, kind: string) => void,
 ): Promise<AgentChatResponse> {
   return USE_MOCK ? mockSendMessage(request) : backendSendMessage(request, onToken, onNotice);
 }
@@ -127,7 +127,7 @@ export async function sendMessage(
 async function backendSendMessage(
   request: AgentChatRequest,
   onToken?: (textSoFar: string) => void,
-  onNotice?: (text: string) => void,
+  onNotice?: (text: string, kind: string) => void,
 ): Promise<AgentChatResponse> {
   const text = withTransactionContext(request);
   let reply: { text: string; messageId: string };
@@ -159,7 +159,7 @@ async function streamReply(
   text: string,
   { language, customer_id }: AgentChatRequest,
   onToken?: (textSoFar: string) => void,
-  onNotice?: (text: string) => void,
+  onNotice?: (text: string, kind: string) => void,
 ): Promise<{ text: string; messageId: string }> {
   // Bound to the logged-in customer: only that customer can pass identity verification.
   sessionId ??= await api.createSession(language, customer_id, loginSession ?? undefined);
@@ -169,7 +169,7 @@ async function streamReply(
       reply += event.text;
       onToken?.(reply);
     } else if (event.type === 'notice') {
-      onNotice?.(event.text);
+      onNotice?.(event.text, event.kind);
     } else if (event.type === 'error') {
       throw new Error(`agent error: ${event.code}`);
     } else {
@@ -177,6 +177,12 @@ async function streamReply(
     }
   }
   throw new Error('stream ended without done/error');
+}
+
+/** The human agent's messages since `after`, for the current conversation (null in mock mode). */
+export async function pollHandoff(after: number): Promise<api.HandoffUpdate | null> {
+  if (USE_MOCK || !sessionId) return null;
+  return api.handoffUpdates(sessionId, after);
 }
 
 /**

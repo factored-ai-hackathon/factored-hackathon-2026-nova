@@ -39,6 +39,10 @@ class TokenUsage:
         self.output_tokens = (self.output_tokens or 0) + usage.get("output_tokens", 0)
 
 
+# Nodes that answer with fixed text (not the model), streamed from their state updates.
+FIXED_TEXT_NODES = ("auth_gate", "handoff", "human_queue")
+
+
 def set_chat_model(model: BaseChatModel) -> None:
     """Rebuild the graph around a given model (tests use a fake one)."""
     global _graph
@@ -69,10 +73,13 @@ async def stream_reply(
     session = await store.get(session_id)
     history = session.messages if session else []
     auth = session.auth if session else {}
+    case = session.case if session else {}
     inputs = {
         "messages": [*_to_langchain(history), HumanMessage(text)],
         "lang": lang,
         "auth": auth,
+        "session_id": session_id,
+        "case": case,
     }
 
     reply: list[str] = []
@@ -93,21 +100,28 @@ async def stream_reply(
                 reply.append(piece)
                 yield piece
         else:
-            delta = payload.get("auth_gate")
-            if not delta:
-                continue
-            for message in delta.get("messages", []):
-                piece = ("\n\n" if reply else "") + message.text
-                reply.append(piece)
-                yield piece
-            for notice in delta.get("notices", []):
-                yield Notice("otp_demo", notice)
-            auth = delta.get("auth", auth)
-            sensitive = sensitive or delta.get("sensitive_input", False)
+            for node, delta in payload.items():
+                if not delta:
+                    continue
+                case = delta.get("case", case)
+                if node not in FIXED_TEXT_NODES:
+                    continue
+                for message in delta.get("messages", []):
+                    piece = ("\n\n" if reply else "") + message.text
+                    reply.append(piece)
+                    yield piece
+                for notice in delta.get("notices", []):
+                    yield Notice("otp_demo", notice)
+                if case_id := delta.get("handoff_notice"):
+                    yield Notice("handoff", case_id)
+                auth = delta.get("auth", auth)
+                sensitive = sensitive or delta.get("sensitive_input", False)
 
     if usage is not None:
         usage.sensitive_input = sensitive
     # Verification answers (document, date of birth, code) never go into the history.
     user_text = identity.text(lang, "placeholder") if sensitive else text
-    turn = [ChatMessage("user", user_text), ChatMessage("assistant", "".join(reply))]
-    await store.save_messages(session_id, lang, [*history, *turn], auth=auth)
+    turn = [ChatMessage("user", user_text)]
+    if reply:  # with an agent on the case, the bot doesn't answer
+        turn.append(ChatMessage("assistant", "".join(reply)))
+    await store.save_messages(session_id, lang, [*history, *turn], auth=auth, case=case)
