@@ -19,6 +19,8 @@ The frontend and the backend both code against this file. Change it first, then 
 | `POST /v1/agent/cases/{case_id}/close` | `{"key"}` | `200` the case, `closed` |
 | `POST /v1/chat/sessions` | `{"lang":"es"\|"pt","customer_id":"...","from_session_id":"..."}` (all optional; default `es`) | `201 {"session_id":"<uuid>","lang":"es"}` |
 | `POST /v1/chat/sessions/{id}/messages` | `{"text":"...","lang":"es"\|"pt"}` | `200 text/event-stream` (see below) |
+| `POST /v1/public/chat/sessions` | `{"lang":"es"\|"pt"}` (optional) | `201 {"session_id","lang"}`: a public session (no customer) |
+| `POST /v1/public/chat/sessions/{id}/messages` | `{"text","lang"}` | `200 text/event-stream`, same events as the account chat |
 | `POST /v1/chat/sessions/{id}/messages/{message_id}/feedback` | `{"rating":"up"\|"down","comment":"..."}` (`comment` optional, max 500 chars) | `204` |
 
 Errors:
@@ -52,6 +54,9 @@ The session id is the only credential the web app keeps. A new conversation for 
 
 ## Demo panel
 `GET /v1/demo/scenarios` returns the demo password and one customer per scenario (`random`, `declined_transaction`, `open_complaint`, `past_due`; see `data/scripts/load_demo_data.py`), picked again on every call. `GET /v1/demo/customers/{id}` returns any customer of the dataset. They show what the customer would know (document, date of birth); logging in still needs the code.
+
+## Public assistant (decision 30)
+For visitors outside the login. `POST /v1/public/chat/sessions` creates a session marked `public`; `POST /v1/public/chat/sessions/{id}/messages` streams the reply like the account chat (`token`, `done`, `error`; never `notice`). The agent (`backend/app/agent/public.py`) is a plain model call with a system prompt holding the fictitious branches, hours and WhatsApp numbers (`public_info.py`): no tools, no identity verification, no customer data. It answers only hours and branch locations (ES/PT) and sends people without an account to the WhatsApp number of their country. Sessions are not interchangeable: a public session id on `/v1/chat/...`, or an account session id on `/v1/public/chat/...`, answers `404`. Same spend limits and errors as the account chat; interactions are stored with `channel: "public"`.
 
 ## Account tools (decision 26)
 Once the chat session is verified, the model can call `get_my_products`, `get_my_transactions` (`days` 1-365, `status`, `search`, `limit` ≤ 50) and `get_my_complaints` (`status` all/open/closed) (`backend/app/agent/account_tools.py`). None takes a customer id: the backend uses the verified session's customer, so no prompt can reach another customer's data. They read the customer's partition of the demo-customers table (`backend/app/agent/account_data.py`) and return only banking-app fields. Dates are relative to the dataset's last day (`DATA_AS_OF_DATE`). At most 3 tool rounds per turn. Without verification, a tool call starts identity verification instead and reads nothing.
