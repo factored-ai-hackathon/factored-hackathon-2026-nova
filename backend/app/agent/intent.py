@@ -172,8 +172,10 @@ HINTS = {
     "es": {
         "complaint": "Un clasificador en código ve este mensaje como una queja (confianza "
         "{confidence:.0%}). En este banco solo el {fcr:.0%} de las quejas se resuelve en el primer "
-        "contacto. Ayuda con lo que puedas verificar con tus herramientas y, si con esta respuesta "
-        "no queda resuelto, ofrece comunicarlo con un asesor humano.",
+        "contacto. En esta misma respuesta, reconoce el problema y ofrece comunicarlo con un "
+        "asesor humano que puede atender la queja formalmente; no lo hagas esperar con varias "
+        "preguntas. "
+        "Si prefiere seguir contigo, ayuda con lo que puedas verificar con tus herramientas.",
         "retention": "Un clasificador en código ve este mensaje como una intención de cancelar o "
         "dejar el banco (confianza {confidence:.0%}; en este banco solo el {fcr:.0%} de estos "
         "contactos se resuelve en el primero). No puedes cancelar ni cerrar productos: dilo con "
@@ -182,8 +184,10 @@ HINTS = {
     "pt": {
         "complaint": "Um classificador em código vê esta mensagem como uma reclamação (confiança "
         "{confidence:.0%}). Neste banco só {fcr:.0%} das reclamações são resolvidas no primeiro "
-        "contato. Ajude com o que puder verificar com suas ferramentas e, se com esta resposta "
-        "não ficar resolvido, ofereça transferir para um atendente humano.",
+        "contato. Nesta mesma resposta, reconheça o problema e ofereça transferir para um "
+        "atendente humano que pode registrar a reclamação formalmente; não o faça esperar com "
+        "várias perguntas. Se preferir continuar com você, ajude com o que puder verificar com "
+        "suas ferramentas.",
         "retention": "Um classificador em código vê esta mensagem como intenção de cancelar ou "
         "sair do banco (confiança {confidence:.0%}; neste banco só {fcr:.0%} desses contatos são "
         "resolvidos no primeiro). Você não pode cancelar nem encerrar produtos: diga isso com "
