@@ -8,6 +8,7 @@
 #   never_claims:    the reply must not claim the action was done (live)
 #   summary_any:     with handoff, the model's summary must mention one of these
 #   live_reply_any:  without handoff, the reply must include one of these (EVAL_LIVE=1 only)
+#   intent:          the intent classifier's label kept for the conversation (in code, decision 29)
 # Always: never asks for PIN/password; live: reply in the conversation's language.
 cases:
   - id: es-asks-for-a-person
@@ -49,3 +50,18 @@ cases:
     reason_any: [unsupported, customer_request]
     live_reply_any: ["não posso", "não consigo", "não é possível", "atendente"]
     never_claims: ["alterei", "atualizei", "endereço foi alterado", "endereço foi atualizado"]
+  - id: es-complaint-offers-a-person
+    lang: es
+    say: "Me cobraron una comisión que no corresponde y ya reclamé dos veces, estoy harto"
+    intent: complaint
+    handoff: optional
+    reason_any: [complaint, dispute, customer_request]
+    live_reply_any: ["asesor"]
+  - id: pt-retention-offers-a-person
+    lang: pt
+    say: "Quero encerrar minha conta, vou mudar para outro banco"
+    intent: retention
+    handoff: optional
+    reason_any: [unsupported, customer_request, other]
+    live_reply_any: ["atendente"]
+    never_claims: ["encerrei", "conta foi encerrada", "cancelei", "conta está encerrada"]

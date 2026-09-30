@@ -1,0 +1,280 @@
+{"text": "Quiero saber el saldo de mi cuenta de ahorros", "label": "transactional"}
+{"text": "¿Cuánto dinero tengo disponible en mi cuenta?", "label": "transactional"}
+{"text": "Necesito ver los últimos movimientos de mi tarjeta", "label": "transactional"}
+{"text": "Hice una transferencia ayer y todavía no llega", "label": "transactional"}
+{"text": "¿Cómo hago una transferencia a otro banco?", "label": "transactional"}
+{"text": "Me rechazaron una compra con la tarjeta de débito", "label": "transactional"}
+{"text": "Intenté retirar en el cajero y no me dio el dinero", "label": "transactional"}
+{"text": "¿Ya se acreditó el depósito que hice esta mañana?", "label": "transactional"}
+{"text": "Quiero pagar mi tarjeta de crédito", "label": "transactional"}
+{"text": "¿Cuál es el pago mínimo de este mes?", "label": "transactional"}
+{"text": "¿Cuándo vence el pago de mi tarjeta?", "label": "transactional"}
+{"text": "Necesito el estado de cuenta del mes pasado", "label": "transactional"}
+{"text": "Mi pago aparece como pendiente, ¿por qué?", "label": "transactional"}
+{"text": "¿Por qué rechazaron mi transacción?", "label": "transactional"}
+{"text": "Quiero consultar mi saldo de la tarjeta de crédito", "label": "transactional"}
+{"text": "¿Me pueden decir cuánto debo en la tarjeta?", "label": "transactional"}
+{"text": "Mandé plata a mi hermano y no le aparece", "label": "transactional"}
+{"text": "¿Cuánto gasté este mes con la tarjeta?", "label": "transactional"}
+{"text": "Quiero ver mis compras de la última semana", "label": "transactional"}
+{"text": "Me devolvieron un pago, ¿ya está en mi cuenta?", "label": "transactional"}
+{"text": "¿Puedo retirar dinero sin tarjeta?", "label": "transactional"}
+{"text": "Necesito un comprobante de la transferencia", "label": "transactional"}
+{"text": "¿Cuál fue mi último movimiento?", "label": "transactional"}
+{"text": "El cajero me cobró pero no entregó los billetes", "label": "transactional"}
+{"text": "Quiero pagar un servicio desde mi cuenta", "label": "transactional"}
+{"text": "¿Cuánto tarda en reflejarse un depósito?", "label": "transactional"}
+{"text": "Hice un pago con la tarjeta y aparece dos veces", "label": "transactional"}
+{"text": "¿Me llegó la nómina?", "label": "transactional"}
+{"text": "Quiero revisar si entró el reembolso", "label": "transactional"}
+{"text": "Mi compra en línea fue declinada", "label": "transactional"}
+{"text": "¿Cuál es mi saldo en dólares?", "label": "transactional"}
+{"text": "Necesito saber cuánto tengo en la cuenta corriente", "label": "transactional"}
+{"text": "¿Se procesó la transferencia que programé?", "label": "transactional"}
+{"text": "Quiero mover dinero de ahorros a mi cuenta corriente", "label": "transactional"}
+{"text": "Consulta de movimientos, por favor", "label": "transactional"}
+{"text": "¿Por qué mi saldo es menor de lo que esperaba?", "label": "transactional"}
+{"text": "No puedo hacer un retiro, dice fondos insuficientes", "label": "transactional"}
+{"text": "¿Cuál es la fecha de corte de mi tarjeta?", "label": "transactional"}
+{"text": "Quiero saber si se aprobó mi pago", "label": "transactional"}
+{"text": "Transferí a una cuenta equivocada", "label": "transactional"}
+{"text": "¿Qué tasa de interés tiene la tarjeta de crédito?", "label": "product"}
+{"text": "¿Qué beneficios tiene mi tarjeta?", "label": "product"}
+{"text": "¿Cuál es el límite de retiro diario de mi cuenta?", "label": "product"}
+{"text": "¿Cuánto cobran de cuota de manejo?", "label": "product"}
+{"text": "¿Cómo funciona la cuenta de ahorros?", "label": "product"}
+{"text": "¿Mi tarjeta sirve para compras en el exterior?", "label": "product"}
+{"text": "Necesito activar mi tarjeta nueva", "label": "product"}
+{"text": "¿Qué requisitos tiene la cuenta corriente?", "label": "product"}
+{"text": "¿La cuenta de ahorros genera intereses?", "label": "product"}
+{"text": "¿Cuánto es la comisión por transferencia internacional?", "label": "product"}
+{"text": "Quiero información sobre el seguro de mi tarjeta", "label": "product"}
+{"text": "¿Cuál es el cupo total de mi tarjeta de crédito?", "label": "product"}
+{"text": "¿Mi préstamo tiene tasa fija o variable?", "label": "product"}
+{"text": "¿Cuántas cuotas me quedan del préstamo?", "label": "product"}
+{"text": "¿La tarjeta tiene programa de puntos?", "label": "product"}
+{"text": "¿Cómo canjeo mis puntos?", "label": "product"}
+{"text": "¿Qué pasa si pago tarde la tarjeta?", "label": "product"}
+{"text": "¿Cuál es el monto mínimo para abrir un plazo fijo?", "label": "product"}
+{"text": "Quiero saber las condiciones de mi crédito", "label": "product"}
+{"text": "¿Tiene costo la reposición de la tarjeta?", "label": "product"}
+{"text": "Se me venció la tarjeta, ¿cómo pido la nueva?", "label": "product"}
+{"text": "¿Puedo usar la tarjeta de débito en otros países?", "label": "product"}
+{"text": "¿Mi cuenta es en pesos o en dólares?", "label": "product"}
+{"text": "¿Qué diferencia hay entre la tarjeta clásica y la oro?", "label": "product"}
+{"text": "¿Cómo cambio el PIN de mi tarjeta?", "label": "product"}
+{"text": "¿Hasta cuánto puedo transferir por día?", "label": "product"}
+{"text": "¿El CDT se renueva automáticamente?", "label": "product"}
+{"text": "¿Qué cubre el seguro de vida del préstamo?", "label": "product"}
+{"text": "Explícame cómo se calculan los intereses de la tarjeta", "label": "product"}
+{"text": "¿Cuál es el costo anual de la tarjeta?", "label": "product"}
+{"text": "¿Cuántos retiros gratis tengo al mes?", "label": "product"}
+{"text": "¿Puedo tener una tarjeta adicional para mi hijo?", "label": "product"}
+{"text": "¿Cómo diferir una compra a cuotas?", "label": "product"}
+{"text": "¿Mi cuenta tiene chequera?", "label": "product"}
+{"text": "¿Qué documentos necesito para actualizar mis datos?", "label": "product"}
+{"text": "¿A cuántos meses es mi préstamo?", "label": "product"}
+{"text": "¿Mi tarjeta es Visa o Mastercard?", "label": "product"}
+{"text": "¿Qué tasa paga la inversión a plazo?", "label": "product"}
+{"text": "Quiero información sobre mi cuenta nómina", "label": "product"}
+{"text": "¿Cobran comisión por retirar en cajeros de otros bancos?", "label": "product"}
+{"text": "Quiero poner una queja por el mal servicio en la sucursal", "label": "complaint"}
+{"text": "Me cobraron una comisión que no corresponde", "label": "complaint"}
+{"text": "Estoy muy molesto, nadie me resuelve el problema", "label": "complaint"}
+{"text": "Llevo semanas esperando una respuesta del banco", "label": "complaint"}
+{"text": "Hay un cargo en mi tarjeta que no reconozco", "label": "complaint"}
+{"text": "Me cobraron dos veces la cuota de manejo", "label": "complaint"}
+{"text": "El asesor me trató muy mal", "label": "complaint"}
+{"text": "Quiero presentar un reclamo formal", "label": "complaint"}
+{"text": "Es la tercera vez que llamo por lo mismo", "label": "complaint"}
+{"text": "Me cobraron intereses aunque pagué a tiempo", "label": "complaint"}
+{"text": "Quiero disputar un cargo de mi tarjeta", "label": "complaint"}
+{"text": "Me hicieron un cobro de un seguro que nunca pedí", "label": "complaint"}
+{"text": "La fila en la sucursal fue de dos horas, es inaceptable", "label": "complaint"}
+{"text": "No me devolvieron el dinero de una compra cancelada", "label": "complaint"}
+{"text": "Me están cobrando algo que ya pagué", "label": "complaint"}
+{"text": "Estoy harto de los cobros sorpresa", "label": "complaint"}
+{"text": "Nunca me llegó la tarjeta y ya me la están cobrando", "label": "complaint"}
+{"text": "Abrieron un caso y nadie me contactó", "label": "complaint"}
+{"text": "El servicio del banco es pésimo", "label": "complaint"}
+{"text": "Me descontaron dinero sin autorización", "label": "complaint"}
+{"text": "Quiero reclamar por un cobro indebido", "label": "complaint"}
+{"text": "Me prometieron una devolución y nunca llegó", "label": "complaint"}
+{"text": "No estoy de acuerdo con el cargo que me hicieron", "label": "complaint"}
+{"text": "Me cobraron una compra que no hice", "label": "complaint"}
+{"text": "Mi reclamo lleva un mes sin respuesta", "label": "complaint"}
+{"text": "Me dieron información falsa sobre la tasa", "label": "complaint"}
+{"text": "Quiero hablar con un supervisor, esto es un abuso", "label": "complaint"}
+{"text": "Me bloquearon la cuenta sin avisarme", "label": "complaint"}
+{"text": "Estoy inconforme con la atención recibida", "label": "complaint"}
+{"text": "Me subieron la cuota de manejo sin aviso", "label": "complaint"}
+{"text": "Me aplicaron una penalidad injusta", "label": "complaint"}
+{"text": "Sigo esperando la solución de mi queja", "label": "complaint"}
+{"text": "Me robaron la tarjeta y hay compras que no hice", "label": "complaint"}
+{"text": "El cajero se tragó mi dinero y nadie responde", "label": "complaint"}
+{"text": "Qué vergüenza de banco, siempre es lo mismo", "label": "complaint"}
+{"text": "No me respetaron la tasa que me ofrecieron", "label": "complaint"}
+{"text": "Me cobran por una cuenta que cerré hace meses", "label": "complaint"}
+{"text": "Presento una queja contra el ejecutivo que me atendió", "label": "complaint"}
+{"text": "Me reportaron mal en el buró de crédito", "label": "complaint"}
+{"text": "Exijo que me devuelvan lo que me cobraron", "label": "complaint"}
+{"text": "No puedo entrar a la aplicación", "label": "technical"}
+{"text": "La app se cierra sola cuando la abro", "label": "technical"}
+{"text": "Olvidé mi contraseña de la banca en línea", "label": "technical"}
+{"text": "No me llega el código de verificación por SMS", "label": "technical"}
+{"text": "La página web del banco no carga", "label": "technical"}
+{"text": "Me sale un error al iniciar sesión", "label": "technical"}
+{"text": "Se bloqueó mi usuario por intentos fallidos", "label": "technical"}
+{"text": "No puedo registrarme en la aplicación", "label": "technical"}
+{"text": "El token digital no funciona", "label": "technical"}
+{"text": "La aplicación no me deja hacer transferencias, sale un error", "label": "technical"}
+{"text": "¿Cómo actualizo la app?", "label": "technical"}
+{"text": "No reconoce mi huella para entrar", "label": "technical"}
+{"text": "Cambié de celular y no puedo activar la app", "label": "technical"}
+{"text": "La banca en línea está caída", "label": "technical"}
+{"text": "Me aparece un mensaje de error 500", "label": "technical"}
+{"text": "No puedo descargar mi estado de cuenta, la página falla", "label": "technical"}
+{"text": "¿Cómo recupero mi usuario?", "label": "technical"}
+{"text": "No me llegan las notificaciones de la app", "label": "technical"}
+{"text": "La app dice que mi dispositivo no es compatible", "label": "technical"}
+{"text": "El código de seguridad me dice que es inválido", "label": "technical"}
+{"text": "No puedo cambiar mi contraseña, el sistema falla", "label": "technical"}
+{"text": "La aplicación está muy lenta", "label": "technical"}
+{"text": "No aparece mi cuenta en la app", "label": "technical"}
+{"text": "Quiero desbloquear mi acceso a la banca móvil", "label": "technical"}
+{"text": "El correo de restablecimiento nunca llegó", "label": "technical"}
+{"text": "No puedo vincular mi tarjeta al celular para pagar", "label": "technical"}
+{"text": "Me pide actualizar datos pero el formulario no avanza", "label": "technical"}
+{"text": "¿Por qué la app me cierra la sesión a cada rato?", "label": "technical"}
+{"text": "La cámara no escanea el código QR para pagar", "label": "technical"}
+{"text": "No puedo agregar un nuevo beneficiario, sale error", "label": "technical"}
+{"text": "Tengo problemas con la clave dinámica", "label": "technical"}
+{"text": "La web me dice sesión expirada todo el tiempo", "label": "technical"}
+{"text": "No puedo validar mi identidad en la app", "label": "technical"}
+{"text": "El cajero no lee mi tarjeta", "label": "technical"}
+{"text": "Mi tarjeta no funciona con pagos sin contacto", "label": "technical"}
+{"text": "¿Cómo configuro la autenticación en dos pasos?", "label": "technical"}
+{"text": "Se me borró la app y no puedo volver a entrar", "label": "technical"}
+{"text": "La contraseña temporal no funciona", "label": "technical"}
+{"text": "No puedo ver el PDF del extracto en el celular", "label": "technical"}
+{"text": "El sistema no me reconoce el número de documento", "label": "technical"}
+{"text": "Quiero solicitar una tarjeta de crédito", "label": "commercial"}
+{"text": "Me interesa un préstamo personal", "label": "commercial"}
+{"text": "¿Me pueden aumentar el cupo de la tarjeta?", "label": "commercial"}
+{"text": "¿Qué promociones tienen este mes?", "label": "commercial"}
+{"text": "Quiero abrir una cuenta de inversión", "label": "commercial"}
+{"text": "¿Estoy preaprobado para algún crédito?", "label": "commercial"}
+{"text": "Quiero información para un crédito hipotecario", "label": "commercial"}
+{"text": "¿Tienen crédito para comprar carro?", "label": "commercial"}
+{"text": "Me gustaría contratar un seguro de viaje", "label": "commercial"}
+{"text": "¿Qué tarjeta me recomiendan para viajar?", "label": "commercial"}
+{"text": "Quiero abrir un plazo fijo", "label": "commercial"}
+{"text": "¿Cuánto me prestan con mi sueldo?", "label": "commercial"}
+{"text": "Me llegó una oferta de tarjeta, ¿cómo la acepto?", "label": "commercial"}
+{"text": "Quiero cambiar mi tarjeta a una categoría superior", "label": "commercial"}
+{"text": "¿Tienen algún descuento en restaurantes?", "label": "commercial"}
+{"text": "Quiero abrir una cuenta en dólares", "label": "commercial"}
+{"text": "¿Puedo consolidar mis deudas con un préstamo?", "label": "commercial"}
+{"text": "Quiero invertir mis ahorros", "label": "commercial"}
+{"text": "¿Cuál es la mejor tasa que me pueden ofrecer para un crédito?", "label": "commercial"}
+{"text": "Me interesa el seguro de hogar", "label": "commercial"}
+{"text": "Quiero sacar una tarjeta para mi negocio", "label": "commercial"}
+{"text": "¿Tienen meses sin intereses?", "label": "commercial"}
+{"text": "Quiero comprar dólares con buena tasa", "label": "commercial"}
+{"text": "¿Cómo pido un adelanto de nómina?", "label": "commercial"}
+{"text": "Me gustaría simular un crédito", "label": "commercial"}
+{"text": "¿Qué productos me pueden ofrecer?", "label": "commercial"}
+{"text": "Quiero comprar una cartera de inversión", "label": "commercial"}
+{"text": "Estoy pensando en abrir una cuenta para mi hija", "label": "commercial"}
+{"text": "¿Tienen tarjeta con cashback?", "label": "commercial"}
+{"text": "Quiero ampliar mi préstamo actual", "label": "commercial"}
+{"text": "¿Cómo accedo a la promoción de la tarjeta nueva?", "label": "commercial"}
+{"text": "Quiero un crédito de libre inversión", "label": "commercial"}
+{"text": "¿Qué necesito para que me den una tarjeta de crédito?", "label": "commercial"}
+{"text": "Busco un fondo de inversión de bajo riesgo", "label": "commercial"}
+{"text": "¿Hay alguna oferta para clientes nuevos?", "label": "commercial"}
+{"text": "Quiero contratar un seguro de vida", "label": "commercial"}
+{"text": "¿Puedo pedir un crédito para estudiar?", "label": "commercial"}
+{"text": "Quiero la tarjeta platino", "label": "commercial"}
+{"text": "¿Tienen leasing para vehículos?", "label": "commercial"}
+{"text": "¿Cuánto me dan de crédito si gano el mínimo?", "label": "commercial"}
+{"text": "Quiero cancelar mi tarjeta de crédito", "label": "retention"}
+{"text": "Quiero cerrar mi cuenta de ahorros", "label": "retention"}
+{"text": "Me voy a cambiar de banco", "label": "retention"}
+{"text": "¿Cómo doy de baja la tarjeta?", "label": "retention"}
+{"text": "Quiero cancelar el seguro que tengo con ustedes", "label": "retention"}
+{"text": "Otro banco me ofrece mejores condiciones, ¿qué me ofrecen ustedes?", "label": "retention"}
+{"text": "Ya no quiero seguir siendo cliente", "label": "retention"}
+{"text": "Quiero cerrar todas mis cuentas", "label": "retention"}
+{"text": "Si no me bajan la cuota de manejo cancelo la tarjeta", "label": "retention"}
+{"text": "¿Qué necesito para cancelar mi cuenta?", "label": "retention"}
+{"text": "Quiero anular la tarjeta adicional", "label": "retention"}
+{"text": "Quiero trasladar mi nómina a otro banco", "label": "retention"}
+{"text": "Estoy pensando en irme a la competencia", "label": "retention"}
+{"text": "Quiero cancelar el débito automático y cerrar la cuenta", "label": "retention"}
+{"text": "¿Cobran algo por cerrar la cuenta?", "label": "retention"}
+{"text": "Deseo terminar mi contrato con el banco", "label": "retention"}
+{"text": "Quiero dar de baja todos los servicios", "label": "retention"}
+{"text": "Voy a pagar mi préstamo por anticipado y cerrar todo", "label": "retention"}
+{"text": "Me voy porque en el otro banco no cobran comisiones", "label": "retention"}
+{"text": "Cancelen mi tarjeta por favor", "label": "retention"}
+{"text": "¿Cómo cierro la cuenta corriente?", "label": "retention"}
+{"text": "No me conviene seguir con ustedes", "label": "retention"}
+{"text": "Quiero portar mi crédito a otra entidad", "label": "retention"}
+{"text": "Quiero dar de baja la cuenta de mi mamá que falleció", "label": "retention"}
+{"text": "Si no me mejoran la tasa me llevo mi dinero", "label": "retention"}
+{"text": "Quiero rescindir el plazo fijo y retirar todo", "label": "retention"}
+{"text": "Ya abrí cuenta en otro banco, quiero cerrar esta", "label": "retention"}
+{"text": "Quiero cancelar la membresía de la tarjeta", "label": "retention"}
+{"text": "¿Me dan algún beneficio si no cancelo?", "label": "retention"}
+{"text": "Solicito la baja de mi cuenta", "label": "retention"}
+{"text": "Quiero cancelar mi cuenta porque no la uso", "label": "retention"}
+{"text": "Me cambio a un banco digital", "label": "retention"}
+{"text": "Quiero cerrar la tarjeta y que me devuelvan la anualidad", "label": "retention"}
+{"text": "No quiero renovar el CDT, voy a retirar el dinero", "label": "retention"}
+{"text": "Estoy evaluando cerrar mis productos con ustedes", "label": "retention"}
+{"text": "Quiero cancelar el crédito y cerrar la relación con el banco", "label": "retention"}
+{"text": "¿Cuál es el proceso para darme de baja como cliente?", "label": "retention"}
+{"text": "Quiero cerrar la cuenta en dólares", "label": "retention"}
+{"text": "Me ofrecieron una tarjeta sin anualidad en otro lado, me voy", "label": "retention"}
+{"text": "Cancelar cuenta", "label": "retention"}
+{"text": "Hola", "label": "other"}
+{"text": "Buenos días", "label": "other"}
+{"text": "Buenas tardes", "label": "other"}
+{"text": "Gracias", "label": "other"}
+{"text": "Muchas gracias por la ayuda", "label": "other"}
+{"text": "Ok, perfecto", "label": "other"}
+{"text": "Sí", "label": "other"}
+{"text": "No", "label": "other"}
+{"text": "Adiós", "label": "other"}
+{"text": "¿Quién eres?", "label": "other"}
+{"text": "¿Eres un robot?", "label": "other"}
+{"text": "¿Qué puedes hacer?", "label": "other"}
+{"text": "¿Cómo está el clima hoy?", "label": "other"}
+{"text": "Cuéntame un chiste", "label": "other"}
+{"text": "¿Quién ganó el partido ayer?", "label": "other"}
+{"text": "Entendido", "label": "other"}
+{"text": "Un momento por favor", "label": "other"}
+{"text": "Ya está, eso era todo", "label": "other"}
+{"text": "Hola, ¿cómo estás?", "label": "other"}
+{"text": "Buenas noches", "label": "other"}
+{"text": "Vale", "label": "other"}
+{"text": "Perdón, me equivoqué", "label": "other"}
+{"text": "¿Hablas portugués?", "label": "other"}
+{"text": "Espera", "label": "other"}
+{"text": "Genial, gracias", "label": "other"}
+{"text": "¿Me recomiendas una película?", "label": "other"}
+{"text": "¿Cuál es la capital de Francia?", "label": "other"}
+{"text": "Escribe un poema", "label": "other"}
+{"text": "Jajaja", "label": "other"}
+{"text": "Listo", "label": "other"}
+{"text": "Hola, necesito ayuda", "label": "other"}
+{"text": "Tengo una pregunta", "label": "other"}
+{"text": "¿Estás ahí?", "label": "other"}
+{"text": "Correcto", "label": "other"}
+{"text": "De acuerdo, gracias", "label": "other"}
+{"text": "Chao", "label": "other"}
+{"text": "¿A qué hora abren?", "label": "other"}
+{"text": "Qué bien", "label": "other"}
+{"text": "Buen día", "label": "other"}
+{"text": "Nada más, gracias", "label": "other"}

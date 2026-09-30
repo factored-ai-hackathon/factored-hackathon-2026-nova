@@ -175,6 +175,8 @@ async def turn_events(
         output_tokens=usage.output_tokens,
         first_token_ms=first_token_ms,
         total_ms=round((time.perf_counter() - started) * 1000),
+        intent=usage.intent,
+        intent_confidence=usage.intent_confidence,
         channel=channel,
     )
     await record_turn(interactions, turn)

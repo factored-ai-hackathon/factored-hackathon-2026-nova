@@ -1,0 +1,352 @@
+{
+  "data": {
+    "train": {
+      "es": 280,
+      "pt": 280
+    },
+    "test": {
+      "es": 105,
+      "pt": 105
+    },
+    "classes": [
+      "transactional",
+      "product",
+      "complaint",
+      "technical",
+      "commercial",
+      "retention",
+      "other"
+    ],
+    "provenance": "team-generated (written for this project with Claude Code); no bank customer text: the dataset's transcripts carry no signal (see ml/README.md)"
+  },
+  "leakage": {
+    "exact_duplicates": 0,
+    "exact_duplicate_texts": [],
+    "nearest_train_jaccard_char4": {
+      "median": 0.227,
+      "p90": 0.445,
+      "max": 0.857,
+      "share_above_0.8": 0.005
+    }
+  },
+  "selection": {
+    "cv": "5-fold stratified on train",
+    "best": {
+      "C": 100,
+      "char_ngram_range": [
+        2,
+        4
+      ],
+      "cv_macro_f1": 0.822
+    },
+    "grid": [
+      {
+        "C": 1,
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "cv_macro_f1": 0.774
+      },
+      {
+        "C": 1,
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "cv_macro_f1": 0.79
+      },
+      {
+        "C": 3,
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "cv_macro_f1": 0.792
+      },
+      {
+        "C": 3,
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "cv_macro_f1": 0.806
+      },
+      {
+        "C": 10,
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "cv_macro_f1": 0.808
+      },
+      {
+        "C": 10,
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "cv_macro_f1": 0.808
+      },
+      {
+        "C": 30,
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "cv_macro_f1": 0.811
+      },
+      {
+        "C": 30,
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "cv_macro_f1": 0.813
+      },
+      {
+        "C": 100,
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "cv_macro_f1": 0.822
+      },
+      {
+        "C": 100,
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "cv_macro_f1": 0.819
+      },
+      {
+        "C": 300,
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "cv_macro_f1": 0.819
+      },
+      {
+        "C": 300,
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "cv_macro_f1": 0.82
+      },
+      {
+        "C": 1000,
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "cv_macro_f1": 0.804
+      },
+      {
+        "C": 1000,
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "cv_macro_f1": 0.807
+      }
+    ],
+    "threshold": 0.58,
+    "threshold_rule": "smallest top probability with >= 0.9 precision on out-of-fold train predictions"
+  },
+  "majority_baseline": {
+    "test": {
+      "n": 210,
+      "accuracy": 0.143,
+      "macro_f1": 0.036,
+      "f1_by_class": {
+        "transactional": 0.0,
+        "product": 0.0,
+        "complaint": 0.0,
+        "technical": 0.0,
+        "commercial": 0.0,
+        "retention": 0.0,
+        "other": 0.25
+      }
+    }
+  },
+  "keyword_baseline": {
+    "test": {
+      "n": 210,
+      "accuracy": 0.629,
+      "macro_f1": 0.618,
+      "f1_by_class": {
+        "transactional": 0.636,
+        "product": 0.318,
+        "complaint": 0.537,
+        "technical": 0.881,
+        "commercial": 0.615,
+        "retention": 0.75,
+        "other": 0.588
+      }
+    }
+  },
+  "model": {
+    "test": {
+      "n": 210,
+      "accuracy": 0.852,
+      "macro_f1": 0.853,
+      "f1_by_class": {
+        "transactional": 0.772,
+        "product": 0.767,
+        "complaint": 0.806,
+        "technical": 0.968,
+        "commercial": 0.881,
+        "retention": 0.947,
+        "other": 0.828
+      },
+      "ece": 0.07,
+      "confident_coverage": 0.805,
+      "confident_accuracy": 0.923
+    }
+  },
+  "by_language": {
+    "es": {
+      "keyword_baseline": {
+        "n": 105,
+        "accuracy": 0.619,
+        "macro_f1": 0.608,
+        "f1_by_class": {
+          "transactional": 0.606,
+          "product": 0.273,
+          "complaint": 0.571,
+          "technical": 0.897,
+          "commercial": 0.56,
+          "retention": 0.759,
+          "other": 0.588
+        }
+      },
+      "model": {
+        "n": 105,
+        "accuracy": 0.8,
+        "macro_f1": 0.797,
+        "f1_by_class": {
+          "transactional": 0.667,
+          "product": 0.643,
+          "complaint": 0.769,
+          "technical": 0.968,
+          "commercial": 0.867,
+          "retention": 0.929,
+          "other": 0.741
+        }
+      }
+    },
+    "pt": {
+      "keyword_baseline": {
+        "n": 105,
+        "accuracy": 0.638,
+        "macro_f1": 0.628,
+        "f1_by_class": {
+          "transactional": 0.667,
+          "product": 0.364,
+          "complaint": 0.5,
+          "technical": 0.867,
+          "commercial": 0.667,
+          "retention": 0.741,
+          "other": 0.588
+        }
+      },
+      "model": {
+        "n": 105,
+        "accuracy": 0.905,
+        "macro_f1": 0.905,
+        "f1_by_class": {
+          "transactional": 0.867,
+          "product": 0.875,
+          "complaint": 0.857,
+          "technical": 0.968,
+          "commercial": 0.897,
+          "retention": 0.966,
+          "other": 0.903
+        }
+      }
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "transactional",
+      "product",
+      "complaint",
+      "technical",
+      "commercial",
+      "retention",
+      "other"
+    ],
+    "rows_true_cols_pred": [
+      [
+        22,
+        1,
+        3,
+        1,
+        0,
+        0,
+        3
+      ],
+      [
+        2,
+        23,
+        3,
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        1,
+        2,
+        27,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        30,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        1,
+        0,
+        26,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        2,
+        27,
+        0
+      ],
+      [
+        1,
+        1,
+        3,
+        0,
+        1,
+        0,
+        24
+      ]
+    ]
+  },
+  "export": {
+    "model_json_kb": 1375,
+    "parity_max_abs_diff": 6.661338147750939e-16
+  }
+}

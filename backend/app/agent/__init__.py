@@ -33,6 +33,8 @@ class TokenUsage:
     input_tokens: int | None = None
     output_tokens: int | None = None
     sensitive_input: bool = False
+    intent: str | None = None  # the classifier's label for the customer's message
+    intent_confidence: float | None = None
 
     def add(self, usage: dict) -> None:
         self.input_tokens = (self.input_tokens or 0) + usage.get("input_tokens", 0)
@@ -104,6 +106,8 @@ async def stream_reply(
                 if not delta:
                     continue
                 case = delta.get("case", case)
+                if usage is not None and (seen := delta.get("turn_intent")):
+                    usage.intent, usage.intent_confidence = seen["label"], seen["confidence"]
                 if node not in FIXED_TEXT_NODES:
                     continue
                 for message in delta.get("messages", []):

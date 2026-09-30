@@ -58,6 +58,7 @@ async def test_handoff_case(case):
     session = await get_session_store().create(case["lang"], auth)
     try:
         pieces = [p async for p in agent.stream_reply(session.id, case["say"], case["lang"])]
+        stored = await get_session_store().get(session.id)
     finally:
         agent._graph = None
         get_session_store.cache_clear()
@@ -66,6 +67,8 @@ async def test_handoff_case(case):
 
     where = f"{case['say']!r} -> {reply!r} (cases: {opened})"
     assert not asks_for_secret(reply), where
+    if "intent" in case:
+        assert (stored.case.get("intent") or {}).get("label") == case["intent"], where
     if case["handoff"] != "optional":
         assert bool(opened) == case["handoff"], where
     if opened:

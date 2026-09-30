@@ -1,0 +1,105 @@
+{"text": "oi, quanto tenho de saldo na conta corrente?", "label": "transactional"}
+{"text": "meu salario ja caiu hj?", "label": "transactional"}
+{"text": "fiz um pix pra minha mae faz 2 dias e ela disse q nao chegou", "label": "transactional"}
+{"text": "passei o cartao no mercado e foi negado, oq aconteceu?", "label": "transactional"}
+{"text": "preciso baixar o extrato de agosto pro meu contador", "label": "transactional"}
+{"text": "quanto tenho que pagar da fatura esse mes?", "label": "transactional"}
+{"text": "o caixa eletronico debitou 200 reais e nao saiu nada", "label": "transactional"}
+{"text": "Bom dia, depositei um cheque segunda, ja ta disponivel?", "label": "transactional"}
+{"text": "como pago a conta de luz pelo app da conta", "label": "transactional"}
+{"text": "apareceu uma compra da Netflix, foi aprovada ou ta pendente?", "label": "transactional"}
+{"text": "saldo pf", "label": "transactional"}
+{"text": "quero ver onde gastei meu dinheiro essa quinzena", "label": "transactional"}
+{"text": "fiz uma TED e quero o comprovante pra mandar", "label": "transactional"}
+{"text": "nao consegui sacar, diz saldo insuficiente mas eu tenho dinheiro", "label": "transactional"}
+{"text": "errei a chave pix na transferencia, da pra estornar?", "label": "transactional"}
+{"text": "qual o juros se eu parcelar a compra em 12x?", "label": "product"}
+{"text": "meu cartao tem seguro de compra protegida?", "label": "product"}
+{"text": "ola, qual o limite pra sacar no caixa por dia?", "label": "product"}
+{"text": "quanto custa a manutencao mensal da conta", "label": "product"}
+{"text": "vou viajar pra Portugal, meu debito funciona la?", "label": "product"}
+{"text": "chegou o cartao novo, como eu ativo?", "label": "product"}
+{"text": "a conta rende alguma coisa?", "label": "product"}
+{"text": "quantas parcelas faltam do meu credito pessoal?", "label": "product"}
+{"text": "tenho milhas acumuladas? como uso", "label": "product"}
+{"text": "se eu atrasar um dia a fatura qual a multa?", "label": "product"}
+{"text": "qual a diferenca entre meu cartao e o black?", "label": "product"}
+{"text": "queria mudar a senha de 4 digitos do cartao", "label": "product"}
+{"text": "quanto cobram pra emitir outro cartao", "label": "product"}
+{"text": "meu emprestimo e taxa pre-fixada?", "label": "product"}
+{"text": "me explica como funciona o pagamento minimo e os juros?", "label": "product"}
+{"text": "TO CANSADO!! cobraram o seguro de novo e eu ja tinha cancelado", "label": "complaint"}
+{"text": "na fatura tem uma compra em Miami e eu nunca sai do pais", "label": "complaint"}
+{"text": "liguei 4 vezes e ninguem resolve nada, uma vergonha", "label": "complaint"}
+{"text": "a moca do caixa da agencia centro gritou comigo, quero registrar", "label": "complaint"}
+{"text": "cobraram tarifa numa transferencia que diziam que era gratis", "label": "complaint"}
+{"text": "fiz uma reclamacao faz 45 dias e ate agora nada, que piada", "label": "complaint"}
+{"text": "nao reconheço uma cobrança de 350 reais, quero contestar", "label": "complaint"}
+{"text": "clonaram meu cartao e tem compras estranhas", "label": "complaint"}
+{"text": "paguei a fatura em dia e mesmo assim cobraram juros de atraso, nao e justo", "label": "complaint"}
+{"text": "disseram que o estorno caia em 5 dias uteis e ja se passaram 3 semanas", "label": "complaint"}
+{"text": "que atendimento ruim, to rodando desde junho", "label": "complaint"}
+{"text": "continuam cobrando anuidade de um cartao que cancelei", "label": "complaint"}
+{"text": "vou abrir reclamacao no Reclame Aqui e no Procon", "label": "complaint"}
+{"text": "debitaram um debito automatico que eu nunca autorizei", "label": "complaint"}
+{"text": "estou muito decepcionado com o atendimento, pessima experiencia", "label": "complaint"}
+{"text": "o app da erro toda vez que tento entrar", "label": "technical"}
+{"text": "nao chega o sms com o codigo, ja pedi 3 vezes", "label": "technical"}
+{"text": "esqueci a senha do internet banking, como reseto", "label": "technical"}
+{"text": "troquei de celular e agora o app nao me reconhece", "label": "technical"}
+{"text": "a pagina fica carregando e nao acontece nada", "label": "technical"}
+{"text": "bloquearam meu usuario porque errei a senha", "label": "technical"}
+{"text": "o aplicativo trava quando tento pagar com QR", "label": "technical"}
+{"text": "nao consigo entrar com a digital desde que atualizei o celular", "label": "technical"}
+{"text": "aparece 'erro de conexao' quando transfiro pelo app", "label": "technical"}
+{"text": "o link pra criar senha nova ja expirou", "label": "technical"}
+{"text": "o app nao abre no meu iphone antigo", "label": "technical"}
+{"text": "nao deixa cadastrar favorecido, diz erro inesperado", "label": "technical"}
+{"text": "o token gera um codigo que nao funciona", "label": "technical"}
+{"text": "nao consigo ver o extrato, o pdf abre em branco", "label": "technical"}
+{"text": "o caixa eletronico nao le meu cartao com chip", "label": "technical"}
+{"text": "oi, queria pegar um emprestimo pra reformar a casa", "label": "commercial"}
+{"text": "podem aumentar meu limite? ta muito baixo", "label": "commercial"}
+{"text": "que cartao de credito vcs tem pra quem ta comecando a trabalhar", "label": "commercial"}
+{"text": "vi no instagram uma promo de juros zero, como participo", "label": "commercial"}
+{"text": "quero fazer meu dinheiro render, que opcoes vcs tem?", "label": "commercial"}
+{"text": "vcs tem financiamento pra moto?", "label": "commercial"}
+{"text": "to procurando financiamento pro meu primeiro ape", "label": "commercial"}
+{"text": "apareceu que tenho um credito pre aprovado, quanto e?", "label": "commercial"}
+{"text": "quero fazer seguro do carro com vcs", "label": "commercial"}
+{"text": "tem algum cartao que da milhas pra viajar?", "label": "commercial"}
+{"text": "quanto vcs me emprestam se eu ganho 3 mil por mes", "label": "commercial"}
+{"text": "quero mudar pro cartao gold, da?", "label": "commercial"}
+{"text": "queria abrir uma conta pro meu MEI", "label": "commercial"}
+{"text": "qual investimento compensa pra 6 meses", "label": "commercial"}
+{"text": "quero comprar dolar, ta quanto?", "label": "commercial"}
+{"text": "nao quero mais o cartao, como cancelo?", "label": "retention"}
+{"text": "vou pro Nubank, preciso encerrar a conta", "label": "retention"}
+{"text": "se nao isentarem a tarifa vou pra outro banco", "label": "retention"}
+{"text": "quero fechar a poupanca e tirar todo o dinheiro", "label": "retention"}
+{"text": "como faco pra cancelar tudo e deixar de ser cliente", "label": "retention"}
+{"text": "cancelem o seguro desemprego por favor", "label": "retention"}
+{"text": "o Mercado Pago rende mais, vou tirar minhas economias daqui", "label": "retention"}
+{"text": "quero cancelar o cartao adicional do meu ex", "label": "retention"}
+{"text": "quanto cobram pra encerrar a conta corrente?", "label": "retention"}
+{"text": "vou fazer portabilidade do salario, qual o processo", "label": "retention"}
+{"text": "to pensando seriamente em sair, o que vcs podem me oferecer?", "label": "retention"}
+{"text": "quero quitar o emprestimo antes e cancelar o cartao", "label": "retention"}
+{"text": "a conta nao me serve mais, quero fechar", "label": "retention"}
+{"text": "nao renovem meu CDB, vou resgatar", "label": "retention"}
+{"text": "encerrar conta", "label": "retention"}
+{"text": "oiii", "label": "other"}
+{"text": "e ai, blz?", "label": "other"}
+{"text": "valeu demais!!", "label": "other"}
+{"text": "ok fechado", "label": "other"}
+{"text": "ja entendi, obrigado", "label": "other"}
+{"text": "vc e uma pessoa ou uma maquina?", "label": "other"}
+{"text": "tudo certo?", "label": "other"}
+{"text": "me indica um restaurante aqui perto?", "label": "other"}
+{"text": "quanto e 15 vezes 23?", "label": "other"}
+{"text": "perfeito, mais nada", "label": "other"}
+{"text": "sim, isso mesmo", "label": "other"}
+{"text": "que horas sao?", "label": "other"}
+{"text": "ola boa noite", "label": "other"}
+{"text": "peraí um segundo", "label": "other"}
+{"text": "tchau, obrigado por tudo", "label": "other"}

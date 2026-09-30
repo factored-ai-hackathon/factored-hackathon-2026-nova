@@ -1,0 +1,105 @@
+{"text": "buenas, me podrias decir cuanta plata me queda en la caja de ahorro?", "label": "transactional"}
+{"text": "Hola! quería revisar si me pagaron el sueldo hoy", "label": "transactional"}
+{"text": "le transferi a mi mama hace 2 dias y ella dice q no le llego nada", "label": "transactional"}
+{"text": "pase la tarjeta en el super y me la rebotaron, que onda?", "label": "transactional"}
+{"text": "necesito descargar los movimientos de agosto para mi contador", "label": "transactional"}
+{"text": "Cuanto tengo que pagar este mes de la tdc?", "label": "transactional"}
+{"text": "el ATM de la esquina me debitó 2000 pesos y no soltó nada", "label": "transactional"}
+{"text": "Buenos dias, deposité un cheque el lunes, ya está disponible?", "label": "transactional"}
+{"text": "como le hago para pagar la luz desde la cuenta", "label": "transactional"}
+{"text": "Me aparece un cobro de Netflix, fue aprobado o sigue pendiente?", "label": "transactional"}
+{"text": "saldo porfa", "label": "transactional"}
+{"text": "Quiero ver en qué me gasté la plata esta quincena", "label": "transactional"}
+{"text": "hice un pago con transferencia y quiero el comprobante para enviarlo", "label": "transactional"}
+{"text": "no pude sacar efectivo, me dice fondos insuficientes pero tengo plata", "label": "transactional"}
+{"text": "me confundi de numero de cuenta al transferir, se puede revertir?", "label": "transactional"}
+{"text": "que interes me cobran si difiero la compra a 12 meses?", "label": "product"}
+{"text": "mi tarjeta tiene seguro de compras protegidas o no?", "label": "product"}
+{"text": "Hola, cual es el tope para sacar del cajero en un dia?", "label": "product"}
+{"text": "cuanto sale el mantenimiento mensual de la cuenta", "label": "product"}
+{"text": "Me voy de viaje a España, funciona mi debito alla?", "label": "product"}
+{"text": "me llego la tarjeta nueva en un sobre, como la habilito", "label": "product"}
+{"text": "la caja de ahorro paga algun rendimiento?", "label": "product"}
+{"text": "Cuantas cuotas le faltan a mi credito personal?", "label": "product"}
+{"text": "tengo millas acumuladas? como las uso", "label": "product"}
+{"text": "si me atraso un dia con el pago que recargo me ponen?", "label": "product"}
+{"text": "cual es la diferencia entre mi tarjeta y la black?", "label": "product"}
+{"text": "Quisiera cambiar la clave de 4 digitos de la tarjeta", "label": "product"}
+{"text": "cuanto me cobran por pedir un plástico de reposicion", "label": "product"}
+{"text": "el credito que tengo es a tasa fija?", "label": "product"}
+{"text": "Me explicas como funciona el pago minimo y los intereses?", "label": "product"}
+{"text": "ESTOY HARTO!! me cobraron el seguro otra vez y ya lo habia cancelado", "label": "complaint"}
+{"text": "en el resumen hay una compra en Miami y yo nunca sali del pais", "label": "complaint"}
+{"text": "llamé 4 veces y nadie me soluciona nada, es una verguenza", "label": "complaint"}
+{"text": "la cajera de la sucursal centro me grito, quiero dejar constancia", "label": "complaint"}
+{"text": "me cobraron comision por una transferencia que dijeron que era gratis", "label": "complaint"}
+{"text": "Hace 45 días hice un reclamo y sigo sin respuesta, esto es un chiste", "label": "complaint"}
+{"text": "no reconozco un cargo de 350 dolares, quiero desconocerlo", "label": "complaint"}
+{"text": "me clonaron la tarjeta y aparecen compras raras", "label": "complaint"}
+{"text": "pague la tarjeta a tiempo y igual me cargaron intereses moratorios, no es justo", "label": "complaint"}
+{"text": "Me dijeron que me devolvian la plata en 5 dias habiles y ya pasaron 3 semanas", "label": "complaint"}
+{"text": "que mal servicio, me tienen dando vueltas desde junio", "label": "complaint"}
+{"text": "me siguen cobrando la anualidad de una tarjeta que cancele", "label": "complaint"}
+{"text": "quiero poner una denuncia formal contra el banco", "label": "complaint"}
+{"text": "me descontaron un debito automatico que yo nunca autorice", "label": "complaint"}
+{"text": "Estoy muy decepcionado con la atencion, pesima experiencia", "label": "complaint"}
+{"text": "la app me tira error cada vez que quiero entrar", "label": "technical"}
+{"text": "no me llega el sms con el codigo, ya pedi 3 veces", "label": "technical"}
+{"text": "se me olvido la clave de la banca por internet, como la reseteo", "label": "technical"}
+{"text": "Cambie de telefono y ahora la app no me reconoce", "label": "technical"}
+{"text": "La pagina se queda cargando y no pasa nada", "label": "technical"}
+{"text": "me bloquearon el usuario por meter mal la contraseña", "label": "technical"}
+{"text": "la aplicacion se congela cuando intento pagar con QR", "label": "technical"}
+{"text": "no puedo entrar con la huella desde que actualice el celu", "label": "technical"}
+{"text": "me sale 'error de conexion' al transferir desde la app", "label": "technical"}
+{"text": "el link para crear la contraseña nueva ya expiro", "label": "technical"}
+{"text": "la app no abre en mi iphone viejo", "label": "technical"}
+{"text": "no me deja inscribir una cuenta de terceros, dice error inesperado", "label": "technical"}
+{"text": "el token me da un codigo que no sirve", "label": "technical"}
+{"text": "no puedo ver el extracto, el pdf sale en blanco", "label": "technical"}
+{"text": "el lector del cajero no toma mi tarjeta con chip", "label": "technical"}
+{"text": "Hola, me interesaria sacar un prestamo para arreglar la casa", "label": "commercial"}
+{"text": "me pueden subir el limite de la tarjeta? me queda corto", "label": "commercial"}
+{"text": "que tarjetas de credito tienen para alguien que recien empieza a trabajar", "label": "commercial"}
+{"text": "vi en instagram una promo de 0% de interes, como aplico", "label": "commercial"}
+{"text": "quiero poner mis ahorros a rendir, que opciones tienen?", "label": "commercial"}
+{"text": "Tienen creditos para comprar moto?", "label": "commercial"}
+{"text": "estoy buscando hipoteca para mi primer depa", "label": "commercial"}
+{"text": "Me sale que tengo un credito preaprobado, cuanto es?", "label": "commercial"}
+{"text": "quiero contratar seguro para el auto con ustedes", "label": "commercial"}
+{"text": "hay alguna tarjeta que de millas para viajar?", "label": "commercial"}
+{"text": "cuanta plata me prestan si gano 800 mil al mes", "label": "commercial"}
+{"text": "Quiero pasarme a la tarjeta gold, se puede?", "label": "commercial"}
+{"text": "me gustaria abrir una cuenta para mi emprendimiento", "label": "commercial"}
+{"text": "que plazo fijo me conviene para 6 meses", "label": "commercial"}
+{"text": "Quiero comprar dolares, a cuanto esta?", "label": "commercial"}
+{"text": "ya no quiero la tarjeta, como la doy de baja?", "label": "retention"}
+{"text": "Me cambio a Nubank, necesito cerrar la cuenta", "label": "retention"}
+{"text": "si no me bonifican la comision me voy a otro banco", "label": "retention"}
+{"text": "quiero cerrar la cuenta de ahorros y llevarme toda la plata", "label": "retention"}
+{"text": "Como hago para dar de baja todo y dejar de ser cliente", "label": "retention"}
+{"text": "cancelen el seguro de desempleo por favor", "label": "retention"}
+{"text": "Mercado Pago me da mas rendimiento, voy a sacar mis ahorros de aca", "label": "retention"}
+{"text": "quiero cancelar la tarjeta adicional de mi ex", "label": "retention"}
+{"text": "cuanto me cobran por cerrar la cuenta corriente?", "label": "retention"}
+{"text": "voy a mover mi sueldo a otro banco, que tramite hago", "label": "retention"}
+{"text": "Estoy considerando seriamente irme, que me pueden ofrecer?", "label": "retention"}
+{"text": "quiero cancelar el credito anticipadamente y cerrar la tarjeta", "label": "retention"}
+{"text": "No me sirve mas la cuenta, la quiero cerrar", "label": "retention"}
+{"text": "no renueven mi CDT, lo voy a sacar", "label": "retention"}
+{"text": "baja de la cuenta", "label": "retention"}
+{"text": "holaaa", "label": "other"}
+{"text": "buenas buenas", "label": "other"}
+{"text": "mil gracias!!", "label": "other"}
+{"text": "ok dale", "label": "other"}
+{"text": "ya entendi, gracias", "label": "other"}
+{"text": "sos una persona o una maquina?", "label": "other"}
+{"text": "que tal", "label": "other"}
+{"text": "me recomendas un restaurante por aca?", "label": "other"}
+{"text": "cuanto es 15 por 23?", "label": "other"}
+{"text": "perfecto, nada mas", "label": "other"}
+{"text": "si, correcto", "label": "other"}
+{"text": "que hora es?", "label": "other"}
+{"text": "hola buenas noches", "label": "other"}
+{"text": "esperame un segundo", "label": "other"}
+{"text": "chau, gracias por todo", "label": "other"}

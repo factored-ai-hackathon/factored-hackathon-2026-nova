@@ -23,6 +23,11 @@ function reasonLabel(reason: string, language: 'es' | 'pt'): string {
   return label ?? reason;
 }
 
+function intentLabel(intent: string, language: 'es' | 'pt'): string {
+  const label: string | undefined = t(`console.intent.${intent}` as TranslationKey, language);
+  return label ?? intent;
+}
+
 export function AgentConsolePage() {
   const { language, setLanguage } = useApp();
   const locale = language === 'pt' ? 'pt-BR' : 'es-CO';
@@ -152,7 +157,10 @@ export function AgentConsolePage() {
                 >
                   <span className={`console-status ${c.status}`}>{t(`console.status.${c.status}`, language)}</span>
                   <span><strong>{c.case_id}</strong> · {c.customer ?? '—'}</span>
-                  <span className="console-case-reason">{reasonLabel(c.reason, language)}</span>
+                  <span className="console-case-reason">
+                    {reasonLabel(c.reason, language)}
+                    {c.intent && ` · ${intentLabel(c.intent, language)}`}
+                  </span>
                   <span className="console-case-time">
                     {when(c.created_at, locale)}
                     {c.faithfulness != null && ` · ${t('console.faith', language)} ${Math.round(c.faithfulness * 100)}%`}
@@ -272,6 +280,26 @@ export function AgentConsolePage() {
                   <dt>{t('console.customer', language)}</dt><dd>{facts?.first_name ?? '—'}</dd>
                   <dt>{t('console.customerId', language)}</dt><dd><code>{facts?.customer_id ?? facts?.logged_in_customer_id ?? '—'}</code></dd>
                 </dl>
+              </section>
+
+              <section className="console-card">
+                <h3>{t('console.intent', language)}</h3>
+                {selected.intent ? (
+                  <>
+                    <p>
+                      <strong>{intentLabel(selected.intent.label, language)}</strong>
+                      {` · ${t('console.intentConfidence', language)} ${Math.round(selected.intent.confidence * 100)}%`}
+                    </p>
+                    {selected.intent.fcr_rate != null && (
+                      <p className="form-help">
+                        {t('console.intentFcr', language).replace('{rate}', `${Math.round(selected.intent.fcr_rate * 100)}%`)}
+                      </p>
+                    )}
+                    {selected.intent.early_handoff && <p className="form-help">{t('console.intentEarly', language)}</p>}
+                  </>
+                ) : (
+                  <p className="form-help">{t('console.intentNone', language)}</p>
+                )}
               </section>
 
               <FaithfulnessPanel data={selected.faithfulness} language={language} />
