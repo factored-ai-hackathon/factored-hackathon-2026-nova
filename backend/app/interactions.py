@@ -11,6 +11,7 @@ import threading
 import time
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
+from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -46,7 +47,10 @@ class Turn:
     output_tokens: int | None = None
     first_token_ms: int | None = None
     total_ms: int | None = None
+    intent: str | None = None  # the intent classifier's label (app/agent/intent.py)
+    intent_confidence: float | None = None
     created_at: str = ""
+    channel: str = "account"  # "public" for the assistant outside the login
 
     def __post_init__(self) -> None:
         self.created_at = self.created_at or datetime.now(UTC).isoformat()
@@ -160,6 +164,8 @@ class DynamoInteractionStore:
 
     async def save_turn(self, turn: Turn) -> None:
         item = {k: v for k, v in asdict(turn.masked()).items() if v is not None}
+        # boto3 rejects floats: DynamoDB numbers go as Decimal.
+        item = {k: Decimal(str(v)) if isinstance(v, float) else v for k, v in item.items()}
         item["expires_at"] = int(time.time()) + self.ttl_days * 86400
         await asyncio.to_thread(self.table.put_item, Item=item)
 

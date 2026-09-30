@@ -16,6 +16,7 @@ const CASE: CaseDetail = {
   case_id: 'NB-ABC123', status: 'waiting', created_at: '2026-06-17T10:00:00Z', reason: 'dispute',
   summary: 'Quiere disputar un rechazo en TecnoMundo', lang: 'es', agent_name: null, customer: 'Miguel',
   session_id: 's1', open_questions: ['¿Reconoce el comercio?'],
+  intent: { label: 'complaint', confidence: 0.91, reason_category: 'Queja', fcr_rate: 0.4339, confident: true, early_handoff: true },
   verified_facts: { identity_verified: true, customer_id: 'demo-001', first_name: 'Miguel', logged_in_customer_id: 'demo-001' },
   evidence: [{ tool: 'get_my_transactions', args: { status: 'declined' }, result: '{"total_found": 1}', at: '2026-06-17T09:59:00Z' }],
   transcript: [{ role: 'customer', text: 'me rechazaron una compra' }],
@@ -24,7 +25,7 @@ const CASE: CaseDetail = {
 
 describe('agent console', () => {
   beforeEach(() => {
-    vi.mocked(consoleApi.listCases).mockReset().mockResolvedValue({ cases: [{ ...CASE, faithfulness: null }] });
+    vi.mocked(consoleApi.listCases).mockReset().mockResolvedValue({ cases: [{ ...CASE, intent: 'complaint', faithfulness: null }] });
     vi.mocked(consoleApi.getCase).mockReset().mockResolvedValue(CASE);
     vi.mocked(consoleApi.takeCase).mockReset().mockResolvedValue({ ...CASE, status: 'active', agent_name: 'Laura' });
     vi.mocked(consoleApi.replyCase).mockReset();
@@ -51,6 +52,9 @@ describe('agent console', () => {
     expect(screen.getByText('¿Reconoce el comercio?')).toBeInTheDocument();
     expect(screen.getByText(/identidad verificada/i)).toBeInTheDocument();
     expect(screen.getByText('get_my_transactions')).toBeInTheDocument();
+    // The intent classifier's reading, with the bank's first contact resolution for it.
+    expect(screen.getByText(/confianza 91%/)).toBeInTheDocument();
+    expect(screen.getByText(/resolución en primer contacto del banco para este motivo: 43%/i)).toBeInTheDocument();
     expect(consoleApi.getCase).toHaveBeenCalledWith('Asesor2026', 'NB-ABC123');
 
     await user.type(screen.getByLabelText(/tu nombre/i), 'Laura');

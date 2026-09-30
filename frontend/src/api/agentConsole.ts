@@ -13,7 +13,18 @@ export interface CaseSummary {
   lang: 'es' | 'pt'
   agent_name: string | null
   customer: string | null
+  /** The intent classifier's label for the conversation (backend/app/agent/intent.py). */
+  intent?: string | null
   faithfulness?: number | null
+}
+
+export interface CaseIntent {
+  label: string
+  confidence: number
+  reason_category: string | null
+  fcr_rate: number | null
+  confident: boolean
+  early_handoff: boolean
 }
 
 export interface QueueStats {
@@ -36,8 +47,9 @@ export interface Faithfulness {
   overall: number | null
 }
 
-export interface CaseDetail extends Omit<CaseSummary, 'faithfulness'> {
+export interface CaseDetail extends Omit<CaseSummary, 'faithfulness' | 'intent'> {
   session_id: string
+  intent: CaseIntent | null
   open_questions: string[]
   verified_facts: {
     identity_verified: boolean

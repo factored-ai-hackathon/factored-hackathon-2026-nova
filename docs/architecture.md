@@ -16,7 +16,7 @@
 | LLM | Claude on Amazon Bedrock (production); Hugging Face Inference Providers, free tier (local only) |
 | Knowledge answers | RAG over products, policies, FAQs |
 | Customer data for the agent | DynamoDB |
-| Contact center models | To be decided (scikit-learn), trained on `latam_curated` |
+| Contact center model | Intent classifier (scikit-learn TF-IDF + logistic regression, run in plain Python in the Lambda) + the bank's FCR by reason from `latam_curated`. See `ml/README.md` |
 | API | FastAPI |
 | Hosting | CloudFront + S3 (frontend), Lambda function URL with streaming (API), DynamoDB (interactions). See `infra/app` |
 | Infrastructure | Terraform |
@@ -41,5 +41,4 @@ Main tables: `call_center_interactions`, `call_transcripts`, `satisfaction_surve
 
 ## Still to decide
 - The single customer flow for the demo
-- Which contact center models to build
 - When to hand over to a human

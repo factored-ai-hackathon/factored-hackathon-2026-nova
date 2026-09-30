@@ -1,0 +1,12 @@
+{
+  "source": "latam_curated.fact_interaction (dbt prod), all interactions, queried 2026-09-30",
+  "query": "select reason_category, count(*), avg(was_resolved), count(is_fcr), avg(is_fcr) from fact_interaction group by reason_category",
+  "by_intent": {
+    "transactional": {"reason_category": "Transaccional", "interactions": 240056, "resolved_rate": 0.9151, "fcr_rate": 0.9055},
+    "product":       {"reason_category": "Producto",      "interactions": 150863, "resolved_rate": 0.8963, "fcr_rate": 0.8906},
+    "complaint":     {"reason_category": "Queja",         "interactions": 117021, "resolved_rate": 0.4360, "fcr_rate": 0.4339},
+    "technical":     {"reason_category": "Técnico",       "interactions": 102899, "resolved_rate": 0.6993, "fcr_rate": 0.6964},
+    "commercial":    {"reason_category": "Comercial",     "interactions": 54879,  "resolved_rate": 0.6521, "fcr_rate": 0.6503},
+    "retention":     {"reason_category": "Retención",     "interactions": 20578,  "resolved_rate": 0.6016, "fcr_rate": 0.6003}
+  }
+}

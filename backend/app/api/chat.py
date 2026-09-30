@@ -22,6 +22,7 @@ from app.agent.identity import (
     is_verified,
     session_auth,
 )
+from app.agent.public import is_public
 from app.api.auth import get_verifier
 from app.api.demo import CUSTOMER_ID_PATTERN
 from app.config import get_settings
@@ -114,7 +115,7 @@ async def post_message(
     stream_reply: Annotated[ReplyStreamer, Depends(get_reply_streamer)],
 ) -> EventSourceResponse:
     session = await store.get(session_id)
-    if session is None:
+    if session is None or is_public(session.auth):  # public sessions belong to /v1/public
         raise HTTPException(status.HTTP_404_NOT_FOUND, "session not found")
     client_ip = client_ip_from(request.headers, request.client.host if request.client else None)
     if refused := await limits.check(client_ip):
@@ -124,55 +125,71 @@ async def post_message(
         await store.set_lang(session_id, body.lang)
     lang = body.lang or session.lang
 
-    async def events() -> AsyncIterator[dict]:
-        message_id = str(uuid.uuid4())
-        usage = TokenUsage()
-        reply: list[str] = []
-        started = time.perf_counter()
-        first_token_ms: int | None = None
-        error_code: str | None = None
-        try:
-            async for piece in stream_reply(session_id, body.text, lang, usage):
-                if isinstance(piece, Notice):
-                    notice = {"kind": piece.kind, "text": piece.text}
-                    yield {"event": "notice", "data": json.dumps(notice, ensure_ascii=False)}
-                    continue
-                if first_token_ms is None:
-                    first_token_ms = round((time.perf_counter() - started) * 1000)
-                reply.append(piece)
-                yield {"event": "token", "data": json.dumps({"text": piece}, ensure_ascii=False)}
-        except Exception:
-            logger.exception("reply failed for session %s", session_id)
-            error_code = "llm_error"
+    return EventSourceResponse(
+        turn_events(session_id, body.text, lang, stream_reply, interactions, limits)
+    )
 
-        turn = Turn(
-            session_id=session_id,
-            message_id=message_id,
-            lang=lang,
-            # Verification answers (document, date of birth, code) are never logged.
-            user_text="[identity verification input]" if usage.sensitive_input else body.text,
-            reply_text="".join(reply),
-            status="error" if error_code else "ok",
-            error_code=error_code,
-            model=model_id(get_settings()),
-            input_tokens=usage.input_tokens,
-            output_tokens=usage.output_tokens,
-            first_token_ms=first_token_ms,
-            total_ms=round((time.perf_counter() - started) * 1000),
-        )
-        await record_turn(interactions, turn)
-        try:
-            await limits.charge(usage.input_tokens, usage.output_tokens)
-        except Exception:
-            logger.exception("could not charge the daily budget for %s", message_id)
 
-        if error_code:
-            error = {"code": error_code, "message": "The assistant could not reply. Try again."}
-            yield {"event": "error", "data": json.dumps(error)}
-        else:
-            yield {"event": "done", "data": json.dumps({"message_id": message_id})}
+async def turn_events(
+    session_id: str,
+    text: str,
+    lang: str,
+    stream_reply: ReplyStreamer,
+    interactions: InteractionStore,
+    limits: Limiter,
+    channel: str = "account",
+) -> AsyncIterator[dict]:
+    """One turn as server-sent events (token, notice, done or error); records it and charges the
+    budget. Shared by the account chat and the public assistant."""
+    message_id = str(uuid.uuid4())
+    usage = TokenUsage()
+    reply: list[str] = []
+    started = time.perf_counter()
+    first_token_ms: int | None = None
+    error_code: str | None = None
+    try:
+        async for piece in stream_reply(session_id, text, lang, usage):
+            if isinstance(piece, Notice):
+                notice = {"kind": piece.kind, "text": piece.text}
+                yield {"event": "notice", "data": json.dumps(notice, ensure_ascii=False)}
+                continue
+            if first_token_ms is None:
+                first_token_ms = round((time.perf_counter() - started) * 1000)
+            reply.append(piece)
+            yield {"event": "token", "data": json.dumps({"text": piece}, ensure_ascii=False)}
+    except Exception:
+        logger.exception("reply failed for session %s", session_id)
+        error_code = "llm_error"
 
-    return EventSourceResponse(events())
+    turn = Turn(
+        session_id=session_id,
+        message_id=message_id,
+        lang=lang,
+        # Verification answers (document, date of birth, code) are never logged.
+        user_text="[identity verification input]" if usage.sensitive_input else text,
+        reply_text="".join(reply),
+        status="error" if error_code else "ok",
+        error_code=error_code,
+        model=model_id(get_settings()),
+        input_tokens=usage.input_tokens,
+        output_tokens=usage.output_tokens,
+        first_token_ms=first_token_ms,
+        total_ms=round((time.perf_counter() - started) * 1000),
+        intent=usage.intent,
+        intent_confidence=usage.intent_confidence,
+        channel=channel,
+    )
+    await record_turn(interactions, turn)
+    try:
+        await limits.charge(usage.input_tokens, usage.output_tokens)
+    except Exception:
+        logger.exception("could not charge the daily budget for %s", message_id)
+
+    if error_code:
+        error = {"code": error_code, "message": "The assistant could not reply. Try again."}
+        yield {"event": "error", "data": json.dumps(error)}
+    else:
+        yield {"event": "done", "data": json.dumps({"message_id": message_id})}
 
 
 async def record_turn(interactions: InteractionStore, turn: Turn) -> None:
