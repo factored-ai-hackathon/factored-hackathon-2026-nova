@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { LoginPage } from './pages/Login/LoginPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { AgentPage } from './pages/Agent/AgentPage';
+import { AgentConsolePage } from './pages/AgentConsole/AgentConsolePage';
 import './styles/globals.css';
 
 /**
@@ -20,6 +21,8 @@ export default function App() {
         <AgentProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            {/* Human agent console: its own key, not the customer login */}
+            <Route path="/asesor" element={<AgentConsolePage />} />
             <Route
               path="/dashboard"
               element={

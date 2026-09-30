@@ -13,6 +13,7 @@ from sse_starlette import EventSourceResponse
 
 from app import agent
 from app.agent import Notice, TokenUsage
+from app.agent.handoff import CaseStore, get_case_store
 from app.agent.identity import (
     SESSION_CUSTOMER,
     CustomerDirectory,
@@ -181,6 +182,41 @@ async def record_turn(interactions: InteractionStore, turn: Turn) -> None:
         await interactions.save_turn(turn)
     except Exception:
         logger.exception("could not store turn %s", turn.message_id)
+
+
+class HandoffUpdatesRequest(BaseModel):
+    after: int = Field(default=0, ge=0)  # how many case messages the client already has
+
+
+@router.post("/sessions/{session_id}/handoff")
+async def handoff_updates(
+    session_id: str,
+    body: HandoffUpdatesRequest,
+    store: Store,
+    cases: Annotated[CaseStore, Depends(get_case_store)],
+) -> dict:
+    """While a human agent has the conversation, the chat polls this for the agent's messages.
+    The session id is the credential: only its own case is returned."""
+    session = await store.get(session_id)
+    if session is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "session not found")
+    state = (session.case or {}).get("handoff") or {}
+    case_id = state.get("case_id") or (session.case or {}).get("last_case_id")
+    case = await cases.get(case_id) if case_id else None
+    if case is None or case["session_id"] != session_id:
+        return {"status": "none", "case_id": None, "agent_name": None, "messages": [], "next": 0}
+    new = [
+        {"from": m["from"], "text": m["text"], "at": m["at"]}
+        for m in case["messages"][body.after :]
+        if m["from"] in ("agent", "system")
+    ]
+    return {
+        "status": case["status"],
+        "case_id": case["case_id"],
+        "agent_name": case.get("agent_name"),
+        "messages": new,
+        "next": len(case["messages"]),
+    }
 
 
 @router.post(

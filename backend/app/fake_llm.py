@@ -85,6 +85,10 @@ _ACCOUNT_TOOL_WORDS = (
     ("get_my_products", ("saldo", "cuenta", "tarjeta", "conta", "cart", "producto", "limite")),
 )
 
+# Asking for a person or reporting something risky: the offline model hands over.
+_HANDOFF_WORDS = ("asesor", "humano", "persona", "atendente", "fraude", "robaron", "no reconozco")
+HANDOFF_TOOL = "request_human_agent"
+
 TOOL_REPLIES = {
     "es": "**Modo sin conexión**: consulté tus datos con `{tool}` y encontré esto:",
     "pt": "**Modo offline**: consultei seus dados com `{tool}` e encontrei isto:",
@@ -109,6 +113,10 @@ class OfflineChatModel(BaseChatModel):
         if not messages or isinstance(messages[-1], ToolMessage):
             return None
         last = messages[-1].text
+        normalized_last = identity.normalize_text(last)
+        if HANDOFF_TOOL in self.bound_tools and any(w in normalized_last for w in _HANDOFF_WORDS):
+            args = {"reason": "customer_request", "summary": last[:300], "open_questions": []}
+            return {"name": HANDOFF_TOOL, "args": args, "id": "call_offline_handoff"}
         if identity.VERIFY_TOOL in self.bound_tools and identity.looks_like_account_request(last):
             return {"name": identity.VERIFY_TOOL, "args": {}, "id": VERIFY_CALL_ID}
         normalized = identity.normalize_text(last)

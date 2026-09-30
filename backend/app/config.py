@@ -48,6 +48,12 @@ class Settings(BaseSettings):
     customers_table: str = "fh26-demo-customers"
     # The dataset is a snapshot: "today" for the account tools is its last day (dbt as_of_date).
     data_as_of_date: date = date(2026, 6, 17)
+    # Human handoff (app/agent/handoff.py). memory: local; dynamodb: deployed.
+    cases_store: Literal["memory", "dynamodb"] = "memory"
+    cases_table: str = "fh26-handoff-cases"
+    case_ttl_days: int = 7
+    # The human agent console (/asesor) key. Public demo value, documented in docs/demo.md.
+    agent_console_key: str = "Asesor2026"
     # Demo web login (app/api/auth.py): one password for every customer, published in docs/demo.md
     # (the dataset is synthetic; the code sent to the phone is what proves identity).
     demo_password: str = "Nova2026"

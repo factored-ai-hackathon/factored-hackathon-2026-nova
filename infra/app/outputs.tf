@@ -32,3 +32,7 @@ output "github_variables" {
 output "demo_customers_table" {
   value = aws_dynamodb_table.demo_customers.name
 }
+
+output "handoff_cases_table" {
+  value = aws_dynamodb_table.handoff_cases.name
+}

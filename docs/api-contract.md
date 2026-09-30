@@ -11,6 +11,12 @@ The frontend and the backend both code against this file. Change it first, then 
 | `GET /v1/demo/scenarios` | – | `200 {"password","scenarios":[{"key","customer":{"customer_id","first_name","country","document_type","document_number","birth_date","phone_last4"}}]}` |
 | `GET /v1/demo/customers/{customer_id}` | – | `200 {"customer_id",...}` (same fields as a scenario's customer) |
 | `POST /v1/accounts/overview` | `{"session_id"}` (a verified chat session, from the login) | `200 {"data_as_of","products":[...],"recent_transactions":[...],"open_complaints":0}` |
+| `POST /v1/chat/sessions/{id}/handoff` | `{"after":0}` | `200 {"status":"none"\|"waiting"\|"active"\|"closed","case_id","agent_name","messages":[{"from":"agent"\|"system","text","at"}],"next"}` |
+| `POST /v1/agent/cases` | `{"key"}` | `200 {"cases":[{case_id,status,created_at,reason,summary,lang,agent_name,customer,faithfulness}],"stats":{"waiting","active","closed","faithfulness_avg"}}` |
+| `POST /v1/agent/cases/{case_id}` | `{"key"}` | `200` the case (summary, open questions, verified facts, evidence, transcript, messages) plus `faithfulness` (see below) |
+| `POST /v1/agent/cases/{case_id}/take` | `{"key","agent_name"}` | `200` the case, now `active` (`409` if not `waiting`) |
+| `POST /v1/agent/cases/{case_id}/reply` | `{"key","text"}` | `200` the case (`409` if not `active`) |
+| `POST /v1/agent/cases/{case_id}/close` | `{"key"}` | `200` the case, `closed` |
 | `POST /v1/chat/sessions` | `{"lang":"es"\|"pt","customer_id":"...","from_session_id":"..."}` (all optional; default `es`) | `201 {"session_id":"<uuid>","lang":"es"}` |
 | `POST /v1/chat/sessions/{id}/messages` | `{"text":"...","lang":"es"\|"pt"}` | `200 text/event-stream` (see below) |
 | `POST /v1/chat/sessions/{id}/messages/{message_id}/feedback` | `{"rating":"up"\|"down","comment":"..."}` (`comment` optional, max 500 chars) | `204` |
@@ -52,6 +58,15 @@ Once the chat session is verified, the model can call `get_my_products`, `get_my
 
 The web app's home page reads the same data through `POST /v1/accounts/overview` (products, the last 30 days' transactions up to 10, open complaints count), also only for the verified session's customer. The session id goes in the body so CloudFront's origin request policy passes it unchanged.
 
+## Handoff to a human agent (decision 27)
+The model can call `request_human_agent` (`reason`: customer_request, fraud_or_security, dispute, complaint, unsupported, repeated_failure, other; `summary`; `open_questions`) at any time, verified or not. The backend creates the case (`NB-XXXXXX`): the model's summary and questions, plus the **verified facts** (from the session's verification state) and the **evidence** (the account tool calls and results of this conversation), and the transcript. The reply is fixed text with the case number, and the stream sends a `notice` with `kind: "handoff"` and the case id as `text`.
+
+While the case is `waiting` or `active`, the model isn't called: the customer's messages go to the case (the reply is a short "queued" note while waiting, and empty once an agent is on it). The chat polls `POST /v1/chat/sessions/{id}/handoff` with `after` = the last `next` for the agent's messages and case notices; the session id is the credential and only its own case is returned. When the agent closes the case, the bot answers again, with the agent's messages in the history as context.
+
+`faithfulness` (decision 28): `{"evidence":[{tool,args,at}],"answers":[{"index","text","claims":[{"token","text","supported"}],"score","sentences":[{"text","similarity":[per evidence item],"shared":[[tokens]]}]}],"overall"}`. `score` and `overall` are supported / total checkable claims, `null` without claims; `similarity` is the cosine of term-frequency vectors (0-1).
+
+The agent console (`/asesor`) uses `POST /v1/agent/...` with the shared demo key (`AGENT_CONSOLE_KEY`) in the body (`401 {"detail":"invalid_key"}` otherwise; unknown case → `404`).
+
 ## Identity verification
 Before any personal data, the agent verifies the customer (`backend/app/agent/identity.py`, decision 22): document number → date of birth → 6-digit code (demo SMS as a `notice` event). The model can only ask to start it; the answers are handled in code, never sent to the model, and stored as placeholders in the history and the interaction log (`[identity verification input]`). 3 failures lock verification for the session; verification lasts 30 minutes. Demo customers: `docs/demo.md`.
 
@@ -90,6 +105,10 @@ Names only; values go in `backend/.env` (gitignored). See `backend/.env.example`
 | `MAX_HISTORY_MESSAGES` | backend | Messages kept per conversation (user + assistant). Default `40` |
 | `CUSTOMER_DIRECTORY` | backend | `demo` (default: 2 fictional customers) or `dynamodb` (deployed: the whole dataset, loaded by `data/scripts/load_demo_data.py`) |
 | `DATA_AS_OF_DATE` | backend | "Today" for the account tools: the dataset's last day. Default `2026-06-17` |
+| `CASES_STORE` | backend | `memory` (default, local) or `dynamodb` (deployed): handoff cases |
+| `CASES_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-handoff-cases` |
+| `CASE_TTL_DAYS` | backend | Days a case is kept. Default `7` |
+| `AGENT_CONSOLE_KEY` | backend | Key of the human agent console. Default `Asesor2026` (public demo value) |
 | `DEMO_PASSWORD` | backend | The password every demo customer logs in with. Default `Nova2026` (public, documented) |
 | `CUSTOMERS_TABLE` | backend | DynamoDB table for `dynamodb`. Default `fh26-demo-customers` |
 | `VERIFICATION_MAX_ATTEMPTS`, `OTP_TTL_SECONDS`, `VERIFIED_TTL_MINUTES` | backend | Identity verification. Defaults `3`, `300`, `30` |

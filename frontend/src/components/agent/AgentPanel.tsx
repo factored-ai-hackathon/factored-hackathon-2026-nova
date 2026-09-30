@@ -3,6 +3,11 @@ import {
   Maximize2,
   X,
   Send,
+  Download,
+  RotateCcw,
+  Minus,
+  Mail,
+  UserRound,
 } from 'lucide-react';
 import { MessageContent } from './MessageContent';
 import { FeedbackButtons } from './FeedbackButtons';
@@ -11,6 +16,8 @@ import { useApp } from '../../context/AppContext';
 import { t } from '../../i18n/translations';
 import { formatTime } from '../../utils/format';
 import type { ConversationMessage } from '../../types';
+import type { HandoffState } from '../../context/AgentContext';
+import { downloadTranscript, transcriptMailto, transcriptText } from '../../utils/transcript';
 
 // ------ Typing indicator ----------------------------------
 
@@ -67,6 +74,21 @@ function MessageRow({ message, onSuggestedAction, language }: MessageRowProps & 
     );
   }
 
+  if (message.role === 'human') {
+    return (
+      <div className="message-row agent human">
+        <div className="msg-avatar human" aria-hidden="true">
+          {(message.author ?? 'A').charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <div className="msg-author">{message.author} · {t('agent.humanAgent', language)}</div>
+          <div className="msg-bubble human">{message.content}</div>
+          <span className="msg-time">{formatTime(message.timestamp, language === 'pt' ? 'pt-BR' : 'es-CO')}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`message-row ${message.role}`}>
       {message.role === 'agent' && (
@@ -99,10 +121,68 @@ function MessageRow({ message, onSuggestedAction, language }: MessageRowProps & 
   );
 }
 
+// ------ Handoff banner (a human agent has the conversation) ----
+
+export function HandoffBanner({ handoff, language }: { handoff: HandoffState | null; language: 'es' | 'pt' }) {
+  if (!handoff || handoff.status === 'closed') return null;
+  const text = handoff.status === 'active'
+    ? t('agent.handoffActive', language).replace('{name}', handoff.agentName ?? '')
+    : t('agent.handoffWaiting', language);
+  return (
+    <div className={`handoff-banner ${handoff.status}`} role="status">
+      <UserRound size={14} aria-hidden="true" />
+      <span>
+        {text} · <strong>{handoff.caseId}</strong>
+      </span>
+    </div>
+  );
+}
+
+// ------ Close confirmation (download or email before closing) ----
+
+function CloseDialog({
+  language,
+  onDownload,
+  onEmail,
+  onCancel,
+  onConfirm,
+}: {
+  language: 'es' | 'pt';
+  onDownload: () => void;
+  onEmail: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="close-dialog-backdrop">
+      <div className="close-dialog" role="alertdialog" aria-modal="true" aria-labelledby="close-dialog-title">
+        <h3 id="close-dialog-title">{t('agent.closeTitle', language)}</h3>
+        <p>{t('agent.closeBody', language)}</p>
+        <div className="close-dialog-save">
+          <button type="button" className="btn-secondary" onClick={onDownload}>
+            <Download size={14} aria-hidden="true" /> {t('agent.download', language)}
+          </button>
+          <a className="btn-secondary" href={onEmail}>
+            <Mail size={14} aria-hidden="true" /> {t('agent.email', language)}
+          </a>
+        </div>
+        <div className="close-dialog-actions">
+          <button type="button" className="btn-ghost" onClick={onCancel} autoFocus>
+            {t('agent.closeNo', language)}
+          </button>
+          <button type="button" className="btn-danger" onClick={onConfirm}>
+            {t('agent.closeYes', language)}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ------ Main floating panel --------------------------------
 
 export function AgentPanel() {
-  const { language } = useApp();
+  const { language, customer } = useApp();
   const {
     isOpen,
     conversation,
@@ -112,7 +192,9 @@ export function AgentPanel() {
     openFullView,
     sendMessage,
     resetConversation,
+    handoff,
   } = useAgent();
+  const [confirmClose, setConfirmClose] = useState(false);
 
   const [inputValue, setInputValue] = useState('');
   const [showEscalation, setShowEscalation] = useState(false);
@@ -167,6 +249,13 @@ export function AgentPanel() {
   }
 
   const agentStatus = conversation.agentContext.status;
+  const transcript = () => transcriptText(conversation.messages, customer?.name ?? '', language);
+
+  function handleCloseChat() {
+    setConfirmClose(false);
+    resetConversation();
+    closeAgent();
+  }
 
   return (
     <div
@@ -187,6 +276,22 @@ export function AgentPanel() {
         <div className="agent-panel-actions">
           <button
             className="panel-action-btn"
+            onClick={() => downloadTranscript(transcript())}
+            aria-label={t('agent.download', language)}
+            title={t('agent.download', language)}
+          >
+            <Download size={14} />
+          </button>
+          <button
+            className="panel-action-btn"
+            onClick={resetConversation}
+            aria-label={t('agent.restart', language)}
+            title={t('agent.restart', language)}
+          >
+            <RotateCcw size={14} />
+          </button>
+          <button
+            className="panel-action-btn"
             onClick={openFullView}
             aria-label={t('agent.openFullView', language)}
             title={t('agent.openFullView', language)}
@@ -196,12 +301,33 @@ export function AgentPanel() {
           <button
             className="panel-action-btn"
             onClick={closeAgent}
+            aria-label={t('agent.minimize', language)}
+            title={t('agent.minimize', language)}
+          >
+            <Minus size={14} />
+          </button>
+          <button
+            className="panel-action-btn"
+            onClick={() => setConfirmClose(true)}
             aria-label={t('common.close', language)}
+            title={t('common.close', language)}
           >
             <X size={14} />
           </button>
         </div>
       </div>
+
+      <HandoffBanner handoff={handoff} language={language} />
+
+      {confirmClose && (
+        <CloseDialog
+          language={language}
+          onDownload={() => downloadTranscript(transcript())}
+          onEmail={transcriptMailto(transcript(), language)}
+          onCancel={() => setConfirmClose(false)}
+          onConfirm={handleCloseChat}
+        />
+      )}
 
       {/* Messages */}
       <div className="agent-messages" role="log" aria-live="polite" aria-label={t('agent.conversationAria', language)}>

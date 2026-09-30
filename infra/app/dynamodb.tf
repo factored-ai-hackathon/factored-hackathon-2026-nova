@@ -70,3 +70,21 @@ resource "aws_dynamodb_table" "demo_customers" {
     projection_type = "ALL"
   }
 }
+
+# Cases handed over to a human agent (decision 27): one item per case, listed by the agent
+# console with a Scan (demo volume). TTL: cases are kept for case_ttl_days.
+resource "aws_dynamodb_table" "handoff_cases" {
+  name         = "${var.prefix}-handoff-cases"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "case_id"
+
+  attribute {
+    name = "case_id"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "expires_at"
+    enabled        = true
+  }
+}

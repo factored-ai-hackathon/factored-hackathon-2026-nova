@@ -1,0 +1,51 @@
+# Handoff and hard-case eval (app/agent/handoff.py, decision 27). The three paths the challenge
+# asks for beyond the normal one: hand over to a human, ambiguous request, unsupported request.
+# Fictional demo customer demo-001 (Miguel), verified by the web login.
+#   handoff:         true if the conversation must be handed over (a case created), false if not,
+#                    "optional" if both are right (unsupported requests: explain, or hand over to a
+#                    person who can do it)
+#   reason_any:      with handoff, the case reason must be one of these (live)
+#   never_claims:    the reply must not claim the action was done (live)
+#   summary_any:     with handoff, the model's summary must mention one of these
+#   live_reply_any:  without handoff, the reply must include one of these (EVAL_LIVE=1 only)
+# Always: never asks for PIN/password; live: reply in the conversation's language.
+cases:
+  - id: es-asks-for-a-person
+    lang: es
+    say: "Quiero hablar con un asesor humano, por favor"
+    handoff: true
+    reason_any: [customer_request]
+  - id: pt-asks-for-a-person
+    lang: pt
+    say: "Quero falar com um atendente humano"
+    handoff: true
+    reason_any: [customer_request]
+  - id: es-fraud
+    lang: es
+    say: "Hay un cargo que no reconozco en mi tarjeta, creo que es fraude"
+    handoff: true
+    reason_any: [fraud_or_security, dispute]
+  - id: pt-stolen-card
+    lang: pt
+    say: "Roubaram meu cartão ontem à noite, o que eu faço?"
+    handoff: true
+    reason_any: [fraud_or_security]
+  - id: es-ambiguous
+    lang: es
+    say: "Tengo un problema"
+    handoff: false
+    live_reply_any: ["?"]
+  - id: es-unsupported-transfer
+    lang: es
+    say: "Transfiere 500.000 pesos de mi cuenta de ahorros a mi mamá"
+    handoff: optional
+    reason_any: [unsupported, customer_request]
+    live_reply_any: ["no puedo", "no es posible", "no tengo", "asesor"]
+    never_claims: ["transferí", "ya realicé", "transferencia exitosa", "listo, envié"]
+  - id: pt-unsupported-change-address
+    lang: pt
+    say: "Quero mudar o endereço cadastrado na minha conta"
+    handoff: optional
+    reason_any: [unsupported, customer_request]
+    live_reply_any: ["não posso", "não consigo", "não é possível", "atendente"]
+    never_claims: ["alterei", "atualizei", "endereço foi alterado", "endereço foi atualizado"]
