@@ -5,6 +5,7 @@ import { useApp } from '../../context/AppContext';
 import { startLogin, verifyCode, type LoginForm, type PendingLogin } from '../../services/authService';
 import { COUNTRIES, documentTypesFor } from '../../data/documents';
 import { DemoPanel } from '../../components/demo/DemoPanel';
+import { PublicAssistant } from '../../components/agent/PublicAssistant';
 import { t, LANGUAGES, type TranslationKey } from '../../i18n/translations';
 import '../../styles/login.css';
 
@@ -274,6 +275,7 @@ export function LoginPage() {
           </p>
         </div>
       </div>
+      <PublicAssistant />
     </div>
   );
 }
