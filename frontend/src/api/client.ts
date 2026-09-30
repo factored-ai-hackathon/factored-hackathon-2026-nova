@@ -145,6 +145,18 @@ export async function createSession(
   return created.session_id
 }
 
+/** New session of the public assistant (outside the login): no customer, only hours and branches. */
+export async function createPublicSession(lang: Lang): Promise<string> {
+  const res = await fetch(`${BASE_URL}/v1/public/chat/sessions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lang }),
+  })
+  if (!res.ok) throw new ApiError(res.status, `create public session failed: ${res.status}`)
+  const created: { session_id: string } = await res.json()
+  return created.session_id
+}
+
 export type Rating = 'up' | 'down'
 
 export interface HandoffUpdate {
@@ -183,8 +195,9 @@ export async function* sendMessage(
   text: string,
   lang: Lang,
   signal?: AbortSignal,
+  chatPath = '/v1/chat', // the public assistant uses '/v1/public/chat'
 ): AsyncGenerator<StreamEvent> {
-  const res = await fetch(`${BASE_URL}/v1/chat/sessions/${sessionId}/messages`, {
+  const res = await fetch(`${BASE_URL}${chatPath}/sessions/${sessionId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
     body: JSON.stringify({ text, lang }),

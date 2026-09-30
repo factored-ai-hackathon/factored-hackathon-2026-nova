@@ -47,6 +47,7 @@ class Turn:
     first_token_ms: int | None = None
     total_ms: int | None = None
     created_at: str = ""
+    channel: str = "account"  # "public" for the assistant outside the login
 
     def __post_init__(self) -> None:
         self.created_at = self.created_at or datetime.now(UTC).isoformat()
