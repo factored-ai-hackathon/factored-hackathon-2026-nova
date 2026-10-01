@@ -19,7 +19,7 @@ dependencies = [
 package = false
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "../evals/agent"]
+testpaths = ["tests", "../evals/agent", "../evals/report"]
 pythonpath = ["."]
 asyncio_mode = "auto"
 markers = ["live: calls the real LLM provider; runs only when HF_TOKEN or BEDROCK_LIVE is set"]
