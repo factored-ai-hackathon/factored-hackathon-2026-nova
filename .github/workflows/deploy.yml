@@ -36,6 +36,9 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          # On a push to main, compare with the previous main. Without `base` the action compares
+          # `development` with `main`, which are the same after a release: nothing ever changed.
+          base: ${{ github.event.before }}
           filters: |
             data:
               - 'data/dbt/**'
