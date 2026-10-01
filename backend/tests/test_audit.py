@@ -160,3 +160,16 @@ async def test_other_handoffs_have_no_card_guidance():
         model, "Quiero hablar con una persona", verified_auth(), cases=InMemoryCaseStore()
     )
     assert "Tu caso es" in reply and "No compartas tu PIN" not in reply
+
+
+# --- a verified customer is never sent back to verification --------------------------------------
+
+
+async def test_a_stray_call_to_verify_does_not_restart_the_verification_of_a_verified_customer():
+    """Found by the repeated passes: the model sometimes called start_identity_verification for an
+    ambiguous message even though the customer was verified (the tool is not bound then)."""
+    model = ToolCallingFake(replies=[call("start_identity_verification")], calls=[])
+    reply, _, session_id = await turn(model, "Tengo un problema con mi cuenta", verified_auth())
+    auth = (await get_session_store().get(session_id)).auth
+    assert auth["step"] == "verified"  # not awaiting_document
+    assert "verificar tu identidad" not in reply
