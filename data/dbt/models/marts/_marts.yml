@@ -89,10 +89,22 @@ models:
               config:
                 severity: warn
 
+  - name: fact_transaction_incr
+    description: >
+      The stored, incremental table behind fact_transaction, partitioned by month of the
+      transaction (txn_month). A run rewrites the months that received a delivery; see the README
+      ("Updates and freshness"). Read fact_transaction, not this table.
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+      - name: txn_month
+        data_tests: [not_null]
+
   - name: fact_transaction
     description: >
       One row per financial transaction with the product used. Source of the customer's
-      movements in the demo and of decline/fraud/dispute analysis.
+      movements in the demo and of decline/fraud/dispute analysis. A view over
+      fact_transaction_incr.
     columns:
       - name: transaction_id
         data_tests: [unique, not_null]
