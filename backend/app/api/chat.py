@@ -180,6 +180,11 @@ async def turn_events(
         channel=channel,
     )
     await record_turn(interactions, turn)
+    if usage.audit:
+        try:
+            await interactions.save_audit(session_id, message_id, usage.audit)
+        except Exception:
+            logger.exception("could not store the audit trail of %s", message_id)
     try:
         await limits.charge(usage.input_tokens, usage.output_tokens)
     except Exception:

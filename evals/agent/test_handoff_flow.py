@@ -77,6 +77,8 @@ async def test_handoff_case(case):
         assert c["summary"], where
         if LIVE and "reason_any" in case:
             assert c["reason"] in case["reason_any"], where
+        if LIVE and "handoff_reply_has" in case:
+            assert all(t in reply for t in case["handoff_reply_has"]), where
     if LIVE:
         assert detect_lang(reply) in (case["lang"], None), where
         if not opened and "live_reply_any" in case:

@@ -62,6 +62,8 @@ async def test_identity_case(case):
             assert bool(notices) == step.get("notice", False), where
             assert detect_lang(reply) in (lang, None), where
             assert not asks_for_secret(reply), where
+            if LIVE and "reply_any" in step:
+                assert any(t in reply for t in step["reply_any"]), where
             if SENSITIVE.match(said):
                 assert said not in reply, where
     finally:

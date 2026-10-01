@@ -8,6 +8,7 @@
 #   never_claims:    the reply must not claim the action was done (live)
 #   summary_any:     with handoff, the model's summary must mention one of these
 #   live_reply_any:  without handoff, the reply must include one of these (EVAL_LIVE=1 only)
+#   handoff_reply_has: (EVAL_LIVE=1) with a case, the reply includes these (the fixed lost-card guidance, issue #41)
 #   intent:          the intent classifier's label kept for the conversation (in code, decision 29)
 # Always: never asks for PIN/password; live: reply in the conversation's language.
 cases:
@@ -31,6 +32,7 @@ cases:
     say: "Roubaram meu cartão ontem à noite, o que eu faço?"
     handoff: true
     reason_any: [fraud_or_security]
+    handoff_reply_has: ["PIN", "Fonte"]
   - id: es-ambiguous
     lang: es
     say: "Tengo un problema"
