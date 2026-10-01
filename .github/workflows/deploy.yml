@@ -1,7 +1,9 @@
 name: Deploy
 
 # Pushing to main (merging a PR) tests and deploys the app to AWS, then creates a GitHub
-# release (date version, notes generated from the merged PRs).
+# release (date version, notes generated from the merged PRs). The data pipeline (dbt build of
+# the production tables, data.yml) is a job of this same run: it shows as skipped when the merge
+# changed nothing it depends on.
 # Infrastructure comes from infra/app (Terraform, applied by hand); this workflow only ships code.
 # Repository variables come from `terraform -chdir=infra/app output github_variables`.
 on:
@@ -21,6 +23,34 @@ concurrency:
 jobs:
   tests:
     uses: ./.github/workflows/tests.yml
+
+  # Did this push change the data model? (the files the dbt build depends on)
+  data-changes:
+    name: Detect data changes
+    runs-on: ubuntu-latest
+    outputs:
+      data: ${{ steps.filter.outputs.data }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            data:
+              - 'data/dbt/**'
+              - 'uv.lock'
+              - 'pyproject.toml'
+              - '.github/workflows/data.yml'
+
+  # Builds latam_curated with dbt (tests included). Independent of the app deploy: a failing data
+  # build does not stop the release, and a failing deploy does not stop the data build.
+  data:
+    name: Data pipeline
+    needs: [tests, data-changes]
+    if: needs.data-changes.outputs.data == 'true'
+    uses: ./.github/workflows/data.yml
+    secrets: inherit
 
   backend:
     name: Deploy API (Lambda)
