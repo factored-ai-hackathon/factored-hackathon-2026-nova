@@ -61,6 +61,9 @@ For visitors outside the login. `POST /v1/public/chat/sessions` creates a sessio
 ## Knowledge search (decision 32)
 The model can call `search_policies(query)` at any time, verified or not (`backend/app/agent/knowledge.py`): it searches 42 team-written, fictitious documents (ES + PT) in the conversation's language and returns up to 3 `{title, text, source}`, or an empty list with a note to not answer from memory. The consulted documents are added to the case's evidence (`tool: "search_policies"`), so the console's faithfulness view checks the answer against them. Retrieval: BM25 + Titan embeddings (needs `bedrock:InvokeModel` on `amazon.titan-embed-text-v2:0`; without it, lexical only); `KNOWLEDGE_DENSE=false` turns the embeddings off. See `ml/rag/README.md`.
 
+## Session lifetime (decision 36)
+A verified session is an idle timeout: every chat turn and every `POST /v1/accounts/overview` renews `verified_until` to now + `VERIFIED_TTL_MINUTES` (30), never beyond `VERIFIED_MAX_HOURS` (8) after `verified_at`. An expired one is not renewed (`401 not_verified`; in the chat, Nova verifies again). The web app keeps the session id in `sessionStorage`, so a reload keeps the customer logged in.
+
 ## Account tools (decision 26)
 Once the chat session is verified, the model can call `get_my_products`, `get_my_transactions` (`days` 1-365, `status`, `search`, `limit` ≤ 50) and `get_my_complaints` (`status` all/open/closed) (`backend/app/agent/account_tools.py`). None takes a customer id: the backend uses the verified session's customer, so no prompt can reach another customer's data. They read the customer's partition of the demo-customers table (`backend/app/agent/account_data.py`) and return only banking-app fields. Dates are relative to the dataset's last day (`DATA_AS_OF_DATE`). At most 3 tool rounds per turn. Without verification, a tool call starts identity verification instead and reads nothing.
 

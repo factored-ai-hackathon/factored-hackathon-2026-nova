@@ -282,6 +282,27 @@ async def test_overview_of_the_verified_customer(client):
     assert body["open_complaints"] == 1
 
 
+async def test_loading_the_home_page_restarts_the_idle_timeout(client):
+    soon = time.time() + 60  # about to expire
+    session = await get_session_store().create("es", {**verified_auth(), "verified_until": soon})
+    assert client.post("/v1/accounts/overview", json={"session_id": session.id}).status_code == 200
+    renewed = (await get_session_store().get(session.id)).auth["verified_until"]
+    assert renewed > soon + 1_000  # about 30 minutes from now
+
+
+async def test_a_chat_turn_restarts_the_idle_timeout():
+    soon = time.time() + 60
+    session = await get_session_store().create("es", {**verified_auth(), "verified_until": soon})
+    model = RecordingFake(messages=iter([AIMessage("ok")]), calls=[])
+    agent._graph = build_graph(model, account_data=SpyData())
+    try:
+        [p async for p in agent.stream_reply(session.id, "hola", "es")]
+    finally:
+        agent._graph = None
+    stored = (await get_session_store().get(session.id)).auth
+    assert stored["verified_until"] > soon + 1_000 and "verified_at" in stored
+
+
 async def test_overview_needs_a_verified_session(client):
     bound_only = await get_session_store().create("es", {SESSION_CUSTOMER: "demo-001"})
     expired = await get_session_store().create(

@@ -16,6 +16,7 @@ from app.agent.identity import (
     parse_birth_date,
     parse_document,
     parse_otp,
+    renewed,
     session_auth,
 )
 from app.api.chat import get_reply_streamer
@@ -368,3 +369,46 @@ def test_build_customer_directory_defaults_to_demo():
     from app.config import Settings
 
     assert isinstance(build_customer_directory(Settings()), DemoCustomerDirectory)
+
+
+# --- idle timeout: a verification is renewed by activity, within a maximum ----------------------
+
+
+def verified(until, since=None):
+    auth = {"step": "verified", "verified_until": until}
+    return auth | ({"verified_at": since} if since is not None else {})
+
+
+def test_activity_renews_the_verification_from_now():
+    out = renewed(verified(1_100, since=1_000), 1_050, 1_800, 28_800)
+    assert out["verified_until"] == 1_050 + 1_800
+    assert out["verified_at"] == 1_000  # the grant date is kept
+
+
+def test_a_verification_never_lasts_beyond_the_maximum_since_it_was_granted():
+    out = renewed(verified(30_000, since=0), 29_000, 1_800, 28_800)
+    assert out["verified_until"] == 30_000  # 8 h after the grant would be 28,800: not shortened
+    late = renewed(verified(28_000, since=0), 27_900, 1_800, 28_800)
+    assert late["verified_until"] == 28_800
+
+
+def test_an_expired_verification_is_not_brought_back():
+    expired = verified(1_000, since=0)
+    assert renewed(expired, 2_000, 1_800, 28_800) == expired
+    assert renewed({"step": "awaiting_otp"}, 2_000, 1_800, 28_800) == {"step": "awaiting_otp"}
+
+
+def test_sessions_from_before_the_field_count_from_now():
+    out = renewed(verified(1_100), 1_050, 1_800, 28_800)
+    assert out["verified_at"] == 1_050 and out["verified_until"] == 2_850
+
+
+async def test_the_verifier_records_when_it_granted_the_verification():
+    v, clock = verifier(), Clock()
+    v.now = clock
+    r = await v.start({}, "es")
+    r = await v.handle(r.auth, MIGUEL["document"], "es")
+    r = await v.handle(r.auth, MIGUEL["birth_date"], "es")
+    assert "verified_at" not in r.auth  # only the last step grants it
+    r = await v.handle(r.auth, CODE, "es")
+    assert r.auth["verified_at"] == clock.t

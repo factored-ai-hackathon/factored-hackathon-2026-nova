@@ -19,13 +19,19 @@ import type {
 import { mockConversation, mockAgentContext } from '../data/mockData';
 import { t } from '../i18n/translations';
 import * as api from '../api/client';
+import { KEYS, loadStored, saveStored } from '../utils/persist';
 
 const USE_MOCK = import.meta.env.VITE_MOCK === '1';
 
-// Backend session for the current conversation (real mode only)
-let sessionId: string | null = null;
-// The session the login created (verified): new conversations inherit its verification.
-let loginSession: string | null = null;
+// Backend session for the current conversation (real mode only), and the session the login
+// created (verified): new conversations inherit its verification. Both survive a page reload.
+const stored = loadStored<{ sessionId: string | null; loginSession: string | null }>(KEYS.chatSession);
+let sessionId: string | null = stored?.sessionId ?? null;
+let loginSession: string | null = stored?.loginSession ?? null;
+
+function remember(): void {
+  saveStored(KEYS.chatSession, { sessionId, loginSession });
+}
 
 // In-memory conversation store (mock only)
 let currentConversation: Conversation = { ...mockConversation, messages: [...mockConversation.messages] };
@@ -137,6 +143,7 @@ async function backendSendMessage(
     // The backend keeps sessions in memory; after a restart, start a new one once.
     if (!(err instanceof api.ApiError && err.status === 404)) throw err;
     sessionId = null;
+    remember();
     reply = await streamReply(text, request, onToken, onNotice);
   }
 
@@ -162,7 +169,10 @@ async function streamReply(
   onNotice?: (text: string, kind: string) => void,
 ): Promise<{ text: string; messageId: string }> {
   // Bound to the logged-in customer: only that customer can pass identity verification.
-  sessionId ??= await api.createSession(language, customer_id, loginSession ?? undefined);
+  if (sessionId === null) {
+    sessionId = await api.createSession(language, customer_id, loginSession ?? undefined);
+    remember();
+  }
   let reply = '';
   for await (const event of api.sendMessage(sessionId, text, language)) {
     if (event.type === 'token') {
@@ -309,11 +319,13 @@ export function startForCustomer(loginSessionId?: string): void {
   loginSession = loginSessionId ?? null;
   resetConversation();
   sessionId = loginSession;
+  remember();
 }
 
 /** New conversation. With a login, the backend copies its verification to the new session. */
 export function resetConversation(): void {
   sessionId = null;
+  remember();
   currentConversation = {
     ...mockConversation,
     messages: [...mockConversation.messages],

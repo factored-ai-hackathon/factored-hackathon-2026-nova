@@ -45,7 +45,18 @@ async def overview(
     if session is None or not identity.is_verified(session.auth, verifier.now()):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "not_verified")
     customer_id = session.auth["customer_id"]
-    as_of = get_settings().data_as_of_date
+    settings = get_settings()
+    # Opening or reloading the home page is activity: the idle timeout restarts.
+    await store.set_auth(
+        session.id,
+        identity.renewed(
+            session.auth,
+            verifier.now(),
+            settings.verified_ttl_minutes * 60,
+            settings.verified_max_hours * 3600,
+        ),
+    )
+    as_of = settings.data_as_of_date
     transactions = await data.transactions(customer_id, as_of - timedelta(days=RECENT_DAYS), as_of)
     complaints = await data.complaints(customer_id)
     open_statuses = {"open", "in process", "escalated"}

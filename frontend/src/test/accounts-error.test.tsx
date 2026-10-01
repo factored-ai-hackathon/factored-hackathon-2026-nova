@@ -8,6 +8,8 @@ import { DashboardPage } from '../pages/Dashboard/DashboardPage';
 import type { Customer } from '../types';
 
 // Separate file: the backend answers with an error (real fetch path, no module mock).
+// A 401 is different: the session expired, and the customer goes back to the login (see
+// session-persistence.test.tsx).
 
 function LoggedIn({ customer }: { customer: Customer }) {
   const { setCustomer } = useApp();
@@ -19,7 +21,7 @@ describe('home page when the accounts cannot be loaded', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('says so, without showing mock data', async () => {
-    const fetchMock = vi.fn(async () => new Response('{"detail":"not_verified"}', { status: 401 }));
+    const fetchMock = vi.fn(async () => new Response('{"detail":"boom"}', { status: 500 }));
     vi.stubGlobal('fetch', fetchMock);
     const customer: Customer = {
       id: 'CLI-1', name: 'Lucía', email: '', phone: '', language: 'es', memberSince: '',

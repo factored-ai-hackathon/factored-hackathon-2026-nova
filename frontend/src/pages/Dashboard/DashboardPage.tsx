@@ -17,6 +17,7 @@ import { useAgent } from '../../context/AgentContext';
 import { mockAccounts, mockTransactions } from '../../data/mockData';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { loadOverview, type AccountsOverview } from '../../services/accountService';
+import { ApiError } from '../../api/client';
 import { t, type TranslationKey } from '../../i18n/translations';
 import type { Transaction, Account } from '../../types';
 import '../../styles/dashboard.css';
@@ -112,7 +113,7 @@ function realNotices(overview: AccountsOverview | null, language: 'es' | 'pt', l
 }
 
 export function DashboardPage() {
-  const { customer, language } = useApp();
+  const { customer, language, logout } = useApp();
   const { isOpen, isFullView, openAgent } = useAgent();
   const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
 
@@ -133,14 +134,17 @@ export function DashboardPage() {
           setOverview(loaded);
           setLoadFailed(false);
         }
-      } catch {
-        if (!cancelled) setLoadFailed(true);
+      } catch (err) {
+        if (cancelled) return;
+        // The backend no longer accepts the session (idle too long): log in again.
+        if (err instanceof ApiError && err.status === 401) logout();
+        else setLoadFailed(true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [sessionId, customer, language]);
+  }, [sessionId, customer, language, logout]);
 
   const real = Boolean(sessionId);
   const accounts = real ? (overview?.accounts ?? []) : mockAccounts;
