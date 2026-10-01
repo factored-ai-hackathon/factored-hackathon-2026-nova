@@ -18,7 +18,7 @@ from pathlib import Path
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 import yaml  # noqa: E402
-from metrics import UNSAFE_TYPES, by, judge, summarize  # noqa: E402
+from metrics import UNSAFE_TYPES, by, judge, percentile, summarize  # noqa: E402
 
 LANGS = {"es": "Spanish", "pt": "Portuguese"}
 
@@ -155,6 +155,42 @@ def failures(runs: list[dict], cases: dict[str, dict]) -> str:
     return "\n".join(out)
 
 
+def e2e_section() -> str:
+    path = HERE / "results" / "e2e.json"
+    if not path.exists():
+        return ""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    summary, results = data["summary"], data["results"]
+    rows = []
+    for kind, group in by(results, lambda r: r["kind"]).items():
+        totals = sorted(r["total_ms"] for r in group)
+        rows.append(
+            f"| {kind} | {len(group)} | {sum(not r['problems'] for r in group)}/{len(group)} "
+            f"| {secs(percentile(totals, 50))} |"
+        )
+    return f"""## End to end, against the deployed app
+
+The runs above measure the agent in process. This pass (`evals/report/e2e.py`, {data["meta"]["date"][:10]})
+goes through the live link (CloudFront, Lambda, Bedrock, DynamoDB) with **customers of the deployed
+synthetic dataset**, and checks the answers against the app's own data (the same API the home page
+reads). It is small on purpose: the public API allows 30 messages per hour per visitor, and it opens no case
+for a person and changes no data.
+
+| Messages | Answers that were right and safe | Total time p50 / p95 | Time to first token p50 / p95 |
+|---|---|---|---|
+| {summary["messages"]} | {summary["passed"]}/{summary["messages"]} | {secs(summary["total_ms"]["p50"])} / {secs(summary["total_ms"]["p95"])} | {secs(summary["first_token_ms"]["p50"])} / {secs(summary["first_token_ms"]["p95"])} |
+
+| Kind | Messages | Right and safe | Total time p50 |
+|---|---|---|---|
+{chr(10).join(rows)}
+
+The median answer takes {secs(summary["total_ms"]["p50"])} for the client against about 2.1 s in the
+in-process runs, with the first token after {secs(summary["first_token_ms"]["p50"])}. The question mix is
+different (these are customers' real-looking accounts and a different set of questions), so the two are only
+roughly comparable: the difference is the network, the Lambda and reading a customer's data.
+"""
+
+
 def ml_section() -> str:
     path = HERE.parent.parent / "ml" / "intent" / "metrics.json"
     if not path.exists():
@@ -201,7 +237,7 @@ def render(datasets: list[dict]) -> str:
         LANGS[lang]: summarize(group, cases)
         for lang, group in by(runs, lambda r: r["lang"]).items()
     }
-    LABELS = ["before fixes", "after fixes", "with knowledge search", "final"]
+    LABELS = ["before fixes", "after fixes", "with knowledge search", "final", "final, repeated"]
     if len(datasets) > 1:
         scored = [rescored(d, cases) for d in datasets]
         first_runs = scored[0][0]
@@ -233,6 +269,11 @@ def render(datasets: list[dict]) -> str:
         + (
             "Run 4 is the final system (language reminder, 90-day transaction window): the same check. "
             if len(datasets) > 3
+            else ""
+        )
+        + (
+            "Run 5 repeats run 4 on the deployed code: a second look at the model's run-to-run variation. "
+            if len(datasets) > 4
             else ""
         )
         + "Quote run 1 as the honest estimate."
@@ -318,13 +359,14 @@ to see the model's variation: **{len(runs)} runs**.
 
 {"**Runs that errored (provider errors, left out of the numbers): " + ", ".join(errors) + "**" if errors else "No run errored."}
 
+{e2e_section()}
 {ml_section()}
 ## Limitations (read before trusting the numbers)
 * **The cases were written by the team, and by the same people (with Claude) who wrote the prompts.** Held-out means they were not used to develop or tune anything, not that they are independent. Real customers phrase things we did not think of.
 * **Small sets.** {len({r["id"] for r in runs})} cases with {meta["repeats"]} repetitions: the repetitions measure the model's variation, not new situations. The intervals show how little a few cases can prove.
 * **Two fictitious customers with small accounts.** The deployed demo reads the full synthetic dataset (5 million items); this set uses fixtures so every figure can be checked exactly.
 * **Portuguese is written by the team, and the dataset has no Brazilian customers**: Portuguese conversations use the same fixtures (an Argentine and a Colombian customer writing in Portuguese).
-* **Latency is the agent's, not the end to end.** The deployed latency (CloudFront, Lambda, DynamoDB) was measured separately with the load test (`evals/load`).
+* **Latency in the runs is the agent's, not the end to end**; the end-to-end section above measures the deployed app, but on a small sample.
 * **Faithfulness checks grounding, not correctness**: a figure that exists in the data but belongs to another row still counts as supported (see `docs/decisions.md`, decision 28).
 * The fixtures' "today" is the dataset's last day (2026-06-17).
 
