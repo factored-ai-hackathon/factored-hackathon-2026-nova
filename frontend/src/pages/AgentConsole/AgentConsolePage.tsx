@@ -10,6 +10,7 @@ import type { CaseDetail, CaseSummary, QueueStats } from '../../api/agentConsole
 import { FaithfulnessPanel } from '../../components/console/FaithfulnessPanel';
 import { MessageContent } from '../../components/agent/MessageContent';
 import { ApiError } from '../../api/client';
+import { KEYS, clearStored, loadStored, saveStored } from '../../utils/persist';
 import '../../styles/agent-console.css';
 
 const POLL_MS = 4000;
@@ -31,12 +32,16 @@ function intentLabel(intent: string, language: 'es' | 'pt'): string {
 export function AgentConsolePage() {
   const { language, setLanguage } = useApp();
   const locale = language === 'pt' ? 'pt-BR' : 'es-CO';
-  const [key, setKey] = useState('');
+  // A reload keeps the agent signed in, with the open case, until they log out.
+  const [stored] = useState(() =>
+    loadStored<{ key: string; agentName: string; selected?: string }>(KEYS.console)
+  );
+  const [key, setKey] = useState(stored?.key ?? '');
   const [signedIn, setSignedIn] = useState(false);
   const [cases, setCases] = useState<CaseSummary[]>([]);
   const [stats, setStats] = useState<QueueStats | null>(null);
   const [selected, setSelected] = useState<CaseDetail | null>(null);
-  const [agentName, setAgentName] = useState('');
+  const [agentName, setAgentName] = useState(stored?.agentName ?? '');
   const [reply, setReply] = useState('');
   const [error, setError] = useState('');
 
@@ -57,6 +62,25 @@ export function AgentConsolePage() {
       setError(t(err instanceof ApiError && err.status === 401 ? 'console.badKey' : 'console.error', language));
     }
   }
+
+  useEffect(() => {
+    if (!stored?.key) return;
+    void (async () => {
+      try {
+        const list = await consoleApi.listCases(stored.key);
+        setCases(list.cases);
+        setStats(list.stats ?? null);
+        setSignedIn(true);
+        if (stored.selected) setSelected(await consoleApi.getCase(stored.key, stored.selected));
+      } catch {
+        clearStored(KEYS.console); // the key no longer works: the login form
+      }
+    })();
+  }, [stored]);
+
+  useEffect(() => {
+    if (signedIn) saveStored(KEYS.console, { key, agentName, selected: selected?.case_id });
+  }, [signedIn, key, agentName, selected?.case_id]);
 
   // Keep the list and the open case fresh while signed in.
   const selectedId = selected?.case_id;
@@ -128,7 +152,7 @@ export function AgentConsolePage() {
           <button className="btn-ghost" onClick={() => void refresh()} aria-label={t('console.refresh', language)}>
             <RefreshCw size={16} aria-hidden="true" />
           </button>
-          <button className="btn-ghost" onClick={() => { setSignedIn(false); setKey(''); setSelected(null); }}>
+          <button className="btn-ghost" onClick={() => { clearStored(KEYS.console); setSignedIn(false); setKey(''); setSelected(null); }}>
             <LogOut size={16} aria-hidden="true" /> {t('console.logout', language)}
           </button>
         </div>

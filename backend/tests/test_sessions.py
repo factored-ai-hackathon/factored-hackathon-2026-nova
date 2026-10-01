@@ -33,9 +33,16 @@ class FakeTable:
         item = self.items.get(Key["session_id"])
         return {"Item": dict(item)} if item else {}
 
-    def update_item(self, Key, UpdateExpression, ExpressionAttributeValues):
+    def update_item(
+        self, Key, UpdateExpression, ExpressionAttributeValues, ConditionExpression=None
+    ):
+        if ConditionExpression and Key["session_id"] not in self.items:
+            error = {"Error": {"Code": "ConditionalCheckFailedException", "Message": ""}}
+            raise ClientError(error, "UpdateItem")
         item = self.items.setdefault(Key["session_id"], {"session_id": Key["session_id"]})
         v = ExpressionAttributeValues
+        if UpdateExpression.startswith("SET auth_state = :auth, expires_at"):
+            item["auth_state"] = v[":auth"]
         if ":m" in v:
             item["messages"] = v[":m"]
             item["auth_state"] = v[":auth"]
@@ -145,3 +152,15 @@ async def test_failed_reply_is_not_saved(monkeypatch):
     with pytest.raises(RuntimeError):
         _ = [p async for p in agent.stream_reply(session.id, "hola", "es")]
     assert (await store.get(session.id)).messages == []
+
+
+# --- renewing the verification of a session (idle timeout) ----------------------------------------
+
+
+async def test_set_auth_replaces_only_the_verification_state_of_an_existing_session():
+    for store in (InMemorySessionStore(), dynamo_store(FakeTable())):
+        session = await store.create("es", {"step": "verified", "verified_until": 1})
+        await store.set_auth(session.id, {"step": "verified", "verified_until": 99})
+        assert (await store.get(session.id)).auth["verified_until"] == 99
+        await store.set_auth("missing", {"step": "verified"})  # nothing is created
+        assert await store.get("missing") is None

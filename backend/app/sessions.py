@@ -45,6 +45,10 @@ class SessionStore(Protocol):
     async def get(self, session_id: str) -> Session | None: ...
     async def set_lang(self, session_id: str, lang: Lang) -> None: ...
 
+    async def set_auth(self, session_id: str, auth: dict) -> None:
+        """Replace the verification state of an existing session (and count it as activity)."""
+        ...
+
     async def save_messages(
         self,
         session_id: str,
@@ -75,6 +79,10 @@ class InMemorySessionStore:
 
     async def set_lang(self, session_id: str, lang: Lang) -> None:
         self._sessions[session_id].lang = lang
+
+    async def set_auth(self, session_id: str, auth: dict) -> None:
+        if session_id in self._sessions:
+            self._sessions[session_id].auth = dict(auth)
 
     async def save_messages(
         self,
@@ -176,6 +184,23 @@ class DynamoSessionStore:
 
     async def set_lang(self, session_id: str, lang: Lang) -> None:
         await asyncio.to_thread(self._set_lang, session_id, lang)
+
+    def _set_auth(self, session_id: str, auth: dict) -> None:
+        from botocore.exceptions import ClientError
+
+        try:
+            self.table.update_item(
+                Key={"session_id": session_id},
+                UpdateExpression="SET auth_state = :auth, expires_at = :exp",
+                ConditionExpression="attribute_exists(session_id)",
+                ExpressionAttributeValues={":auth": json.dumps(auth), ":exp": self._expires_at()},
+            )
+        except ClientError as e:
+            if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+                raise  # a session that expired meanwhile is simply not renewed
+
+    async def set_auth(self, session_id: str, auth: dict) -> None:
+        await asyncio.to_thread(self._set_auth, session_id, auth)
 
     async def save_messages(
         self,

@@ -17,6 +17,7 @@ import * as agentService from '../services/agentService';
 import { limitReason } from '../api/client';
 import { useApp } from './AppContext';
 import { t } from '../i18n/translations';
+import { KEYS, loadStored, saveStored } from '../utils/persist';
 
 interface AgentContextValue {
   isOpen: boolean;
@@ -46,6 +47,21 @@ export interface HandoffState {
 }
 
 const POLL_MS = 3000;
+const MAX_STORED_MESSAGES = 60;
+
+/** What survives a page reload: the conversation on screen, an open handoff, the panel. */
+interface StoredChat {
+  customerId: string | null;
+  conversation: Conversation;
+  handoff: HandoffState | null;
+  isOpen: boolean;
+}
+
+function restoredChat(customerId: string | undefined): StoredChat | null {
+  const stored = loadStored<StoredChat>(KEYS.chat);
+  // Only the same customer's conversation: another login starts clean.
+  return stored && stored.customerId === (customerId ?? null) ? stored : null;
+}
 
 function freshConversation(language: 'es' | 'pt', customerName = 'Miguel Ramírez'): Conversation {
   const firstName = customerName.split(' ')[0];
@@ -69,13 +85,24 @@ function freshConversation(language: 'es' | 'pt', customerName = 'Miguel Ramíre
 
 export function AgentProvider({ children }: { children: ReactNode }) {
   const { customer, language } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
+  const [restored] = useState(() => restoredChat(customer?.id));
+  const [isOpen, setIsOpen] = useState(restored?.isOpen ?? false);
   const [isFullView, setIsFullView] = useState(false);
-  const [conversation, setConversation] = useState<Conversation>(() =>
-    freshConversation(language, customer?.name)
+  const [conversation, setConversation] = useState<Conversation>(
+    () => restored?.conversation ?? freshConversation(language, customer?.name)
   );
   const [isTyping, setIsTyping] = useState(false);
-  const [handoff, setHandoff] = useState<HandoffState | null>(null);
+  const [handoff, setHandoff] = useState<HandoffState | null>(restored?.handoff ?? null);
+
+  // Keep it for a reload (a human agent's case keeps being polled from where it was).
+  useEffect(() => {
+    saveStored(KEYS.chat, {
+      customerId: customer?.id ?? null,
+      conversation: { ...conversation, messages: conversation.messages.slice(-MAX_STORED_MESSAGES) },
+      handoff,
+      isOpen,
+    } satisfies StoredChat);
+  }, [conversation, handoff, isOpen, customer?.id]);
   const [isStreaming, setIsStreaming] = useState(false);
   const transactionContext = conversation.agentContext.transactionContext;
 

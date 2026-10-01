@@ -3,6 +3,7 @@
 Yields reply text chunks (str) and out-of-band notices for the customer (Notice).
 """
 
+import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
@@ -12,6 +13,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from app.agent import identity
 from app.agent.graph import build_graph
+from app.config import get_settings
 from app.sessions import ChatMessage, get_session_store
 
 _graph: CompiledStateGraph | None = None
@@ -128,4 +130,8 @@ async def stream_reply(
     turn = [ChatMessage("user", user_text)]
     if reply:  # with an agent on the case, the bot doesn't answer
         turn.append(ChatMessage("assistant", "".join(reply)))
+    settings = get_settings()
+    auth = identity.renewed(
+        auth, time.time(), settings.verified_ttl_minutes * 60, settings.verified_max_hours * 3600
+    )
     await store.save_messages(session_id, lang, [*history, *turn], auth=auth, case=case)
