@@ -46,10 +46,9 @@ IN_PROGRESS = ("awaiting_document", "awaiting_birth_date", "awaiting_otp")
 
 @tool(VERIFY_TOOL)
 def start_identity_verification() -> str:
-    """Start verifying the customer's identity. Call it, without writing any other text, when the
-    customer asks about their own accounts, balances, cards, transactions, transfers, loans,
-    complaints or any other personal data, or asks to be verified. Never ask for their document,
-    date of birth or codes yourself: this tool does it."""
+    """Start verifying the customer's identity. Call it, writing nothing else, when the customer
+    asks about their own accounts, balances, cards, transactions, transfers, loans, complaints or
+    other personal data, or asks to be verified. Never ask for document, birth date or codes."""
     return "started"
 
 

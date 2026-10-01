@@ -291,13 +291,12 @@ def get_knowledge_base() -> KnowledgeBase:
 
 @tool
 def search_policies(query: str) -> str:
-    """Search NovaBank's documents about products, policies and how things work: why a purchase is
-    declined, product statuses, lost cards, transfer times and limits, complaints and their
-    deadlines, credit card basics, late payments, security, login, identity verification,
-    documents, currencies, channels, human advisors, data freshness, opening an account, privacy,
-    what Nova cannot do, branches and opening hours. Use it for general questions (not for the
-    customer's own data) and answer ONLY from what it returns, naming the document title. If it
-    returns nothing relevant, say you don't have that information and offer a human advisor."""
+    """Search NovaBank's documents on products, policies and how things work: declined purchases,
+    product statuses, lost cards, transfers, complaints and deadlines, credit cards, late payments,
+    security, login and identity verification, documents, currencies, channels, advisors, data
+    freshness, opening an account, privacy, what Nova can't do, branches and hours. Not for the
+    customer's own data. Answer only from the result, naming the title; if nothing relevant,
+    say so and offer an advisor."""
     return ""
 
 

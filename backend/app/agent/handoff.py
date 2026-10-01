@@ -40,13 +40,12 @@ MAX_TRANSCRIPT_MESSAGES = 20
 def request_human_agent(
     reason: Reason, summary: str, open_questions: list[str] | None = None
 ) -> str:
-    """Hand the conversation over to a human agent. Call it when the customer asks for a person;
-    reports fraud, theft, a lost card or a charge they don't recognize; wants to dispute a
-    transaction; has a complaint you can't solve; accepts your offer to talk to an agent (for
-    something you can't do, first explain it and offer); or after two failed attempts to help.
-    `summary`: what the customer needs and what you already found, in
-    the customer's language, for the agent. `open_questions`: what the agent still has to find
-    out or decide. Don't write any other text when you call it."""
+    """Hand the conversation over to a human agent: the customer asks for a person; reports
+    fraud, theft, a lost card or an unknown charge; wants to dispute a transaction; has a
+    complaint you can't solve; accepts your offer of an agent (for something you can't do,
+    explain and offer first); or two attempts to help failed. `summary`: what the customer needs
+    and what you found, in their language. `open_questions`: what the agent must find out. Write
+    no other text when you call it."""
     return "handed over"
 
 

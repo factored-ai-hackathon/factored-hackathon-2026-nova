@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-2"
     # Knowledge search (decision 32): the question is embedded with Titan; without it, lexical only.
     knowledge_dense: bool = True
-    llm_max_tokens: int = 1024
+    llm_max_tokens: int = 600  # answers are short by prompt; this only stops rambling
     cors_origins: str = "http://localhost:5173"
     # Deployed: CloudFront adds this secret as the X-Origin-Verify header, so the public Lambda
     # function URL rejects requests that skip CloudFront. Unset locally (no check).
