@@ -4,7 +4,9 @@ START -> route -> respond (model) -> END
                     ▲       ├─ asks to verify (or for data before verifying) ─> auth_gate -> END
                     │       └─ verified, calls account tools ─> account_tools ─┐
                     └──────────────────────────────────────────────────────────┘
-               -> auth_gate (a verification step is pending: the model is skipped) -> END
+               -> auth_gate (a verification step is pending: the model is skipped) -> END,
+                  or, when the last step verifies them, -> respond: the question that started the
+                  verification is answered at once (they do not have to ask it again)
 
 Every message the model sees is also classified in code (app/agent/intent.py, the learned
 component): the conversation's intent goes into the case, and for the reasons a first contact
@@ -30,9 +32,15 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
+from app import audit
 from app.agent import handoff, identity, intent, knowledge
 from app.agent.account_data import AccountData, get_account_data
-from app.agent.account_tools import ACCOUNT_TOOL_NAMES, ACCOUNT_TOOLS, run_account_tool
+from app.agent.account_tools import (
+    ACCOUNT_TOOL_NAMES,
+    ACCOUNT_TOOL_PARAMS,
+    ACCOUNT_TOOLS,
+    run_account_tool,
+)
 from app.config import get_settings
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
@@ -58,6 +66,8 @@ class ChatState(MessagesState):
     case: dict  # human handoff state and the evidence gathered (app/agent/handoff.py)
     handoff_notice: str  # case id, when this turn handed the conversation over
     turn_intent: dict  # the classifier's reading of this turn's message (app/agent/intent.py)
+    resume_text: str  # the question asked before verifying, to answer once verified
+    audit: list  # what was done with data and permissions this turn (app/audit.py)
 
 
 # Account tool rounds per turn; after that the model has to answer with what it has.
@@ -123,6 +133,15 @@ def build_graph(
         else:
             llm = model_with_verify if state.get("tool_rounds", 0) < MAX_TOOL_ROUNDS else model
         messages = list(state["messages"])
+        if resume := state.get("resume_text"):
+            # [.., the code typed, "verified", their question, ..]: the model never sees the code.
+            asked = next(
+                (i for i in range(len(messages) - 1, -1, -1)
+                 if messages[i].type == "human" and messages[i].text == resume),
+                None,
+            )  # fmt: skip
+            if asked is not None and asked >= 2 and messages[asked - 2].type == "human":
+                messages[asked - 2] = HumanMessage(identity.text(lang, "placeholder"))
         last_human = next(
             (i for i in range(len(messages) - 1, -1, -1) if messages[i].type == "human"), None
         )
@@ -138,6 +157,9 @@ def build_graph(
             return END
         if any(c["name"] == handoff.HANDOFF_TOOL for c in calls):
             return "handoff"
+        verified = identity.is_verified(state.get("auth"), verifier.now())
+        if verified and all(c["name"] == identity.VERIFY_TOOL for c in calls):
+            return END  # already verified: a stray call to verify must not restart verification
         # Tools that can run now: the documents search always, the account tools once verified.
         runnable = {knowledge.SEARCH_TOOL_NAME}
         if identity.is_verified(state.get("auth"), verifier.now()):
@@ -155,34 +177,53 @@ def build_graph(
         verified = identity.is_verified(auth, verifier.now())  # again: it may expire mid-turn
         case = state.get("case") or {}
         evidence = list(case.get("evidence", []))
-        results, blocked = [], False
+        results, blocked, trail = [], False, list(state.get("audit") or [])
+        customer = auth.get("customer_id")
         for call in state["messages"][-1].tool_calls:
+            args = call.get("args") or {}
             if call["name"] == knowledge.SEARCH_TOOL_NAME:
-                content = await knowledge.run_search(call.get("args") or {}, state["lang"])
+                content = await knowledge.run_search(args, state["lang"])
                 results.append(ToolMessage(content, tool_call_id=call["id"], name=call["name"]))
-                evidence.append(
-                    handoff.evidence_entry(call["name"], call.get("args") or {}, content)
+                evidence.append(handoff.evidence_entry(call["name"], args, content))
+                found = bool(json.loads(content).get("results"))
+                trail.append(
+                    audit.entry(
+                        "tool_call", "ok" if found else "no_result", tool=call["name"], args=args
+                    )
                 )
                 continue
             if not verified:
                 blocked = True
                 content = json.dumps({"error": "verification expired: the customer must verify"})
                 results.append(ToolMessage(content, tool_call_id=call["id"], name=call["name"]))
+                trail.append(
+                    audit.entry("tool_refused", "not_verified", tool=call["name"], args=args)
+                )
                 continue
             content = await run_account_tool(
-                call["name"],
-                call.get("args") or {},
-                customer_id=auth["customer_id"],
-                data=data,
-                as_of=as_of,
+                call["name"], args, customer_id=customer, data=data, as_of=as_of
             )
             results.append(ToolMessage(content, tool_call_id=call["id"], name=call["name"]))
-            evidence.append(handoff.evidence_entry(call["name"], call.get("args") or {}, content))
+            evidence.append(handoff.evidence_entry(call["name"], args, content))
+            ignored = sorted(set(args) - ACCOUNT_TOOL_PARAMS.get(call["name"], set()))
+            failed = "error" in json.loads(content)
+            trail.append(
+                audit.entry(
+                    "tool_call",
+                    "error" if failed else "ok",
+                    tool=call["name"],
+                    args=args,
+                    customer_id=customer,
+                    # Names only: the model tried to pass a parameter the tool does not take.
+                    detail={"ignored_args": ignored} if ignored else None,
+                )
+            )
         rounds = state.get("tool_rounds", 0) + 1
         return {
             "messages": results,
             "tool_rounds": MAX_TOOL_ROUNDS if blocked else rounds,
             "case": {**case, "evidence": evidence[-handoff.MAX_EVIDENCE :]},
+            "audit": trail,
         }
 
     async def handoff_node(state: ChatState) -> dict:
@@ -208,8 +249,23 @@ def build_graph(
         )
         await cases.create(new_case)
         case_id = new_case["case_id"]
+        reply = handoff.text(state["lang"], "handed_over", case_id=case_id)
+        if new_case["reason"] == "fraud_or_security":
+            # Right away, from the knowledge base and not from the model: what to do meanwhile.
+            if tips := knowledge.guidance("lost-card", state["lang"]):
+                reply += "\n\n" + tips
+        trail = [
+            *(state.get("audit") or []),
+            audit.entry(
+                "handoff",
+                "opened",
+                customer_id=auth.get("customer_id"),
+                detail={"reason": new_case["reason"], "case_id": case_id},
+            ),
+        ]
         return {
-            "messages": [AIMessage(handoff.text(state["lang"], "handed_over", case_id=case_id))],
+            "audit": trail,
+            "messages": [AIMessage(reply)],
             "case": {
                 **case_state,
                 "handoff": {"case_id": case_id, "status": "waiting"},
@@ -237,16 +293,60 @@ def build_graph(
 
     async def auth_gate(state: ChatState) -> dict:
         auth, lang = state.get("auth") or {}, state["lang"]
+        case = dict(state.get("case") or {})
         if identity.in_progress(auth):
             result = await verifier.handle(auth, state["messages"][-1].text, lang)
         else:
             result = await verifier.start(auth, lang)
-        return {
+            # The question that made the model ask to verify: answered once they are verified.
+            asked = next((m.text for m in reversed(state["messages"]) if m.type == "human"), "")
+            if asked.strip() and result.auth.get("step") == "awaiting_document":
+                case["pending_question"] = asked[:500]
+        trail = list(state.get("audit") or [])
+        last = state["messages"][-1]
+        for call in getattr(last, "tool_calls", None) or []:
+            if call["name"] in ACCOUNT_TOOL_NAMES:  # asked for data before being verified
+                trail.append(
+                    audit.entry(
+                        "tool_refused",
+                        "not_verified",
+                        tool=call["name"],
+                        args=call.get("args") or {},
+                    )
+                )
+        before, after = auth.get("step"), result.auth.get("step")
+        failures = result.auth.get("failures", 0) > auth.get("failures", 0)
+        if after == "verified" and before != "verified":
+            trail.append(
+                audit.entry("verification", "verified", customer_id=result.auth.get("customer_id"))
+            )
+        elif after == "locked" and before != "locked":
+            trail.append(audit.entry("verification", "locked"))
+        elif failures or (before == "awaiting_otp" and after == "awaiting_document"):
+            trail.append(audit.entry("verification", "failed"))
+        elif before in (None, "none") and after == "awaiting_document":
+            trail.append(audit.entry("verification", "started"))
+        update: dict = {
+            "audit": trail,
             "messages": [AIMessage(result.reply)],
             "auth": result.auth,
             "notices": result.notices,
             "sensitive_input": result.sensitive_input,
+            "case": case,
         }
+        if identity.is_verified(result.auth, verifier.now()) and case.get("pending_question"):
+            question = case.pop("pending_question")
+            # No "how can I help?": the answer to what they asked follows.
+            name = result.auth.get("first_name", "")
+            update["messages"] = [AIMessage(identity.text(lang, "verified_resume", name=name))]
+            update["messages"].append(HumanMessage(question))
+            update["resume_text"] = question
+        elif result.auth.get("step") in ("locked", "none", None):
+            case.pop("pending_question", None)  # cancelled or locked: nothing to resume
+        return update
+
+    def after_auth_gate(state: ChatState) -> str:
+        return "respond" if state.get("resume_text") else END
 
     graph = StateGraph(ChatState)
     # TODO(answer_public): RAG over products and policies for public questions.
@@ -260,7 +360,7 @@ def build_graph(
         "respond", after_respond, ["auth_gate", "account_tools", "handoff", END]
     )
     graph.add_edge("account_tools", "respond")
-    graph.add_edge("auth_gate", END)
+    graph.add_conditional_edges("auth_gate", after_auth_gate, ["respond", END])
     graph.add_edge("handoff", END)
     graph.add_edge("human_queue", END)
     # No checkpointer by default: stream_reply loads and saves the conversation through the session

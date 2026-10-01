@@ -289,6 +289,16 @@ def get_knowledge_base() -> KnowledgeBase:
     return build_knowledge_base(get_settings())
 
 
+def guidance(topic: str, lang: str) -> str | None:
+    """A document's text with its source line, for fixed replies that must say what the knowledge
+    base says (e.g. the lost-card steps next to a handoff) without asking the model."""
+    for chunk in get_knowledge_base().by_lang.get(lang, []):
+        if chunk.id == topic:
+            label = "Fuente" if lang == "es" else "Fonte"
+            return f"{chunk.text}\n\n{label}: {chunk.title}"
+    return None
+
+
 @tool
 def search_policies(query: str) -> str:
     """Search NovaBank's documents on products, policies and how things work: declined purchases,
@@ -331,6 +341,7 @@ __all__ = [
     "SearchResult",
     "Thresholds",
     "get_knowledge_base",
+    "guidance",
     "run_search",
     "search_policies",
     "tokens",

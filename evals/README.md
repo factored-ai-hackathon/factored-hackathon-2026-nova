@@ -16,7 +16,7 @@ From `backend/`: `uv run pytest ../evals/agent`. It uses a fake model by default
 | Set | Cases | Checks |
 |---|---|---|
 | `agent/smoke.yaml` | 10 (5 ES, 5 PT) | Reply language; never asks for card number/PIN/password; no invented amounts |
-| `agent/identity.yaml` | chat verification flows (ES, PT) | Verification step after each message; demo SMS; answers never repeated |
+| `agent/identity.yaml` | chat verification flows (ES, PT) | Verification step after each message; demo SMS; answers never repeated |; two cases check that the question that started the verification is answered once verified (issue #35, live)
 | `ml/intent/data/test_*.jsonl` | 210 (105 ES, 105 PT), team-written | Intent classifier on held-out phrases: macro-F1 vs keyword and majority baselines, per language and class, calibration (`uv run python ml/intent/train.py`, results in `ml/intent/metrics.json`) |
 | (faithfulness) | `backend/tests/test_faithfulness.py` | Claims found / not found in the evidence, number normalization, sentence-to-evidence similarity; shown per case in the agent console |
 | `agent/handoff.yaml` | 9 (5 ES, 4 PT) | Hands over when it should (person, fraud, stolen card) with code-built facts; asks when ambiguous; never claims an unsupported action was done; complaint and retention: the intent is kept in code and Nova offers a person |

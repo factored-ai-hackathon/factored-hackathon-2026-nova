@@ -60,6 +60,8 @@ def get_my_complaints(status: Literal["all", "open", "closed"] = "all") -> str:
 
 ACCOUNT_TOOLS = [get_my_products, get_my_transactions, get_my_complaints]
 ACCOUNT_TOOL_NAMES = {t.name for t in ACCOUNT_TOOLS}
+# What each tool takes: anything else the model sends (a customer id) is ignored, and audited.
+ACCOUNT_TOOL_PARAMS = {t.name: set(t.args) for t in ACCOUNT_TOOLS}
 
 OPEN_COMPLAINT = {"open", "in process", "escalated"}
 

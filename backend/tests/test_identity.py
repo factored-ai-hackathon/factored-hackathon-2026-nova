@@ -197,9 +197,12 @@ async def test_full_verification_through_the_agent(model):
     assert "fecha de nacimiento" in reply and usage.sensitive_input
     reply, notices, _ = await say("s1", MIGUEL["birth_date"])
     assert notices and CODE in notices[0].text
+    assert len(model.calls) == calls_before  # the steps' answers never went to the model
     reply, _, _ = await say("s1", CODE)
     assert "Miguel" in reply
-    assert len(model.calls) == calls_before  # the answers never went to the model
+    # Verified: the question that started it is answered at once (issue #35), with their data.
+    assert "get_my_products" in reply and "4850320" in reply
+    assert "¿Cuál es mi saldo?" not in reply  # the question is resumed, not echoed
 
     await say("s1", "Hola de nuevo")
     system_prompt = model.calls[-1][0].content
@@ -412,3 +415,25 @@ async def test_the_verifier_records_when_it_granted_the_verification():
     assert "verified_at" not in r.auth  # only the last step grants it
     r = await v.handle(r.auth, CODE, "es")
     assert r.auth["verified_at"] == clock.t
+
+
+async def test_the_resumed_question_is_answered_without_showing_the_model_the_code(model):
+    await say("s9", "¿Cuál es mi saldo?")
+    await say("s9", MIGUEL["document"])
+    await say("s9", MIGUEL["birth_date"])
+    await say("s9", CODE)
+    answering = model.calls[-1]
+    texts = [m.text.split("\n\n(")[0] for m in answering if m.type == "human"]
+    assert "[dato de verificación]" in texts and "¿Cuál es mi saldo?" in texts
+    assert CODE not in " ".join(m.text for m in answering)
+    case = (await get_session_store().get("s9")).case
+    assert "pending_question" not in case  # used once
+
+
+async def test_a_cancelled_or_locked_verification_forgets_the_question(model):
+    await say("s10", "¿Cuál es mi saldo?")
+    assert (await get_session_store().get("s10")).case.get(
+        "pending_question"
+    ) == "¿Cuál es mi saldo?"
+    await say("s10", "cancelar")
+    assert "pending_question" not in (await get_session_store().get("s10")).case

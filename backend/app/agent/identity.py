@@ -286,6 +286,7 @@ TEXTS = {
         "wrong_otp": "El código no es correcto. Te quedan {left} intento(s).",
         "otp_expired": "El código venció. Te enviamos uno nuevo al celular terminado en {last4}.",
         "verified": "¡Listo, {name}! Verifiqué tu identidad. ¿En qué te ayudo?",
+        "verified_resume": "¡Listo, {name}! Verifiqué tu identidad.",
         "locked": "Por seguridad, bloqueé la verificación en esta conversación después de "
         "varios intentos fallidos. Si necesitas ayuda con tu cuenta, un asesor de nuestro "
         "centro de contacto puede atenderte.",
@@ -298,7 +299,8 @@ TEXTS = {
         "al hablar de fechas y díselo si pregunta por algo más reciente. Responde solo con lo "
         "que traigan las herramientas y nunca inventes datos; si no está, dilo. Muestra solo "
         "los últimos 4 dígitos de cuentas y tarjetas. Si pide datos de otra persona, explícale "
-        "que solo puedes darle los suyos.",
+        "que solo puedes darle los suyos. Ya está verificado: no vuelvas a pedirle que se "
+        "verifique ni uses start_identity_verification.",
     },
     "pt": {
         "start": "Para proteger suas informações, primeiro preciso verificar sua identidade. "
@@ -318,6 +320,7 @@ TEXTS = {
         "wrong_otp": "O código não está correto. Você tem mais {left} tentativa(s).",
         "otp_expired": "O código venceu. Enviamos um novo para o celular terminado em {last4}.",
         "verified": "Pronto, {name}! Verifiquei sua identidade. Como posso ajudar?",
+        "verified_resume": "Pronto, {name}! Verifiquei sua identidade.",
         "locked": "Por segurança, bloqueei a verificação nesta conversa depois de várias "
         "tentativas sem sucesso. Se precisar de ajuda com sua conta, um atendente da nossa "
         "central pode ajudar.",
@@ -330,7 +333,8 @@ TEXTS = {
         "ao falar de datas e avise se ele perguntar por algo mais recente. Responda só com o que "
         "as ferramentas trouxerem e nunca invente dados; se não estiver lá, diga. Mostre só os "
         "últimos 4 dígitos de contas e cartões. Se pedir dados de outra pessoa, explique que só "
-        "pode dar os dele.",
+        "pode dar os dele. Ele já está verificado: não peça de novo que se verifique nem use "
+        "start_identity_verification.",
     },
 }
 

@@ -61,6 +61,9 @@ For visitors outside the login. `POST /v1/public/chat/sessions` creates a sessio
 ## Knowledge search (decision 32)
 The model can call `search_policies(query)` at any time, verified or not (`backend/app/agent/knowledge.py`): it searches 42 team-written, fictitious documents (ES + PT) in the conversation's language and returns up to 3 `{title, text, source}`, or an empty list with a note to not answer from memory. The consulted documents are added to the case's evidence (`tool: "search_policies"`), so the console's faithfulness view checks the answer against them. Retrieval: BM25 + Titan embeddings (needs `bedrock:InvokeModel` on `amazon.titan-embed-text-v2:0`; without it, lexical only); `KNOWLEDGE_DENSE=false` turns the embeddings off. See `ml/rag/README.md`.
 
+## Audit trail (decision 37)
+Each chat turn stores its audit entries next to the turn record (DynamoDB: same table, `message_id` = `<message id>#audit00`, `#audit01`...; locally the JSONL file, `type: "audit"`). Entry: `event` (`tool_call`, `tool_refused`, `verification`, `handoff`), `outcome` (`ok`, `error`, `no_result`, `not_verified`, `started`, `failed`, `verified`, `locked`, `opened`), `at`, and when they apply `tool`, `args_hash`, `customer` (hash) and `detail` (names of ignored arguments, or the handoff's reason and case id). No text, no raw arguments, no customer ids. After an in-chat verification the same turn also answers the question that started it.
+
 ## Session lifetime (decision 36)
 A verified session is an idle timeout: every chat turn and every `POST /v1/accounts/overview` renews `verified_until` to now + `VERIFIED_TTL_MINUTES` (30), never beyond `VERIFIED_MAX_HOURS` (8) after `verified_at`. An expired one is not renewed (`401 not_verified`; in the chat, Nova verifies again). The web app keeps the session id in `sessionStorage`, so a reload keeps the customer logged in.
 
