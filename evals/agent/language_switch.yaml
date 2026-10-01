@@ -1,0 +1,22 @@
+# Language switch eval: the customer changes the interface language in the middle of the
+# conversation (the demo has a language selector). Every reply must be in the language of ITS
+# message, whatever the earlier turns were in. Found in the production smoke test of the knowledge
+# search: after a Portuguese turn, Spanish messages got Portuguese replies.
+# Fictitious demo customer demo-001 (Miguel), verified by the web login. Team-written.
+cases:
+  - id: pt-then-es
+    start: pt
+    turns:
+      - {lang: pt, say: "Se eu mandar dinheiro para outro banco, chega na hora?"}
+      - {lang: es, say: "¿Tienen una sucursal en Santiago de Chile?"}
+      - {lang: es, say: "¿Cuál es el saldo de mi cuenta de ahorros?"}
+      - {lang: pt, say: "Quanto tempo leva uma reclamação?"}
+      - {lang: es, say: "Gracias, ¿en cuántos días hábiles?"}
+  - id: es-then-pt
+    start: es
+    turns:
+      - {lang: es, say: "¿Cuánto tarda una transferencia a otro banco?"}
+      - {lang: pt, say: "Qual é o limite do meu cartão de crédito?"}
+      - {lang: pt, say: "E se eu perder o cartão, o que eu faço?"}
+      - {lang: es, say: "¿Qué documentos aceptan en Colombia?"}
+      - {lang: pt, say: "Obrigado, e as movimentações recentes?"}

@@ -60,7 +60,11 @@ def _reply(messages: list[BaseMessage]) -> str:
         data = last.text[:600] + ("…" if len(last.text) > 600 else "")
         intro = TOOL_REPLIES[_lang(messages)].format(tool=last.name)
         return f"{intro}\n\n```\n{data}\n```"
-    text = last.text if last else ""
+    text = (
+        re.sub(r"\n\n\((Responde en español|Responda em português)\.\)$", "", last.text)
+        if last
+        else ""
+    )
     echo = " ".join(text.split())[:MAX_ECHO_CHARS]
     return REPLIES[_lang(messages)].format(echo=echo)
 

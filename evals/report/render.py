@@ -201,7 +201,7 @@ def render(datasets: list[dict]) -> str:
         LANGS[lang]: summarize(group, cases)
         for lang, group in by(runs, lambda r: r["lang"]).items()
     }
-    LABELS = ["before fixes", "after fixes", "with knowledge search"]
+    LABELS = ["before fixes", "after fixes", "with knowledge search", "final"]
     if len(datasets) > 1:
         scored = [rescored(d, cases) for d in datasets]
         first_runs = scored[0][0]
@@ -228,6 +228,11 @@ def render(datasets: list[dict]) -> str:
             "Run 3 repeats them again after adding the knowledge search (decision 32): a regression check "
             "of the final system, not a new estimate. "
             if len(datasets) > 2
+            else ""
+        )
+        + (
+            "Run 4 is the final system (language reminder, 90-day transaction window): the same check. "
+            if len(datasets) > 3
             else ""
         )
         + "Quote run 1 as the honest estimate."
