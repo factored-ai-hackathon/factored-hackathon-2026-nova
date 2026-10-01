@@ -1,0 +1,2566 @@
+{
+ "generated_by": "ml/export_metrics_page.py",
+ "intent": {
+  "classes": [
+   "transactional",
+   "product",
+   "complaint",
+   "technical",
+   "commercial",
+   "retention",
+   "other"
+  ],
+  "data": {
+   "train": {
+    "es": 280,
+    "pt": 280
+   },
+   "test": {
+    "es": 105,
+    "pt": 105
+   }
+  },
+  "leakage": {
+   "median": 0.227,
+   "p90": 0.445,
+   "max": 0.857,
+   "share_above_0.8": 0.005
+  },
+  "selection": {
+   "best": {
+    "C": 100,
+    "char_ngram_range": [
+     2,
+     4
+    ],
+    "cv_macro_f1": 0.822
+   },
+   "grid": [
+    {
+     "C": 1,
+     "char_ngram_range": [
+      2,
+      4
+     ],
+     "cv_macro_f1": 0.774
+    },
+    {
+     "C": 1,
+     "char_ngram_range": [
+      3,
+      5
+     ],
+     "cv_macro_f1": 0.79
+    },
+    {
+     "C": 3,
+     "char_ngram_range": [
+      2,
+      4
+     ],
+     "cv_macro_f1": 0.792
+    },
+    {
+     "C": 3,
+     "char_ngram_range": [
+      3,
+      5
+     ],
+     "cv_macro_f1": 0.806
+    },
+    {
+     "C": 10,
+     "char_ngram_range": [
+      2,
+      4
+     ],
+     "cv_macro_f1": 0.808
+    },
+    {
+     "C": 10,
+     "char_ngram_range": [
+      3,
+      5
+     ],
+     "cv_macro_f1": 0.808
+    },
+    {
+     "C": 30,
+     "char_ngram_range": [
+      2,
+      4
+     ],
+     "cv_macro_f1": 0.811
+    },
+    {
+     "C": 30,
+     "char_ngram_range": [
+      3,
+      5
+     ],
+     "cv_macro_f1": 0.813
+    },
+    {
+     "C": 100,
+     "char_ngram_range": [
+      2,
+      4
+     ],
+     "cv_macro_f1": 0.822
+    },
+    {
+     "C": 100,
+     "char_ngram_range": [
+      3,
+      5
+     ],
+     "cv_macro_f1": 0.819
+    },
+    {
+     "C": 300,
+     "char_ngram_range": [
+      2,
+      4
+     ],
+     "cv_macro_f1": 0.819
+    },
+    {
+     "C": 300,
+     "char_ngram_range": [
+      3,
+      5
+     ],
+     "cv_macro_f1": 0.82
+    },
+    {
+     "C": 1000,
+     "char_ngram_range": [
+      2,
+      4
+     ],
+     "cv_macro_f1": 0.804
+    },
+    {
+     "C": 1000,
+     "char_ngram_range": [
+      3,
+      5
+     ],
+     "cv_macro_f1": 0.807
+    }
+   ],
+   "threshold": 0.58
+  },
+  "test": {
+   "majority": {
+    "accuracy": 0.143,
+    "macro_f1": 0.036,
+    "f1_by_class": {
+     "transactional": 0.0,
+     "product": 0.0,
+     "complaint": 0.0,
+     "technical": 0.0,
+     "commercial": 0.0,
+     "retention": 0.0,
+     "other": 0.25
+    }
+   },
+   "keywords": {
+    "accuracy": 0.629,
+    "macro_f1": 0.618,
+    "f1_by_class": {
+     "transactional": 0.636,
+     "product": 0.318,
+     "complaint": 0.537,
+     "technical": 0.881,
+     "commercial": 0.615,
+     "retention": 0.75,
+     "other": 0.588
+    }
+   },
+   "model": {
+    "accuracy": 0.852,
+    "macro_f1": 0.853,
+    "f1_by_class": {
+     "transactional": 0.772,
+     "product": 0.767,
+     "complaint": 0.806,
+     "technical": 0.968,
+     "commercial": 0.881,
+     "retention": 0.947,
+     "other": 0.828
+    }
+   }
+  },
+  "by_language": {
+   "es": {
+    "keyword_baseline": {
+     "accuracy": 0.619,
+     "macro_f1": 0.608,
+     "f1_by_class": {
+      "transactional": 0.606,
+      "product": 0.273,
+      "complaint": 0.571,
+      "technical": 0.897,
+      "commercial": 0.56,
+      "retention": 0.759,
+      "other": 0.588
+     }
+    },
+    "model": {
+     "accuracy": 0.8,
+     "macro_f1": 0.797,
+     "f1_by_class": {
+      "transactional": 0.667,
+      "product": 0.643,
+      "complaint": 0.769,
+      "technical": 0.968,
+      "commercial": 0.867,
+      "retention": 0.929,
+      "other": 0.741
+     }
+    }
+   },
+   "pt": {
+    "keyword_baseline": {
+     "accuracy": 0.638,
+     "macro_f1": 0.628,
+     "f1_by_class": {
+      "transactional": 0.667,
+      "product": 0.364,
+      "complaint": 0.5,
+      "technical": 0.867,
+      "commercial": 0.667,
+      "retention": 0.741,
+      "other": 0.588
+     }
+    },
+    "model": {
+     "accuracy": 0.905,
+     "macro_f1": 0.905,
+     "f1_by_class": {
+      "transactional": 0.867,
+      "product": 0.875,
+      "complaint": 0.857,
+      "technical": 0.968,
+      "commercial": 0.897,
+      "retention": 0.966,
+      "other": 0.903
+     }
+    }
+   }
+  },
+  "calibration": {
+   "ece": 0.07,
+   "confident_coverage": 0.805,
+   "confident_accuracy": 0.923
+  },
+  "confusion": {
+   "labels": [
+    "transactional",
+    "product",
+    "complaint",
+    "technical",
+    "commercial",
+    "retention",
+    "other"
+   ],
+   "rows_true_cols_pred": [
+    [
+     22,
+     1,
+     3,
+     1,
+     0,
+     0,
+     3
+    ],
+    [
+     2,
+     23,
+     3,
+     1,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     2,
+     27,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     30,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     3,
+     1,
+     0,
+     26,
+     0,
+     0
+    ],
+    [
+     1,
+     0,
+     0,
+     0,
+     2,
+     27,
+     0
+    ],
+    [
+     1,
+     1,
+     3,
+     0,
+     1,
+     0,
+     24
+    ]
+   ]
+  },
+  "llm": [
+   {
+    "name": "TF-IDF + regresión logística",
+    "macro_f1": 0.853,
+    "es": 0.797,
+    "pt": 0.905,
+    "f1_by_class": {
+     "transactional": 0.772,
+     "product": 0.767,
+     "complaint": 0.806,
+     "technical": 0.968,
+     "commercial": 0.881,
+     "retention": 0.947,
+     "other": 0.828
+    },
+    "latency_ms": 0.31,
+    "cost_per_1000": 0.0
+   },
+   {
+    "name": "Claude zero-shot",
+    "macro_f1": 0.89,
+    "es": 0.896,
+    "pt": 0.884,
+    "f1_by_class": {
+     "transactional": 0.889,
+     "product": 0.8,
+     "complaint": 0.966,
+     "technical": 0.938,
+     "commercial": 0.793,
+     "retention": 0.846,
+     "other": 1.0
+    },
+    "latency_ms": 566.0,
+    "cost_per_1000": 0.2488
+   },
+   {
+    "name": "Claude few-shot",
+    "macro_f1": 0.914,
+    "es": 0.904,
+    "pt": 0.924,
+    "f1_by_class": {
+     "transactional": 0.871,
+     "product": 0.78,
+     "complaint": 0.968,
+     "technical": 0.938,
+     "commercial": 0.893,
+     "retention": 0.947,
+     "other": 1.0
+    },
+    "latency_ms": 562.5,
+    "cost_per_1000": 0.7167
+   }
+  ],
+  "fcr": {
+   "transactional": {
+    "fcr": 0.9055,
+    "interactions": 240056
+   },
+   "product": {
+    "fcr": 0.8906,
+    "interactions": 150863
+   },
+   "complaint": {
+    "fcr": 0.4339,
+    "interactions": 117021
+   },
+   "technical": {
+    "fcr": 0.6964,
+    "interactions": 102899
+   },
+   "commercial": {
+    "fcr": 0.6503,
+    "interactions": 54879
+   },
+   "retention": {
+    "fcr": 0.6003,
+    "interactions": 20578
+   }
+  },
+  "ablation": {
+   "repeats": 3,
+   "group_sizes": {
+    "target": 20,
+    "control": 12
+   },
+   "classifier_fired": {
+    "target": 18,
+    "control": 0
+   },
+   "paired": {
+    "target": {
+     "only_with_hint": 14,
+     "only_without_hint": 1,
+     "same": 45
+    },
+    "control": {
+     "only_with_hint": 3,
+     "only_without_hint": 1,
+     "same": 32
+    }
+   },
+   "cells": {
+    "target_on": {
+     "runs": 60,
+     "person": 57,
+     "opened": 22
+    },
+    "target_off": {
+     "runs": 60,
+     "person": 44,
+     "opened": 13
+    },
+    "control_on": {
+     "runs": 36,
+     "person": 5,
+     "opened": 0
+    },
+    "control_off": {
+     "runs": 36,
+     "person": 3,
+     "opened": 0
+    }
+   }
+  }
+ },
+ "rag": {
+  "embedding": {
+   "model": "amazon.titan-embed-text-v2:0",
+   "dimensions": 512,
+   "pca_variance": [
+    0.138,
+    0.105
+   ]
+  },
+  "crosslingual": {
+   "same_topic": [
+    {
+     "id": "declined-purchase",
+     "cos": 0.868
+    },
+    {
+     "id": "product-status",
+     "cos": 0.817
+    },
+    {
+     "id": "lost-card",
+     "cos": 0.802
+    },
+    {
+     "id": "transfers",
+     "cos": 0.885
+    },
+    {
+     "id": "complaints-process",
+     "cos": 0.784
+    },
+    {
+     "id": "credit-card-basics",
+     "cos": 0.726
+    },
+    {
+     "id": "past-due",
+     "cos": 0.849
+    },
+    {
+     "id": "security-tips",
+     "cos": 0.947
+    },
+    {
+     "id": "login-help",
+     "cos": 0.857
+    },
+    {
+     "id": "identity-verification",
+     "cos": 0.927
+    },
+    {
+     "id": "accepted-documents",
+     "cos": 0.909
+    },
+    {
+     "id": "currencies",
+     "cos": 0.908
+    },
+    {
+     "id": "channels",
+     "cos": 0.9
+    },
+    {
+     "id": "human-advisor",
+     "cos": 0.784
+    },
+    {
+     "id": "data-freshness",
+     "cos": 0.888
+    },
+    {
+     "id": "account-opening",
+     "cos": 0.951
+    },
+    {
+     "id": "privacy",
+     "cos": 0.858
+    },
+    {
+     "id": "unsupported-actions",
+     "cos": 0.91
+    },
+    {
+     "id": "branches-mexico",
+     "cos": 0.941
+    },
+    {
+     "id": "branches-colombia",
+     "cos": 0.899
+    },
+    {
+     "id": "branches-argentina",
+     "cos": 0.937
+    }
+   ],
+   "other_topic_mean": 0.305,
+   "other_topic_max": 0.737
+  },
+  "chunks": [
+   {
+    "id": "declined-purchase",
+    "lang": "es",
+    "title": "Por qué se rechaza una compra",
+    "words": 80,
+    "xy": [
+     0.272,
+     0.231
+    ]
+   },
+   {
+    "id": "product-status",
+    "lang": "es",
+    "title": "Estados de un producto (activo, bloqueado, suspendido, cerrado)",
+    "words": 60,
+    "xy": [
+     0.1734,
+     0.3018
+    ]
+   },
+   {
+    "id": "lost-card",
+    "lang": "es",
+    "title": "Tarjeta perdida, robada o cargo que no reconoces",
+    "words": 68,
+    "xy": [
+     0.2618,
+     0.022
+    ]
+   },
+   {
+    "id": "transfers",
+    "lang": "es",
+    "title": "Transferencias, plazos y límites",
+    "words": 65,
+    "xy": [
+     -0.0943,
+     0.058
+    ]
+   },
+   {
+    "id": "complaints-process",
+    "lang": "es",
+    "title": "Cómo funcionan las quejas y reclamos",
+    "words": 61,
+    "xy": [
+     0.1758,
+     0.0389
+    ]
+   },
+   {
+    "id": "credit-card-basics",
+    "lang": "es",
+    "title": "Tarjeta de crédito: cupo, saldo, fecha de corte y pago mínimo",
+    "words": 80,
+    "xy": [
+     0.1105,
+     0.3491
+    ]
+   },
+   {
+    "id": "past-due",
+    "lang": "es",
+    "title": "Mora y días de atraso",
+    "words": 66,
+    "xy": [
+     0.2081,
+     0.2586
+    ]
+   },
+   {
+    "id": "security-tips",
+    "lang": "es",
+    "title": "Seguridad: lo que NovaBank nunca te pide",
+    "words": 60,
+    "xy": [
+     0.1437,
+     -0.498
+    ]
+   },
+   {
+    "id": "login-help",
+    "lang": "es",
+    "title": "Cómo iniciar sesión y qué hacer si no puedes",
+    "words": 69,
+    "xy": [
+     0.2042,
+     -0.4559
+    ]
+   },
+   {
+    "id": "identity-verification",
+    "lang": "es",
+    "title": "Verificación de identidad en el chat",
+    "words": 50,
+    "xy": [
+     0.2929,
+     -0.4324
+    ]
+   },
+   {
+    "id": "accepted-documents",
+    "lang": "es",
+    "title": "Documentos de identidad aceptados por país",
+    "words": 50,
+    "xy": [
+     -0.3301,
+     -0.0619
+    ]
+   },
+   {
+    "id": "currencies",
+    "lang": "es",
+    "title": "Monedas de las cuentas",
+    "words": 55,
+    "xy": [
+     0.022,
+     0.0308
+    ]
+   },
+   {
+    "id": "channels",
+    "lang": "es",
+    "title": "Canales para hacer operaciones",
+    "words": 43,
+    "xy": [
+     0.0359,
+     0.033
+    ]
+   },
+   {
+    "id": "human-advisor",
+    "lang": "es",
+    "title": "Cuándo y cómo te atiende un asesor humano",
+    "words": 72,
+    "xy": [
+     0.2199,
+     -0.1458
+    ]
+   },
+   {
+    "id": "data-freshness",
+    "lang": "es",
+    "title": "Qué tan actualizados están tus datos",
+    "words": 61,
+    "xy": [
+     0.0362,
+     0.2795
+    ]
+   },
+   {
+    "id": "account-opening",
+    "lang": "es",
+    "title": "Cómo abrir una cuenta en NovaBank",
+    "words": 52,
+    "xy": [
+     -0.1201,
+     -0.4994
+    ]
+   },
+   {
+    "id": "privacy",
+    "lang": "es",
+    "title": "Cómo se protegen tus datos en el chat",
+    "words": 60,
+    "xy": [
+     0.2854,
+     -0.2059
+    ]
+   },
+   {
+    "id": "unsupported-actions",
+    "lang": "es",
+    "title": "Lo que Nova no puede hacer",
+    "words": 40,
+    "xy": [
+     0.2716,
+     0.1672
+    ]
+   },
+   {
+    "id": "branches-mexico",
+    "lang": "es",
+    "title": "Sucursales y horarios en México",
+    "words": 61,
+    "xy": [
+     -0.6442,
+     -0.008
+    ]
+   },
+   {
+    "id": "branches-colombia",
+    "lang": "es",
+    "title": "Sucursales y horarios en Colombia",
+    "words": 57,
+    "xy": [
+     -0.6388,
+     -0.0196
+    ]
+   },
+   {
+    "id": "branches-argentina",
+    "lang": "es",
+    "title": "Sucursales y horarios en Argentina",
+    "words": 50,
+    "xy": [
+     -0.6697,
+     0.0505
+    ]
+   },
+   {
+    "id": "declined-purchase",
+    "lang": "pt",
+    "title": "Por que uma compra é recusada",
+    "words": 78,
+    "xy": [
+     0.2226,
+     0.3238
+    ]
+   },
+   {
+    "id": "product-status",
+    "lang": "pt",
+    "title": "Status de um produto (ativo, bloqueado, suspenso, encerrado)",
+    "words": 59,
+    "xy": [
+     0.1732,
+     0.3495
+    ]
+   },
+   {
+    "id": "lost-card",
+    "lang": "pt",
+    "title": "Cartão perdido, roubado ou cobrança que você não reconhece",
+    "words": 70,
+    "xy": [
+     0.1767,
+     0.0757
+    ]
+   },
+   {
+    "id": "transfers",
+    "lang": "pt",
+    "title": "Transferências, prazos e limites",
+    "words": 66,
+    "xy": [
+     -0.1121,
+     0.0808
+    ]
+   },
+   {
+    "id": "complaints-process",
+    "lang": "pt",
+    "title": "Como funcionam as reclamações",
+    "words": 59,
+    "xy": [
+     0.1618,
+     0.1208
+    ]
+   },
+   {
+    "id": "credit-card-basics",
+    "lang": "pt",
+    "title": "Cartão de crédito: limite, saldo, data de corte e pagamento mínimo",
+    "words": 80,
+    "xy": [
+     0.0844,
+     0.3696
+    ]
+   },
+   {
+    "id": "past-due",
+    "lang": "pt",
+    "title": "Atraso e dias em atraso",
+    "words": 71,
+    "xy": [
+     0.185,
+     0.2797
+    ]
+   },
+   {
+    "id": "security-tips",
+    "lang": "pt",
+    "title": "Segurança: o que o NovaBank nunca pede",
+    "words": 56,
+    "xy": [
+     0.1099,
+     -0.4882
+    ]
+   },
+   {
+    "id": "login-help",
+    "lang": "pt",
+    "title": "Como entrar e o que fazer se não conseguir",
+    "words": 72,
+    "xy": [
+     0.1736,
+     -0.3817
+    ]
+   },
+   {
+    "id": "identity-verification",
+    "lang": "pt",
+    "title": "Verificação de identidade no chat",
+    "words": 53,
+    "xy": [
+     0.2786,
+     -0.3911
+    ]
+   },
+   {
+    "id": "accepted-documents",
+    "lang": "pt",
+    "title": "Documentos de identidade aceitos por país",
+    "words": 51,
+    "xy": [
+     -0.337,
+     -0.039
+    ]
+   },
+   {
+    "id": "currencies",
+    "lang": "pt",
+    "title": "Moedas das contas",
+    "words": 52,
+    "xy": [
+     0.0323,
+     0.0855
+    ]
+   },
+   {
+    "id": "channels",
+    "lang": "pt",
+    "title": "Canais para fazer operações",
+    "words": 42,
+    "xy": [
+     -0.0276,
+     0.1114
+    ]
+   },
+   {
+    "id": "human-advisor",
+    "lang": "pt",
+    "title": "Quando e como um atendente humano atende você",
+    "words": 74,
+    "xy": [
+     0.169,
+     -0.0935
+    ]
+   },
+   {
+    "id": "data-freshness",
+    "lang": "pt",
+    "title": "Quão atualizados estão seus dados",
+    "words": 58,
+    "xy": [
+     0.0054,
+     0.3446
+    ]
+   },
+   {
+    "id": "account-opening",
+    "lang": "pt",
+    "title": "Como abrir uma conta no NovaBank",
+    "words": 52,
+    "xy": [
+     -0.1441,
+     -0.4798
+    ]
+   },
+   {
+    "id": "privacy",
+    "lang": "pt",
+    "title": "Como seus dados são protegidos no chat",
+    "words": 60,
+    "xy": [
+     0.2719,
+     -0.0885
+    ]
+   },
+   {
+    "id": "unsupported-actions",
+    "lang": "pt",
+    "title": "O que a Nova não pode fazer",
+    "words": 43,
+    "xy": [
+     0.2199,
+     0.2333
+    ]
+   },
+   {
+    "id": "branches-mexico",
+    "lang": "pt",
+    "title": "Agências e horários em México",
+    "words": 62,
+    "xy": [
+     -0.629,
+     0.0167
+    ]
+   },
+   {
+    "id": "branches-colombia",
+    "lang": "pt",
+    "title": "Agências e horários em Colômbia",
+    "words": 58,
+    "xy": [
+     -0.5837,
+     0.0001
+    ]
+   },
+   {
+    "id": "branches-argentina",
+    "lang": "pt",
+    "title": "Agências e horários em Argentina",
+    "words": 51,
+    "xy": [
+     -0.647,
+     0.0764
+    ]
+   }
+  ],
+  "questions": {
+   "dev": 50,
+   "test": 48
+  },
+  "thresholds": {
+   "dense": 0.19,
+   "lexical": 0.45,
+   "lexical_only": 0.025
+  },
+  "ranking": {
+   "all": {
+    "bm25-words": {
+     "n": 38,
+     "recall@1": {
+      "k": 31,
+      "n": 38,
+      "rate": 0.816,
+      "ci95": [
+       0.666,
+       0.908
+      ]
+     },
+     "recall@3": {
+      "k": 35,
+      "n": 38,
+      "rate": 0.921,
+      "ci95": [
+       0.792,
+       0.973
+      ]
+     },
+     "mrr": 0.877
+    },
+    "bm25-stems": {
+     "n": 38,
+     "recall@1": {
+      "k": 31,
+      "n": 38,
+      "rate": 0.816,
+      "ci95": [
+       0.666,
+       0.908
+      ]
+     },
+     "recall@3": {
+      "k": 32,
+      "n": 38,
+      "rate": 0.842,
+      "ci95": [
+       0.696,
+       0.926
+      ]
+     },
+     "mrr": 0.864
+    },
+    "dense": {
+     "n": 38,
+     "recall@1": {
+      "k": 31,
+      "n": 38,
+      "rate": 0.816,
+      "ci95": [
+       0.666,
+       0.908
+      ]
+     },
+     "recall@3": {
+      "k": 37,
+      "n": 38,
+      "rate": 0.974,
+      "ci95": [
+       0.865,
+       0.995
+      ]
+     },
+     "mrr": 0.89
+    },
+    "hybrid": {
+     "n": 38,
+     "recall@1": {
+      "k": 33,
+      "n": 38,
+      "rate": 0.868,
+      "ci95": [
+       0.727,
+       0.942
+      ]
+     },
+     "recall@3": {
+      "k": 37,
+      "n": 38,
+      "rate": 0.974,
+      "ci95": [
+       0.865,
+       0.995
+      ]
+     },
+     "mrr": 0.928
+    }
+   },
+   "es": {
+    "bm25-words": {
+     "n": 19,
+     "recall@1": {
+      "k": 16,
+      "n": 19,
+      "rate": 0.842,
+      "ci95": [
+       0.624,
+       0.945
+      ]
+     },
+     "recall@3": {
+      "k": 17,
+      "n": 19,
+      "rate": 0.895,
+      "ci95": [
+       0.686,
+       0.971
+      ]
+     },
+     "mrr": 0.882
+    },
+    "bm25-stems": {
+     "n": 19,
+     "recall@1": {
+      "k": 16,
+      "n": 19,
+      "rate": 0.842,
+      "ci95": [
+       0.624,
+       0.945
+      ]
+     },
+     "recall@3": {
+      "k": 16,
+      "n": 19,
+      "rate": 0.842,
+      "ci95": [
+       0.624,
+       0.945
+      ]
+     },
+     "mrr": 0.875
+    },
+    "dense": {
+     "n": 19,
+     "recall@1": {
+      "k": 16,
+      "n": 19,
+      "rate": 0.842,
+      "ci95": [
+       0.624,
+       0.945
+      ]
+     },
+     "recall@3": {
+      "k": 18,
+      "n": 19,
+      "rate": 0.947,
+      "ci95": [
+       0.754,
+       0.991
+      ]
+     },
+     "mrr": 0.902
+    },
+    "hybrid": {
+     "n": 19,
+     "recall@1": {
+      "k": 16,
+      "n": 19,
+      "rate": 0.842,
+      "ci95": [
+       0.624,
+       0.945
+      ]
+     },
+     "recall@3": {
+      "k": 18,
+      "n": 19,
+      "rate": 0.947,
+      "ci95": [
+       0.754,
+       0.991
+      ]
+     },
+     "mrr": 0.908
+    }
+   },
+   "pt": {
+    "bm25-words": {
+     "n": 19,
+     "recall@1": {
+      "k": 15,
+      "n": 19,
+      "rate": 0.789,
+      "ci95": [
+       0.567,
+       0.915
+      ]
+     },
+     "recall@3": {
+      "k": 18,
+      "n": 19,
+      "rate": 0.947,
+      "ci95": [
+       0.754,
+       0.991
+      ]
+     },
+     "mrr": 0.873
+    },
+    "bm25-stems": {
+     "n": 19,
+     "recall@1": {
+      "k": 15,
+      "n": 19,
+      "rate": 0.789,
+      "ci95": [
+       0.567,
+       0.915
+      ]
+     },
+     "recall@3": {
+      "k": 16,
+      "n": 19,
+      "rate": 0.842,
+      "ci95": [
+       0.624,
+       0.945
+      ]
+     },
+     "mrr": 0.853
+    },
+    "dense": {
+     "n": 19,
+     "recall@1": {
+      "k": 15,
+      "n": 19,
+      "rate": 0.789,
+      "ci95": [
+       0.567,
+       0.915
+      ]
+     },
+     "recall@3": {
+      "k": 19,
+      "n": 19,
+      "rate": 1.0,
+      "ci95": [
+       0.832,
+       1.0
+      ]
+     },
+     "mrr": 0.877
+    },
+    "hybrid": {
+     "n": 19,
+     "recall@1": {
+      "k": 17,
+      "n": 19,
+      "rate": 0.895,
+      "ci95": [
+       0.686,
+       0.971
+      ]
+     },
+     "recall@3": {
+      "k": 19,
+      "n": 19,
+      "rate": 1.0,
+      "ci95": [
+       0.832,
+       1.0
+      ]
+     },
+     "mrr": 0.947
+    }
+   }
+  },
+  "abstention": {
+   "hybrid": {
+    "test": {
+     "decision_accuracy": {
+      "k": 39,
+      "n": 48,
+      "rate": 0.812,
+      "ci95": [
+       0.681,
+       0.898
+      ]
+     },
+     "answered_unanswerable": {
+      "k": 8,
+      "n": 10,
+      "rate": 0.8,
+      "ci95": [
+       0.49,
+       0.943
+      ]
+     },
+     "abstained_answerable": {
+      "k": 1,
+      "n": 38,
+      "rate": 0.026,
+      "ci95": [
+       0.005,
+       0.135
+      ]
+     },
+     "answered_with_gold_on_top": {
+      "k": 32,
+      "n": 38,
+      "rate": 0.842,
+      "ci95": [
+       0.696,
+       0.926
+      ]
+     }
+    },
+    "dev (calibration)": {
+     "decision_accuracy": {
+      "k": 45,
+      "n": 50,
+      "rate": 0.9,
+      "ci95": [
+       0.786,
+       0.957
+      ]
+     },
+     "answered_unanswerable": {
+      "k": 5,
+      "n": 10,
+      "rate": 0.5,
+      "ci95": [
+       0.237,
+       0.763
+      ]
+     },
+     "abstained_answerable": {
+      "k": 0,
+      "n": 40,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.088
+      ]
+     },
+     "answered_with_gold_on_top": {
+      "k": 36,
+      "n": 40,
+      "rate": 0.9,
+      "ci95": [
+       0.769,
+       0.96
+      ]
+     }
+    }
+   },
+   "lexical-only (fallback)": {
+    "test": {
+     "decision_accuracy": {
+      "k": 36,
+      "n": 48,
+      "rate": 0.75,
+      "ci95": [
+       0.612,
+       0.851
+      ]
+     },
+     "answered_unanswerable": {
+      "k": 10,
+      "n": 10,
+      "rate": 1.0,
+      "ci95": [
+       0.722,
+       1.0
+      ]
+     },
+     "abstained_answerable": {
+      "k": 2,
+      "n": 38,
+      "rate": 0.053,
+      "ci95": [
+       0.015,
+       0.173
+      ]
+     },
+     "answered_with_gold_on_top": {
+      "k": 31,
+      "n": 38,
+      "rate": 0.816,
+      "ci95": [
+       0.666,
+       0.908
+      ]
+     }
+    },
+    "dev (calibration)": {
+     "decision_accuracy": {
+      "k": 43,
+      "n": 50,
+      "rate": 0.86,
+      "ci95": [
+       0.738,
+       0.93
+      ]
+     },
+     "answered_unanswerable": {
+      "k": 7,
+      "n": 10,
+      "rate": 0.7,
+      "ci95": [
+       0.397,
+       0.892
+      ]
+     },
+     "abstained_answerable": {
+      "k": 0,
+      "n": 40,
+      "rate": 0.0,
+      "ci95": [
+       0.0,
+       0.088
+      ]
+     },
+     "answered_with_gold_on_top": {
+      "k": 32,
+      "n": 40,
+      "rate": 0.8,
+      "ci95": [
+       0.652,
+       0.895
+      ]
+     }
+    }
+   }
+  },
+  "test_questions": [
+   {
+    "id": "es-02",
+    "lang": "es",
+    "q": "me salió un código 51 en el datáfono, ¿qué significa?",
+    "gold": "declined-purchase",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 7,
+     "hybrid": 4
+    },
+    "gold_cos": 0.139,
+    "best_other_cos": 0.22,
+    "top_cos": 0.22,
+    "top_lexical": 0.375,
+    "abstained": false,
+    "top_hit": "login-help",
+    "xy": [
+     0.0538,
+     -0.015
+    ]
+   },
+   {
+    "id": "es-04",
+    "lang": "es",
+    "q": "Mi producto está bloqueado, ¿cómo lo activo otra vez?",
+    "gold": "product-status",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.54,
+    "best_other_cos": 0.23,
+    "top_cos": 0.54,
+    "top_lexical": 0.427,
+    "abstained": false,
+    "top_hit": "product-status",
+    "xy": [
+     0.0543,
+     0.141
+    ]
+   },
+   {
+    "id": "es-06",
+    "lang": "es",
+    "q": "¿En cuánto tiempo me llega la tarjeta de reposición si me la robaron?",
+    "gold": "lost-card",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.526,
+    "best_other_cos": 0.233,
+    "top_cos": 0.526,
+    "top_lexical": 0.455,
+    "abstained": false,
+    "top_hit": "lost-card",
+    "xy": [
+     0.0619,
+     0.1729
+    ]
+   },
+   {
+    "id": "es-08",
+    "lang": "es",
+    "q": "¿Hay un tope por día para mandar plata?",
+    "gold": "transfers",
+    "ranks": {
+     "bm25-words": 4,
+     "bm25-stems": 4,
+     "dense": 2,
+     "hybrid": 2
+    },
+    "gold_cos": 0.234,
+    "best_other_cos": 0.234,
+    "top_cos": 0.234,
+    "top_lexical": 0.0,
+    "abstained": false,
+    "top_hit": "currencies",
+    "xy": [
+     -0.0284,
+     0.1462
+    ]
+   },
+   {
+    "id": "es-10",
+    "lang": "es",
+    "q": "¿Qué significa que mi queja esté escalada?",
+    "gold": "complaints-process",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.471,
+    "best_other_cos": 0.239,
+    "top_cos": 0.471,
+    "top_lexical": 0.548,
+    "abstained": false,
+    "top_hit": "complaints-process",
+    "xy": [
+     0.0618,
+     0.0629
+    ]
+   },
+   {
+    "id": "es-12",
+    "lang": "es",
+    "q": "Si pago solo el mínimo, ¿pasa algo con el resto de la deuda?",
+    "gold": "credit-card-basics",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.243,
+    "best_other_cos": 0.227,
+    "top_cos": 0.243,
+    "top_lexical": 0.32,
+    "abstained": false,
+    "top_hit": "credit-card-basics",
+    "xy": [
+     0.0252,
+     0.1423
+    ]
+   },
+   {
+    "id": "es-14",
+    "lang": "es",
+    "q": "¿Me pueden dar un plan para ponerme al día con lo que debo?",
+    "gold": "past-due",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.242,
+    "best_other_cos": 0.194,
+    "top_cos": 0.242,
+    "top_lexical": 0.41,
+    "abstained": false,
+    "top_hit": "past-due",
+    "xy": [
+     -0.0426,
+     0.0832
+    ]
+   },
+   {
+    "id": "es-16",
+    "lang": "es",
+    "q": "Me llegó un mensaje pidiéndome mi token, ¿es del banco?",
+    "gold": "security-tips",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.38,
+    "best_other_cos": 0.269,
+    "top_cos": 0.38,
+    "top_lexical": 0.249,
+    "abstained": false,
+    "top_hit": "security-tips",
+    "xy": [
+     -0.0509,
+     -0.1659
+    ]
+   },
+   {
+    "id": "es-18",
+    "lang": "es",
+    "q": "Cambié de número de celular y ya no puedo ingresar, ¿cómo lo actualizo?",
+    "gold": "login-help",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.377,
+    "best_other_cos": 0.194,
+    "top_cos": 0.377,
+    "top_lexical": 0.54,
+    "abstained": false,
+    "top_hit": "login-help",
+    "xy": [
+     -0.0261,
+     -0.1075
+    ]
+   },
+   {
+    "id": "es-20",
+    "lang": "es",
+    "q": "¿Cuánto dura la verificación una vez que la hice?",
+    "gold": "identity-verification",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.335,
+    "best_other_cos": 0.209,
+    "top_cos": 0.335,
+    "top_lexical": 0.564,
+    "abstained": false,
+    "top_hit": "identity-verification",
+    "xy": [
+     0.0062,
+     -0.1045
+    ]
+   },
+   {
+    "id": "es-22",
+    "lang": "es",
+    "q": "¿Qué documentos sirven para identificarme en Argentina?",
+    "gold": "accepted-documents",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.574,
+    "best_other_cos": 0.196,
+    "top_cos": 0.574,
+    "top_lexical": 0.504,
+    "abstained": false,
+    "top_hit": "accepted-documents",
+    "xy": [
+     -0.1538,
+     -0.0458
+    ]
+   },
+   {
+    "id": "es-24",
+    "lang": "es",
+    "q": "¿Se pueden sumar mis saldos de pesos y de dólares?",
+    "gold": "currencies",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.258,
+    "best_other_cos": 0.165,
+    "top_cos": 0.258,
+    "top_lexical": 0.441,
+    "abstained": false,
+    "top_hit": "currencies",
+    "xy": [
+     -0.064,
+     0.1649
+    ]
+   },
+   {
+    "id": "es-26",
+    "lang": "es",
+    "q": "¿Dónde puedo hacer operaciones además de la app?",
+    "gold": "channels",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.461,
+    "best_other_cos": 0.216,
+    "top_cos": 0.461,
+    "top_lexical": 0.471,
+    "abstained": false,
+    "top_hit": "channels",
+    "xy": [
+     -0.112,
+     0.1019
+    ]
+   },
+   {
+    "id": "es-28",
+    "lang": "es",
+    "q": "¿Puedo hablar con una persona si Nova no me resuelve?",
+    "gold": "human-advisor",
+    "ranks": {
+     "bm25-words": 3,
+     "bm25-stems": 4,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.58,
+    "best_other_cos": 0.485,
+    "top_cos": 0.58,
+    "top_lexical": 0.215,
+    "abstained": false,
+    "top_hit": "human-advisor",
+    "xy": [
+     0.1832,
+     0.0158
+    ]
+   },
+   {
+    "id": "es-30",
+    "lang": "es",
+    "q": "¿A qué fecha están los datos que me muestra Nova?",
+    "gold": "data-freshness",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.64,
+    "best_other_cos": 0.472,
+    "top_cos": 0.64,
+    "top_lexical": 0.527,
+    "abstained": false,
+    "top_hit": "data-freshness",
+    "xy": [
+     0.1154,
+     0.1256
+    ]
+   },
+   {
+    "id": "es-32",
+    "lang": "es",
+    "q": "No tengo cuenta todavía, ¿por dónde empiezo?",
+    "gold": "account-opening",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.334,
+    "best_other_cos": 0.218,
+    "top_cos": 0.334,
+    "top_lexical": 0.764,
+    "abstained": false,
+    "top_hit": "account-opening",
+    "xy": [
+     -0.0044,
+     -0.0375
+    ]
+   },
+   {
+    "id": "es-34",
+    "lang": "es",
+    "q": "¿Los asesores ven todos mis datos o solo lo necesario?",
+    "gold": "privacy",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 2,
+     "hybrid": 1
+    },
+    "gold_cos": 0.271,
+    "best_other_cos": 0.31,
+    "top_cos": 0.31,
+    "top_lexical": 0.5,
+    "abstained": false,
+    "top_hit": "privacy",
+    "xy": [
+     0.0622,
+     0.046
+    ]
+   },
+   {
+    "id": "es-36",
+    "lang": "es",
+    "q": "¿Puedo pedirle a Nova que cierre mi cuenta?",
+    "gold": "unsupported-actions",
+    "ranks": {
+     "bm25-words": 6,
+     "bm25-stems": 8,
+     "dense": 1,
+     "hybrid": 2
+    },
+    "gold_cos": 0.612,
+    "best_other_cos": 0.546,
+    "top_cos": 0.612,
+    "top_lexical": 0.697,
+    "abstained": false,
+    "top_hit": "identity-verification",
+    "xy": [
+     0.1812,
+     -0.0207
+    ]
+   },
+   {
+    "id": "es-38",
+    "lang": "es",
+    "q": "¿Dónde queda la sucursal de Guadalajara?",
+    "gold": "branches-mexico",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.352,
+    "best_other_cos": 0.319,
+    "top_cos": 0.352,
+    "top_lexical": 0.437,
+    "abstained": false,
+    "top_hit": "branches-mexico",
+    "xy": [
+     -0.2614,
+     0.1417
+    ]
+   },
+   {
+    "id": "es-45",
+    "lang": "es",
+    "q": "¿Me prestan plata para comprar un carro?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.168,
+    "top_cos": 0.168,
+    "top_lexical": 0.287,
+    "abstained": true,
+    "top_hit": null,
+    "xy": [
+     -0.0425,
+     0.0995
+    ]
+   },
+   {
+    "id": "es-46",
+    "lang": "es",
+    "q": "¿Aceptan pagos con criptomonedas en las sucursales?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.316,
+    "top_cos": 0.316,
+    "top_lexical": 0.352,
+    "abstained": false,
+    "top_hit": "accepted-documents",
+    "xy": [
+     -0.1704,
+     0.1191
+    ]
+   },
+   {
+    "id": "es-47",
+    "lang": "es",
+    "q": "¿Tienen una sucursal en Chile?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.275,
+    "top_cos": 0.275,
+    "top_lexical": 0.722,
+    "abstained": false,
+    "top_hit": "branches-colombia",
+    "xy": [
+     -0.2087,
+     0.1658
+    ]
+   },
+   {
+    "id": "es-48",
+    "lang": "es",
+    "q": "¿Cuál es el código SWIFT del banco?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.263,
+    "top_cos": 0.263,
+    "top_lexical": 0.396,
+    "abstained": false,
+    "top_hit": "security-tips",
+    "xy": [
+     -0.196,
+     -0.0718
+    ]
+   },
+   {
+    "id": "es-49",
+    "lang": "es",
+    "q": "¿Cuántos empleados tiene NovaBank?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.431,
+    "top_cos": 0.431,
+    "top_lexical": 0.618,
+    "abstained": false,
+    "top_hit": "branches-argentina",
+    "xy": [
+     -0.2819,
+     -0.0222
+    ]
+   },
+   {
+    "id": "pt-02",
+    "lang": "pt",
+    "q": "apareceu código 05 na maquininha, o que isso quer dizer?",
+    "gold": "declined-purchase",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 3,
+     "hybrid": 1
+    },
+    "gold_cos": 0.181,
+    "best_other_cos": 0.228,
+    "top_cos": 0.228,
+    "top_lexical": 0.32,
+    "abstained": false,
+    "top_hit": "declined-purchase",
+    "xy": [
+     0.0464,
+     0.0856
+    ]
+   },
+   {
+    "id": "pt-04",
+    "lang": "pt",
+    "q": "Meu produto está bloqueado, como faço para ativar de novo?",
+    "gold": "product-status",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.615,
+    "best_other_cos": 0.233,
+    "top_cos": 0.615,
+    "top_lexical": 0.392,
+    "abstained": false,
+    "top_hit": "product-status",
+    "xy": [
+     0.0779,
+     0.2024
+    ]
+   },
+   {
+    "id": "pt-06",
+    "lang": "pt",
+    "q": "Quanto tempo leva para chegar o cartão novo se roubaram o meu?",
+    "gold": "lost-card",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.685,
+    "best_other_cos": 0.3,
+    "top_cos": 0.685,
+    "top_lexical": 0.52,
+    "abstained": false,
+    "top_hit": "lost-card",
+    "xy": [
+     0.0853,
+     0.1753
+    ]
+   },
+   {
+    "id": "pt-08",
+    "lang": "pt",
+    "q": "Existe um teto por dia para enviar dinheiro?",
+    "gold": "transfers",
+    "ranks": {
+     "bm25-words": 4,
+     "bm25-stems": 4,
+     "dense": 2,
+     "hybrid": 2
+    },
+    "gold_cos": 0.242,
+    "best_other_cos": 0.258,
+    "top_cos": 0.258,
+    "top_lexical": 0.0,
+    "abstained": false,
+    "top_hit": "currencies",
+    "xy": [
+     -0.0604,
+     0.15
+    ]
+   },
+   {
+    "id": "pt-10",
+    "lang": "pt",
+    "q": "O que quer dizer minha reclamação estar escalada?",
+    "gold": "complaints-process",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.473,
+    "best_other_cos": 0.212,
+    "top_cos": 0.473,
+    "top_lexical": 0.585,
+    "abstained": false,
+    "top_hit": "complaints-process",
+    "xy": [
+     0.082,
+     0.0816
+    ]
+   },
+   {
+    "id": "pt-12",
+    "lang": "pt",
+    "q": "Se eu pagar só o mínimo, o resto da dívida rende alguma coisa?",
+    "gold": "credit-card-basics",
+    "ranks": {
+     "bm25-words": 2,
+     "bm25-stems": 2,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.304,
+    "best_other_cos": 0.265,
+    "top_cos": 0.304,
+    "top_lexical": 0.249,
+    "abstained": false,
+    "top_hit": "credit-card-basics",
+    "xy": [
+     -0.0168,
+     0.1659
+    ]
+   },
+   {
+    "id": "pt-14",
+    "lang": "pt",
+    "q": "Dá para combinar um plano para regularizar o que devo?",
+    "gold": "past-due",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 3,
+     "hybrid": 1
+    },
+    "gold_cos": 0.158,
+    "best_other_cos": 0.184,
+    "top_cos": 0.184,
+    "top_lexical": 0.403,
+    "abstained": true,
+    "top_hit": null,
+    "xy": [
+     -0.0582,
+     0.1265
+    ]
+   },
+   {
+    "id": "pt-16",
+    "lang": "pt",
+    "q": "Recebi uma mensagem pedindo meu token, é do banco?",
+    "gold": "security-tips",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.401,
+    "best_other_cos": 0.276,
+    "top_cos": 0.401,
+    "top_lexical": 0.364,
+    "abstained": false,
+    "top_hit": "security-tips",
+    "xy": [
+     -0.0434,
+     -0.0794
+    ]
+   },
+   {
+    "id": "pt-18",
+    "lang": "pt",
+    "q": "Troquei de número de celular e não consigo entrar, como atualizo?",
+    "gold": "login-help",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.474,
+    "best_other_cos": 0.227,
+    "top_cos": 0.474,
+    "top_lexical": 0.554,
+    "abstained": false,
+    "top_hit": "login-help",
+    "xy": [
+     -0.0074,
+     -0.086
+    ]
+   },
+   {
+    "id": "pt-20",
+    "lang": "pt",
+    "q": "Quanto tempo dura a verificação depois que eu faço?",
+    "gold": "identity-verification",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.331,
+    "best_other_cos": 0.26,
+    "top_cos": 0.331,
+    "top_lexical": 0.585,
+    "abstained": false,
+    "top_hit": "identity-verification",
+    "xy": [
+     0.036,
+     -0.0183
+    ]
+   },
+   {
+    "id": "pt-22",
+    "lang": "pt",
+    "q": "Quais documentos servem para me identificar na Argentina?",
+    "gold": "accepted-documents",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.574,
+    "best_other_cos": 0.23,
+    "top_cos": 0.574,
+    "top_lexical": 0.499,
+    "abstained": false,
+    "top_hit": "accepted-documents",
+    "xy": [
+     -0.1426,
+     -0.0264
+    ]
+   },
+   {
+    "id": "pt-24",
+    "lang": "pt",
+    "q": "Dá para somar meus saldos em pesos e em dólares?",
+    "gold": "currencies",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.312,
+    "best_other_cos": 0.166,
+    "top_cos": 0.312,
+    "top_lexical": 0.454,
+    "abstained": false,
+    "top_hit": "currencies",
+    "xy": [
+     -0.0636,
+     0.1477
+    ]
+   },
+   {
+    "id": "pt-26",
+    "lang": "pt",
+    "q": "Onde posso fazer operações além do app?",
+    "gold": "channels",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.49,
+    "best_other_cos": 0.263,
+    "top_cos": 0.49,
+    "top_lexical": 0.484,
+    "abstained": false,
+    "top_hit": "channels",
+    "xy": [
+     -0.0674,
+     0.1196
+    ]
+   },
+   {
+    "id": "pt-28",
+    "lang": "pt",
+    "q": "Posso falar com uma pessoa se a Nova não resolver?",
+    "gold": "human-advisor",
+    "ranks": {
+     "bm25-words": 3,
+     "bm25-stems": 4,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.496,
+    "best_other_cos": 0.448,
+    "top_cos": 0.496,
+    "top_lexical": 0.217,
+    "abstained": false,
+    "top_hit": "human-advisor",
+    "xy": [
+     0.1291,
+     0.0804
+    ]
+   },
+   {
+    "id": "pt-30",
+    "lang": "pt",
+    "q": "Até que data vão os dados que a Nova me mostra?",
+    "gold": "data-freshness",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.556,
+    "best_other_cos": 0.433,
+    "top_cos": 0.556,
+    "top_lexical": 0.535,
+    "abstained": false,
+    "top_hit": "data-freshness",
+    "xy": [
+     0.1387,
+     0.1029
+    ]
+   },
+   {
+    "id": "pt-32",
+    "lang": "pt",
+    "q": "Ainda não tenho conta, por onde começo?",
+    "gold": "account-opening",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.207,
+    "best_other_cos": 0.2,
+    "top_cos": 0.207,
+    "top_lexical": 0.718,
+    "abstained": false,
+    "top_hit": "account-opening",
+    "xy": [
+     0.0784,
+     0.0608
+    ]
+   },
+   {
+    "id": "pt-34",
+    "lang": "pt",
+    "q": "Os atendentes veem todos os meus dados ou só o necessário?",
+    "gold": "privacy",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 1,
+     "dense": 1,
+     "hybrid": 1
+    },
+    "gold_cos": 0.262,
+    "best_other_cos": 0.247,
+    "top_cos": 0.262,
+    "top_lexical": 0.476,
+    "abstained": false,
+    "top_hit": "privacy",
+    "xy": [
+     0.0158,
+     0.0554
+    ]
+   },
+   {
+    "id": "pt-36",
+    "lang": "pt",
+    "q": "Posso pedir para a Nova encerrar minha conta?",
+    "gold": "unsupported-actions",
+    "ranks": {
+     "bm25-words": 1,
+     "bm25-stems": 5,
+     "dense": 1,
+     "hybrid": 2
+    },
+    "gold_cos": 0.58,
+    "best_other_cos": 0.461,
+    "top_cos": 0.58,
+    "top_lexical": 0.221,
+    "abstained": false,
+    "top_hit": "complaints-process",
+    "xy": [
+     0.1352,
+     0.0975
+    ]
+   },
+   {
+    "id": "pt-38",
+    "lang": "pt",
+    "q": "Onde fica a agência de Medellín?",
+    "gold": "branches-colombia",
+    "ranks": {
+     "bm25-words": 2,
+     "bm25-stems": 1,
+     "dense": 2,
+     "hybrid": 1
+    },
+    "gold_cos": 0.308,
+    "best_other_cos": 0.345,
+    "top_cos": 0.345,
+    "top_lexical": 0.359,
+    "abstained": false,
+    "top_hit": "branches-colombia",
+    "xy": [
+     -0.2074,
+     0.0764
+    ]
+   },
+   {
+    "id": "pt-45",
+    "lang": "pt",
+    "q": "Vocês emprestam dinheiro para comprar um carro?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.176,
+    "top_cos": 0.176,
+    "top_lexical": 0.288,
+    "abstained": true,
+    "top_hit": null,
+    "xy": [
+     -0.0389,
+     0.1403
+    ]
+   },
+   {
+    "id": "pt-46",
+    "lang": "pt",
+    "q": "Aceitam pagamento com criptomoedas nas agências?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.281,
+    "top_cos": 0.281,
+    "top_lexical": 0.191,
+    "abstained": false,
+    "top_hit": "branches-argentina",
+    "xy": [
+     -0.2009,
+     0.1405
+    ]
+   },
+   {
+    "id": "pt-47",
+    "lang": "pt",
+    "q": "Vocês têm agência no Chile?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.273,
+    "top_cos": 0.273,
+    "top_lexical": 0.496,
+    "abstained": false,
+    "top_hit": "branches-colombia",
+    "xy": [
+     -0.1709,
+     0.1198
+    ]
+   },
+   {
+    "id": "pt-48",
+    "lang": "pt",
+    "q": "Qual é o código SWIFT do banco?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.285,
+    "top_cos": 0.285,
+    "top_lexical": 0.403,
+    "abstained": false,
+    "top_hit": "security-tips",
+    "xy": [
+     -0.1598,
+     0.0016
+    ]
+   },
+   {
+    "id": "pt-49",
+    "lang": "pt",
+    "q": "Quantos funcionários o NovaBank tem?",
+    "gold": null,
+    "ranks": {
+     "bm25-words": null,
+     "bm25-stems": null,
+     "dense": null,
+     "hybrid": null
+    },
+    "gold_cos": null,
+    "best_other_cos": 0.414,
+    "top_cos": 0.414,
+    "top_lexical": 0.283,
+    "abstained": false,
+    "top_hit": "branches-argentina",
+    "xy": [
+     -0.2738,
+     -0.0118
+    ]
+   }
+  ]
+ },
+ "cost": {
+  "source": "evals/report/results/run6.json",
+  "model": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+  "price_per_mtok": {
+   "input": 1.0,
+   "output": 5.0
+  },
+  "price_per_token": {
+   "input": 1e-06,
+   "output": 5e-06
+  },
+  "all": {
+   "conversations": 180,
+   "messages": 228,
+   "input_tokens_per_conversation": 3442,
+   "output_tokens_per_conversation": 127,
+   "cost_per_conversation": 0.004076,
+   "cost_per_message": 0.003218,
+   "input_share_of_cost": 0.844
+  },
+  "p95_per_conversation": 0.007757,
+  "by_kind": {
+   "account": {
+    "conversations": 60,
+    "messages": 60,
+    "input_tokens_per_conversation": 4926,
+    "output_tokens_per_conversation": 137,
+    "cost_per_conversation": 0.005609,
+    "cost_per_message": 0.005609,
+    "input_share_of_cost": 0.878
+   },
+   "ambiguous": {
+    "conversations": 12,
+    "messages": 12,
+    "input_tokens_per_conversation": 2322,
+    "output_tokens_per_conversation": 58,
+    "cost_per_conversation": 0.002611,
+    "cost_per_message": 0.002611,
+    "input_share_of_cost": 0.889
+   },
+   "handoff": {
+    "conversations": 30,
+    "messages": 30,
+    "input_tokens_per_conversation": 2505,
+    "output_tokens_per_conversation": 193,
+    "cost_per_conversation": 0.003472,
+    "cost_per_message": 0.003472,
+    "input_share_of_cost": 0.721
+   },
+   "public": {
+    "conversations": 24,
+    "messages": 24,
+    "input_tokens_per_conversation": 1162,
+    "output_tokens_per_conversation": 89,
+    "cost_per_conversation": 0.001605,
+    "cost_per_message": 0.001605,
+    "input_share_of_cost": 0.724
+   },
+   "unsafe": {
+    "conversations": 24,
+    "messages": 24,
+    "input_tokens_per_conversation": 2752,
+    "output_tokens_per_conversation": 99,
+    "cost_per_conversation": 0.003249,
+    "cost_per_message": 0.003249,
+    "input_share_of_cost": 0.847
+   },
+   "unsupported": {
+    "conversations": 18,
+    "messages": 18,
+    "input_tokens_per_conversation": 2334,
+    "output_tokens_per_conversation": 99,
+    "cost_per_conversation": 0.00283,
+    "cost_per_message": 0.00283,
+    "input_share_of_cost": 0.825
+   },
+   "verification": {
+    "conversations": 12,
+    "messages": 60,
+    "input_tokens_per_conversation": 7078,
+    "output_tokens_per_conversation": 154,
+    "cost_per_conversation": 0.007848,
+    "cost_per_message": 0.00157,
+    "input_share_of_cost": 0.902
+   }
+  },
+  "titan_price_per_mtok": 0.02
+ }
+}
