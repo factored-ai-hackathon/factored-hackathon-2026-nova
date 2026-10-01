@@ -10,6 +10,9 @@ Every message the model sees is also classified in code (app/agent/intent.py, th
 component): the conversation's intent goes into the case, and for the reasons a first contact
 rarely solves (complaints, retention) the turn's prompt tells the model to offer a human sooner.
 
+Questions about products and policies go through search_policies (app/agent/knowledge.py,
+decision 32): the account_tools node runs it too, verified or not (the documents are not data).
+
 Security steps are enforced here, in code: identity verification lives in auth_gate
 (app/agent/identity.py), and the model can only ask for it. The account tools are bound only
 when the session is verified, and account_tools runs them for the session's customer
@@ -27,7 +30,7 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from app.agent import handoff, identity, intent
+from app.agent import handoff, identity, intent, knowledge
 from app.agent.account_data import AccountData, get_account_data
 from app.agent.account_tools import ACCOUNT_TOOL_NAMES, ACCOUNT_TOOLS, run_account_tool
 from app.config import get_settings
@@ -75,10 +78,19 @@ def build_graph(
     cases = case_store or handoff.get_case_store()
     as_of = get_settings().data_as_of_date
     # Handing over to a person is always possible, verified or not.
+    # Questions about products and policies can be answered with or without verification: the
+    # documents are not customer data (decision 32).
     model_with_verify = _with_tools(
-        model, [identity.start_identity_verification, handoff.request_human_agent]
+        model,
+        [
+            identity.start_identity_verification,
+            handoff.request_human_agent,
+            knowledge.search_policies,
+        ],
     )
-    model_with_accounts = _with_tools(model, [*ACCOUNT_TOOLS, handoff.request_human_agent])
+    model_with_accounts = _with_tools(
+        model, [*ACCOUNT_TOOLS, handoff.request_human_agent, knowledge.search_policies]
+    )
 
     def route(state: ChatState) -> str:
         # An open case: the human handles the conversation, the model stays out.
@@ -104,7 +116,7 @@ def build_graph(
             rounds = state.get("tool_rounds", 0)
             llm = model_with_accounts if rounds < MAX_TOOL_ROUNDS else model
         else:
-            llm = model_with_verify
+            llm = model_with_verify if state.get("tool_rounds", 0) < MAX_TOOL_ROUNDS else model
         reply = await llm.ainvoke([SystemMessage(prompt), *state["messages"]], config)
         return {"messages": [reply], "case": case, "turn_intent": seen.as_dict()}
 
@@ -114,9 +126,11 @@ def build_graph(
             return END
         if any(c["name"] == handoff.HANDOFF_TOOL for c in calls):
             return "handoff"
-        if identity.is_verified(state.get("auth"), verifier.now()) and all(
-            c["name"] in ACCOUNT_TOOL_NAMES for c in calls
-        ):
+        # Tools that can run now: the documents search always, the account tools once verified.
+        runnable = {knowledge.SEARCH_TOOL_NAME}
+        if identity.is_verified(state.get("auth"), verifier.now()):
+            runnable |= ACCOUNT_TOOL_NAMES
+        if all(c["name"] in runnable for c in calls):
             # Out of rounds (the model had no tools but still asked): end the turn.
             return "account_tools" if state.get("tool_rounds", 0) < MAX_TOOL_ROUNDS else END
         # Asked to verify, or asked for account data before verifying: verification first.
@@ -129,9 +143,17 @@ def build_graph(
         verified = identity.is_verified(auth, verifier.now())  # again: it may expire mid-turn
         case = state.get("case") or {}
         evidence = list(case.get("evidence", []))
-        results = []
+        results, blocked = [], False
         for call in state["messages"][-1].tool_calls:
+            if call["name"] == knowledge.SEARCH_TOOL_NAME:
+                content = await knowledge.run_search(call.get("args") or {}, state["lang"])
+                results.append(ToolMessage(content, tool_call_id=call["id"], name=call["name"]))
+                evidence.append(
+                    handoff.evidence_entry(call["name"], call.get("args") or {}, content)
+                )
+                continue
             if not verified:
+                blocked = True
                 content = json.dumps({"error": "verification expired: the customer must verify"})
                 results.append(ToolMessage(content, tool_call_id=call["id"], name=call["name"]))
                 continue
@@ -147,7 +169,7 @@ def build_graph(
         rounds = state.get("tool_rounds", 0) + 1
         return {
             "messages": results,
-            "tool_rounds": rounds if verified else MAX_TOOL_ROUNDS,
+            "tool_rounds": MAX_TOOL_ROUNDS if blocked else rounds,
             "case": {**case, "evidence": evidence[-handoff.MAX_EVIDENCE :]},
         }
 

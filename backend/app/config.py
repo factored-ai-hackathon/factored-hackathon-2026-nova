@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     # isn't supported on demand). Credentials come from the standard AWS chain (IAM role in prod).
     bedrock_model_id: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     aws_region: str = "us-east-2"
+    # Knowledge search (decision 32): the question is embedded with Titan; without it, lexical only.
+    knowledge_dense: bool = True
     llm_max_tokens: int = 1024
     cors_origins: str = "http://localhost:5173"
     # Deployed: CloudFront adds this secret as the X-Origin-Verify header, so the public Lambda

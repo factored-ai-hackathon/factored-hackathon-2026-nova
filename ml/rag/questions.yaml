@@ -1,0 +1,110 @@
+# Held-out questions for the knowledge search (ml/rag/evaluate.py).
+#
+# TEAM-GENERATED, SYNTHETIC: written for this evaluation (with Claude's help) AFTER the knowledge
+# base, in colloquial phrasing that does not copy the documents' wording. Nothing here is real
+# customer text.
+#   gold:  the topic id (backend/app/agent/knowledge/docs_*.yaml) whose chunk answers the question,
+#          or null when the knowledge base has no answer (the search must abstain)
+#   split: dev  = used to choose the abstention thresholds (and nothing else)
+#          test = used only for the reported numbers
+questions:
+  # ---------------------------------------------------------------- Spanish
+  - {id: es-01, lang: es, split: dev,  gold: declined-purchase, q: "¿Por qué me rebotaron la compra que hice ayer en el súper?"}
+  - {id: es-02, lang: es, split: test, gold: declined-purchase, q: "me salió un código 51 en el datáfono, ¿qué significa?"}
+  - {id: es-03, lang: es, split: dev,  gold: product-status, q: "¿Qué quiere decir que mi cuenta aparece como suspendida?"}
+  - {id: es-04, lang: es, split: test, gold: product-status, q: "Mi producto está bloqueado, ¿cómo lo activo otra vez?"}
+  - {id: es-05, lang: es, split: dev,  gold: lost-card, q: "Se me perdió la tarjeta en el taxi, ¿qué hago?"}
+  - {id: es-06, lang: es, split: test, gold: lost-card, q: "¿En cuánto tiempo me llega la tarjeta de reposición si me la robaron?"}
+  - {id: es-07, lang: es, split: dev,  gold: transfers, q: "¿Cuánto demora en llegar una transferencia a otro banco?"}
+  - {id: es-08, lang: es, split: test, gold: transfers, q: "¿Hay un tope por día para mandar plata?"}
+  - {id: es-09, lang: es, split: dev,  gold: complaints-process, q: "¿En cuántos días me contestan un reclamo?"}
+  - {id: es-10, lang: es, split: test, gold: complaints-process, q: "¿Qué significa que mi queja esté escalada?"}
+  - {id: es-11, lang: es, split: dev,  gold: credit-card-basics, q: "¿Qué es la fecha de corte de la tarjeta de crédito?"}
+  - {id: es-12, lang: es, split: test, gold: credit-card-basics, q: "Si pago solo el mínimo, ¿pasa algo con el resto de la deuda?"}
+  - {id: es-13, lang: es, split: dev,  gold: past-due, q: "Llevo 20 días sin pagar, ¿qué me cobran de más?"}
+  - {id: es-14, lang: es, split: test, gold: past-due, q: "¿Me pueden dar un plan para ponerme al día con lo que debo?"}
+  - {id: es-15, lang: es, split: dev,  gold: security-tips, q: "¿El banco me va a pedir la clave por teléfono alguna vez?"}
+  - {id: es-16, lang: es, split: test, gold: security-tips, q: "Me llegó un mensaje pidiéndome mi token, ¿es del banco?"}
+  - {id: es-17, lang: es, split: dev,  gold: login-help, q: "No me llega el mensaje de texto con el código para entrar"}
+  - {id: es-18, lang: es, split: test, gold: login-help, q: "Cambié de número de celular y ya no puedo ingresar, ¿cómo lo actualizo?"}
+  - {id: es-19, lang: es, split: dev,  gold: identity-verification, q: "¿Por qué Nova me pide mi fecha de nacimiento antes de darme datos?"}
+  - {id: es-20, lang: es, split: test, gold: identity-verification, q: "¿Cuánto dura la verificación una vez que la hice?"}
+  - {id: es-21, lang: es, split: dev,  gold: accepted-documents, q: "Soy extranjero en Colombia, ¿puedo ingresar con mi cédula de extranjería?"}
+  - {id: es-22, lang: es, split: test, gold: accepted-documents, q: "¿Qué documentos sirven para identificarme en Argentina?"}
+  - {id: es-23, lang: es, split: dev,  gold: currencies, q: "Tengo una cuenta en dólares, ¿me muestran el saldo convertido a pesos?"}
+  - {id: es-24, lang: es, split: test, gold: currencies, q: "¿Se pueden sumar mis saldos de pesos y de dólares?"}
+  - {id: es-25, lang: es, split: dev,  gold: channels, q: "¿Por qué canal se hizo cada movimiento de mi extracto?"}
+  - {id: es-26, lang: es, split: test, gold: channels, q: "¿Dónde puedo hacer operaciones además de la app?"}
+  - {id: es-27, lang: es, split: dev,  gold: human-advisor, q: "¿Qué información le llega al asesor cuando me pasan con él?"}
+  - {id: es-28, lang: es, split: test, gold: human-advisor, q: "¿Puedo hablar con una persona si Nova no me resuelve?"}
+  - {id: es-29, lang: es, split: dev,  gold: data-freshness, q: "Hice un pago hoy y no aparece, ¿cuánto tarda en verse?"}
+  - {id: es-30, lang: es, split: test, gold: data-freshness, q: "¿A qué fecha están los datos que me muestra Nova?"}
+  - {id: es-31, lang: es, split: dev,  gold: account-opening, q: "Quiero hacerme cliente, ¿qué necesito para abrir una cuenta?"}
+  - {id: es-32, lang: es, split: test, gold: account-opening, q: "No tengo cuenta todavía, ¿por dónde empiezo?"}
+  - {id: es-33, lang: es, split: dev,  gold: privacy, q: "¿Guardan mis conversaciones con Nova? ¿por cuánto tiempo?"}
+  - {id: es-34, lang: es, split: test, gold: privacy, q: "¿Los asesores ven todos mis datos o solo lo necesario?"}
+  - {id: es-35, lang: es, split: dev,  gold: unsupported-actions, q: "¿Nova me puede aprobar un préstamo o subir el cupo?"}
+  - {id: es-36, lang: es, split: test, gold: unsupported-actions, q: "¿Puedo pedirle a Nova que cierre mi cuenta?"}
+  - {id: es-37, lang: es, split: dev,  gold: branches-colombia, q: "¿A qué hora cierran las oficinas en Bogotá?"}
+  - {id: es-38, lang: es, split: test, gold: branches-mexico, q: "¿Dónde queda la sucursal de Guadalajara?"}
+  - {id: es-39, lang: es, split: dev,  gold: branches-argentina, q: "¿Atienden los sábados en Rosario?"}
+  - {id: es-40, lang: es, split: dev,  gold: null, q: "¿Cuál es la tasa de interés de un crédito hipotecario?"}
+  - {id: es-41, lang: es, split: dev,  gold: null, q: "¿Puedo comprar bitcoin con mi tarjeta de crédito?"}
+  - {id: es-42, lang: es, split: dev,  gold: null, q: "¿Ofrecen seguros de vida?"}
+  - {id: es-43, lang: es, split: dev,  gold: null, q: "¿Cómo invierto en un CDT a 90 días?"}
+  - {id: es-44, lang: es, split: dev,  gold: null, q: "¿Cómo va a estar el clima mañana?"}
+  - {id: es-45, lang: es, split: test, gold: null, q: "¿Me prestan plata para comprar un carro?"}
+  - {id: es-46, lang: es, split: test, gold: null, q: "¿Aceptan pagos con criptomonedas en las sucursales?"}
+  - {id: es-47, lang: es, split: test, gold: null, q: "¿Tienen una sucursal en Chile?"}
+  - {id: es-48, lang: es, split: test, gold: null, q: "¿Cuál es el código SWIFT del banco?"}
+  - {id: es-49, lang: es, split: test, gold: null, q: "¿Cuántos empleados tiene NovaBank?"}
+  # ---------------------------------------------------------------- Portuguese
+  - {id: pt-01, lang: pt, split: dev,  gold: declined-purchase, q: "Por que minha compra no mercado foi barrada ontem?"}
+  - {id: pt-02, lang: pt, split: test, gold: declined-purchase, q: "apareceu código 05 na maquininha, o que isso quer dizer?"}
+  - {id: pt-03, lang: pt, split: dev,  gold: product-status, q: "O que significa minha conta aparecer como suspensa?"}
+  - {id: pt-04, lang: pt, split: test, gold: product-status, q: "Meu produto está bloqueado, como faço para ativar de novo?"}
+  - {id: pt-05, lang: pt, split: dev,  gold: lost-card, q: "Perdi o cartão no táxi, o que eu faço?"}
+  - {id: pt-06, lang: pt, split: test, gold: lost-card, q: "Quanto tempo leva para chegar o cartão novo se roubaram o meu?"}
+  - {id: pt-07, lang: pt, split: dev,  gold: transfers, q: "Quanto tempo demora uma transferência para outro banco?"}
+  - {id: pt-08, lang: pt, split: test, gold: transfers, q: "Existe um teto por dia para enviar dinheiro?"}
+  - {id: pt-09, lang: pt, split: dev,  gold: complaints-process, q: "Em quantos dias respondem uma reclamação?"}
+  - {id: pt-10, lang: pt, split: test, gold: complaints-process, q: "O que quer dizer minha reclamação estar escalada?"}
+  - {id: pt-11, lang: pt, split: dev,  gold: credit-card-basics, q: "O que é a data de fechamento do cartão de crédito?"}
+  - {id: pt-12, lang: pt, split: test, gold: credit-card-basics, q: "Se eu pagar só o mínimo, o resto da dívida rende alguma coisa?"}
+  - {id: pt-13, lang: pt, split: dev,  gold: past-due, q: "Estou há 20 dias sem pagar, o que cobram a mais de mim?"}
+  - {id: pt-14, lang: pt, split: test, gold: past-due, q: "Dá para combinar um plano para regularizar o que devo?"}
+  - {id: pt-15, lang: pt, split: dev,  gold: security-tips, q: "O banco vai pedir minha senha por telefone alguma vez?"}
+  - {id: pt-16, lang: pt, split: test, gold: security-tips, q: "Recebi uma mensagem pedindo meu token, é do banco?"}
+  - {id: pt-17, lang: pt, split: dev,  gold: login-help, q: "O SMS com o código para entrar não chega"}
+  - {id: pt-18, lang: pt, split: test, gold: login-help, q: "Troquei de número de celular e não consigo entrar, como atualizo?"}
+  - {id: pt-19, lang: pt, split: dev,  gold: identity-verification, q: "Por que a Nova pede minha data de nascimento antes de mostrar os dados?"}
+  - {id: pt-20, lang: pt, split: test, gold: identity-verification, q: "Quanto tempo dura a verificação depois que eu faço?"}
+  - {id: pt-21, lang: pt, split: dev,  gold: accepted-documents, q: "Sou estrangeiro na Colômbia, posso entrar com a cédula de estrangeiro?"}
+  - {id: pt-22, lang: pt, split: test, gold: accepted-documents, q: "Quais documentos servem para me identificar na Argentina?"}
+  - {id: pt-23, lang: pt, split: dev,  gold: currencies, q: "Tenho conta em dólar, mostram meu saldo convertido para pesos?"}
+  - {id: pt-24, lang: pt, split: test, gold: currencies, q: "Dá para somar meus saldos em pesos e em dólares?"}
+  - {id: pt-25, lang: pt, split: dev,  gold: channels, q: "Por qual canal foi feita cada movimentação do meu extrato?"}
+  - {id: pt-26, lang: pt, split: test, gold: channels, q: "Onde posso fazer operações além do app?"}
+  - {id: pt-27, lang: pt, split: dev,  gold: human-advisor, q: "Que informação chega ao atendente quando me passam para ele?"}
+  - {id: pt-28, lang: pt, split: test, gold: human-advisor, q: "Posso falar com uma pessoa se a Nova não resolver?"}
+  - {id: pt-29, lang: pt, split: dev,  gold: data-freshness, q: "Fiz um pagamento hoje e não aparece, quanto demora para ver?"}
+  - {id: pt-30, lang: pt, split: test, gold: data-freshness, q: "Até que data vão os dados que a Nova me mostra?"}
+  - {id: pt-31, lang: pt, split: dev,  gold: account-opening, q: "Quero virar cliente, o que preciso para abrir uma conta?"}
+  - {id: pt-32, lang: pt, split: test, gold: account-opening, q: "Ainda não tenho conta, por onde começo?"}
+  - {id: pt-33, lang: pt, split: dev,  gold: privacy, q: "Vocês guardam minhas conversas com a Nova? Por quanto tempo?"}
+  - {id: pt-34, lang: pt, split: test, gold: privacy, q: "Os atendentes veem todos os meus dados ou só o necessário?"}
+  - {id: pt-35, lang: pt, split: dev,  gold: unsupported-actions, q: "A Nova pode aprovar um empréstimo ou aumentar meu limite?"}
+  - {id: pt-36, lang: pt, split: test, gold: unsupported-actions, q: "Posso pedir para a Nova encerrar minha conta?"}
+  - {id: pt-37, lang: pt, split: dev,  gold: branches-argentina, q: "Que horas fecham as agências em Córdoba?"}
+  - {id: pt-38, lang: pt, split: test, gold: branches-colombia, q: "Onde fica a agência de Medellín?"}
+  - {id: pt-39, lang: pt, split: dev,  gold: branches-mexico, q: "As agências abrem aos sábados na Cidade do México?"}
+  - {id: pt-40, lang: pt, split: dev,  gold: null, q: "Qual é a taxa de juros de um financiamento imobiliário?"}
+  - {id: pt-41, lang: pt, split: dev,  gold: null, q: "Posso comprar bitcoin com meu cartão de crédito?"}
+  - {id: pt-42, lang: pt, split: dev,  gold: null, q: "Vocês oferecem seguro de vida?"}
+  - {id: pt-43, lang: pt, split: dev,  gold: null, q: "Como investir em um CDB de 90 dias?"}
+  - {id: pt-44, lang: pt, split: dev,  gold: null, q: "Como vai estar o tempo amanhã?"}
+  - {id: pt-45, lang: pt, split: test, gold: null, q: "Vocês emprestam dinheiro para comprar um carro?"}
+  - {id: pt-46, lang: pt, split: test, gold: null, q: "Aceitam pagamento com criptomoedas nas agências?"}
+  - {id: pt-47, lang: pt, split: test, gold: null, q: "Vocês têm agência no Chile?"}
+  - {id: pt-48, lang: pt, split: test, gold: null, q: "Qual é o código SWIFT do banco?"}
+  - {id: pt-49, lang: pt, split: test, gold: null, q: "Quantos funcionários o NovaBank tem?"}

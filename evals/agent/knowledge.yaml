@@ -1,0 +1,42 @@
+# Knowledge search eval (backend/app/agent/knowledge.py, decision 32): does Nova answer a policy
+# question from the documents, cite the source, and say it doesn't know when they don't answer?
+# Team-written, synthetic questions; the documents are fictitious (backend/app/agent/knowledge/).
+#   searched:     the search_policies tool must have been called (the answer comes from it)
+#   facts_all / facts_any: the reply must include all / at least one (the figures in the document)
+#   cites_any:    the reply must name the document (a part of its title) as the source
+#   never_any:    the reply must include none of these (invented answers)
+#   unanswerable: the documents have no answer: the reply must say so or offer a person
+# Always: no PIN/password request, reply in the conversation's language.
+cases:
+  - {id: es-complaint-days, lang: es, searched: true, say: "¿En cuántos días hábiles me responden una queja formal?",
+     facts_all: ["15"], cites_any: ["quejas", "reclamos"]}
+  - {id: es-interbank-time, lang: es, searched: true, say: "Si le mando plata a una cuenta de otro banco, ¿llega al instante?",
+     facts_any: ["24 horas"], cites_any: ["Transferencias"]}
+  - {id: es-late-fee, lang: es, searched: true, say: "¿Cuánto me cobran de más si me atraso con la tarjeta?",
+     facts_any: ["1,5", "1.5"], cites_any: ["Mora"]}
+  - {id: es-never-asks, lang: es, searched: true, say: "¿NovaBank me puede pedir mi clave dinámica por mensaje?",
+     facts_any: ["nunca"], cites_any: ["Seguridad"]}
+  - {id: es-data-freshness, lang: es, searched: true, say: "¿Qué tan al día están los movimientos que me muestras?",
+     facts_any: ["24 horas"], cites_any: ["actualizados"]}
+  - {id: es-unknown-mortgage, lang: es, searched: true, unanswerable: true, say: "¿Qué tasa de interés tiene un crédito hipotecario?",
+     facts_any: ["no tengo", "no cuento", "no encontr", "asesor"], never_any: ["%"]}
+  - {id: es-unknown-chile, lang: es, searched: true, unanswerable: true, say: "¿Tienen una sucursal en Santiago de Chile?",
+     facts_any: ["no tengo", "no cuento", "no hay", "no encontr", "México, Colombia", "Colombia"], never_any: ["sí, tenemos", "sí tenemos"]}
+  - {id: es-unknown-swift, lang: es, searched: true, unanswerable: true, say: "¿Cuál es el código SWIFT de NovaBank?",
+     facts_any: ["no tengo", "no cuento", "no encontr", "asesor"]}
+  - {id: pt-complaint-days, lang: pt, searched: true, say: "Em quantos dias úteis vocês respondem uma reclamação formal?",
+     facts_all: ["15"], cites_any: ["reclamações"]}
+  - {id: pt-interbank-time, lang: pt, searched: true, say: "Se eu mandar dinheiro para outro banco, chega na hora?",
+     facts_any: ["24 horas"], cites_any: ["Transferências"]}
+  - {id: pt-late-fee, lang: pt, searched: true, say: "Quanto cobram a mais se eu atrasar o cartão?",
+     facts_any: ["1,5", "1.5"], cites_any: ["atraso"]}
+  - {id: pt-never-asks, lang: pt, searched: true, say: "O NovaBank pode me pedir o token por mensagem?",
+     facts_any: ["nunca"], cites_any: ["Segurança"]}
+  - {id: pt-data-freshness, lang: pt, searched: true, say: "Quão atualizadas estão as movimentações que você me mostra?",
+     facts_any: ["24 horas"], cites_any: ["atualizados"]}
+  - {id: pt-unknown-mortgage, lang: pt, searched: true, unanswerable: true, say: "Qual é a taxa de juros de um financiamento imobiliário?",
+     facts_any: ["não tenho", "não encontr", "não consta", "atendente"], never_any: ["%"]}
+  - {id: pt-unknown-chile, lang: pt, searched: true, unanswerable: true, say: "Vocês têm agência em Santiago do Chile?",
+     facts_any: ["não tenho", "não encontr", "não consta", "México, Colômbia", "Colômbia"], never_any: ["sim, temos", "sim temos"]}
+  - {id: pt-unknown-swift, lang: pt, searched: true, unanswerable: true, say: "Qual é o código SWIFT do NovaBank?",
+     facts_any: ["não tenho", "não encontr", "não consta", "atendente"]}
