@@ -77,6 +77,14 @@ resource "aws_iam_role_policy" "api" {
         )
       },
       {
+        # Knowledge search (decision 32): the customer's question is embedded with Titan. Without
+        # this permission the search falls back to lexical only, so applying it is not urgent.
+        Sid      = "EmbedQuestions"
+        Effect   = "Allow"
+        Action   = ["bedrock:InvokeModel"]
+        Resource = ["arn:aws:bedrock:${var.region}::foundation-model/${var.embedding_model_id}"]
+      },
+      {
         Sid      = "ChatSessions"
         Effect   = "Allow"
         Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"]

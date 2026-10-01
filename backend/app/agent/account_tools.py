@@ -16,6 +16,7 @@ from langchain_core.tools import tool
 from app.agent.account_data import AccountData
 
 MAX_TRANSACTIONS = 50
+DEFAULT_DAYS = 90
 
 # ISO 8583 response codes in the dataset.
 DECLINE_REASONS = {
@@ -35,13 +36,15 @@ def get_my_products() -> str:
 
 @tool
 def get_my_transactions(
-    days: int = 30,
+    days: int = 90,
     status: Literal["all", "approved", "declined", "pending", "reversed"] = "all",
     search: str | None = None,
     limit: int = 20,
 ) -> str:
     """The customer's transactions, newest first, from the last `days` days (1-365) before
-    the data date. Filter by `status` (e.g. "declined" for rejected payments) and/or `search`
+    the data date (default 90: when the customer names a month or no period, look back at least
+    that far, or recent-looking results hide older ones). Filter by `status` (e.g. "declined" for
+    rejected payments) and/or `search`
     (text in the merchant, category or type: Deposit, Withdrawal, Transfer, Payment, Purchase or
     Adjustment; Spanish or Portuguese words like "transferencia" or "compra" work too). Declined
     ones include the reason."""
@@ -106,7 +109,7 @@ def _matches(row: dict, text: str) -> bool:
 
 
 async def _transactions(data: AccountData, customer_id: str, as_of: date, args: dict) -> dict:
-    days = min(max(int(args.get("days") or 30), 1), 365)
+    days = min(max(int(args.get("days") or DEFAULT_DAYS), 1), 365)
     status = (args.get("status") or "all").lower()
     search = (args.get("search") or "").strip()
     limit = min(max(int(args.get("limit") or 20), 1), MAX_TRANSACTIONS)

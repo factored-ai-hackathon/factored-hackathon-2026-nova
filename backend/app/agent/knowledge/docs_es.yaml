@@ -1,0 +1,148 @@
+# Base de conocimiento de Nova (español). Búsqueda: search_policies (app/agent/knowledge.py).
+# DATOS FICTICIOS: políticas y cifras escritas por el equipo para este demo de NovaBank; no son de
+# ningún banco real. Los códigos de rechazo, estados y tipos de movimiento vienen del dataset.
+# Un fragmento (chunk) por entrada: una idea, ~80-150 palabras, con su id (el mismo tema en ES y PT).
+- id: declined-purchase
+  title: "Por qué se rechaza una compra"
+  source: "equipo (ficticio); códigos de respuesta del dataset"
+  text: >
+    Una compra rechazada no se cobra. Los motivos más comunes, según el código de respuesta: 51,
+    fondos insuficientes (el saldo o el cupo disponible no alcanza); 05, no autorizada por una regla
+    de seguridad del banco; 14, número de tarjeta inválido; 54, tarjeta vencida. Si el motivo es
+    el 05, un asesor puede revisar la regla. Nova puede mostrarte tus compras rechazadas con su
+    motivo, pero no puede aprobar una compra ni cambiar los cupos o las reglas de seguridad.
+- id: product-status
+  title: "Estados de un producto (activo, bloqueado, suspendido, cerrado)"
+  source: "equipo (ficticio); estados del dataset"
+  text: >
+    Cada producto tiene un estado. Activo: funciona con normalidad. Bloqueado: no admite compras ni
+    retiros, por seguridad o a pedido tuyo. Suspendido: detenido temporalmente, por ejemplo por mora
+    o por documentos pendientes. Cerrado: terminó y no se puede usar. Para desbloquear o reactivar un
+    producto hay que hablar con un asesor; Nova no puede cambiar el estado de un producto.
+- id: lost-card
+  title: "Tarjeta perdida, robada o cargo que no reconoces"
+  source: "equipo (ficticio)"
+  text: >
+    Si perdiste tu tarjeta, te la robaron o ves un cargo que no hiciste, avisa de inmediato: Nova te
+    comunica con un asesor, que bloquea la tarjeta y abre la revisión del cargo. No compartas tu PIN,
+    tu contraseña ni códigos con nadie, tampoco con el banco. La tarjeta nueva llega en 5 días
+    hábiles. Mientras el caso está abierto, el asesor te escribe en este mismo chat.
+- id: transfers
+  title: "Transferencias, plazos y límites"
+  source: "equipo (ficticio)"
+  text: >
+    Las transferencias entre cuentas de NovaBank son inmediatas. Las transferencias a otros bancos
+    pueden tardar hasta 24 horas hábiles en acreditarse. Cada cliente tiene un límite diario de
+    transferencias, definido en su contrato; Nova no puede subirlo. Nova tampoco puede hacer
+    transferencias por ti: se hacen desde la app o la banca en línea, y si hay un problema con una,
+    un asesor la revisa.
+- id: complaints-process
+  title: "Cómo funcionan las quejas y reclamos"
+  source: "equipo (ficticio); estados y plazos medidos en el dataset"
+  text: >
+    Puedes presentar una queja o un reclamo hablando con un asesor desde este chat. Cada queja tiene
+    una prioridad (baja, media o alta) y un estado: abierta, en proceso, escalada o cerrada. La
+    respuesta se da en un máximo de 15 días hábiles. Nova puede decirte en qué estado va una queja
+    que ya registraste, pero no puede registrarla ni cerrarla.
+- id: credit-card-basics
+  title: "Tarjeta de crédito: cupo, saldo, fecha de corte y pago mínimo"
+  source: "equipo (ficticio)"
+  text: >
+    El cupo es el máximo que puedes gastar con la tarjeta; el saldo es lo que debes en este momento;
+    lo disponible es el cupo menos el saldo. Cada mes hay una fecha de corte (se calcula lo que
+    debes) y una fecha límite de pago. El pago mínimo evita la mora, pero el resto genera intereses.
+    Nova puede mostrarte el cupo y el saldo de tu tarjeta; los pagos se hacen desde la app o la
+    banca en línea.
+- id: past-due
+  title: "Mora y días de atraso"
+  source: "equipo (ficticio); días de mora del dataset"
+  text: >
+    Los días de atraso cuentan desde la fecha límite de pago sin pagar. Con atraso, el producto
+    puede suspenderse y se cobra una tasa de mora equivalente a 1,5 veces la tasa normal del
+    producto. Al pagar lo vencido el atraso vuelve a cero. Si no puedes pagar, un asesor puede
+    revisar con tu caso un plan de pagos; Nova no puede negociar ni cambiar fechas.
+- id: security-tips
+  title: "Seguridad: lo que NovaBank nunca te pide"
+  source: "equipo (ficticio)"
+  text: >
+    NovaBank nunca te pide por chat, llamada o mensaje tu PIN, tu contraseña, tu clave dinámica ni
+    el número completo de tu tarjeta. El único código que recibes es el de 6 dígitos por SMS para
+    iniciar sesión o verificar tu identidad, y vale 5 minutos. Si alguien te pide esos datos,
+    no los des y avisa a un asesor.
+- id: login-help
+  title: "Cómo iniciar sesión y qué hacer si no puedes"
+  source: "equipo (ficticio)"
+  text: >
+    Para ingresar eliges tu país, tu tipo y número de documento y tu clave; después escribes el código
+    de 6 dígitos que llega por SMS al celular registrado. Si el código falla tres veces, debes
+    volver a empezar el ingreso. Si no tienes un celular registrado no puedes recibir el código: un
+    asesor o una sucursal pueden actualizar tu número. Nova no puede cambiar tu clave ni tu celular.
+- id: identity-verification
+  title: "Verificación de identidad en el chat"
+  source: "equipo (ficticio); descrito en la decisión 22"
+  text: >
+    Para consultar datos de tu cuenta, Nova verifica quién eres con tu número de documento, tu fecha
+    de nacimiento y un código de 6 dígitos enviado por SMS. Tres intentos fallidos bloquean la
+    verificación. Una vez verificado, vale 30 minutos. Nova nunca guarda tus respuestas de
+    verificación en la conversación.
+- id: accepted-documents
+  title: "Documentos de identidad aceptados por país"
+  source: "equipo (ficticio); tipos de documento del dataset"
+  text: >
+    En México se acepta el DNI. En Colombia se acepta la cédula de ciudadanía (CC), la cédula de
+    extranjería (CE) y el pasaporte. En Argentina se acepta el DNI. Para iniciar sesión se usa el
+    documento con el que abriste la cuenta; si tu pasaporte tiene letras, escríbelas tal cual.
+- id: currencies
+  title: "Monedas de las cuentas"
+  source: "equipo (ficticio)"
+  text: >
+    Cada producto tiene su propia moneda: la local de tu país (peso colombiano, peso mexicano, peso
+    argentino) o dólares estadounidenses (USD). Nova te muestra cada saldo en la moneda de la
+    cuenta y no hace conversiones ni suma saldos de monedas distintas. Los cambios de moneda se
+    hacen desde la app o con un asesor.
+- id: channels
+  title: "Canales para hacer operaciones"
+  source: "equipo (ficticio); canales del dataset"
+  text: >
+    Puedes operar por la app, la banca en línea (web), en comercios con tu tarjeta (POS) y en
+    cajeros automáticos. Cada movimiento muestra el canal por el que se hizo. Nova solo consulta
+    información: no hace pagos, retiros ni transferencias en ningún canal.
+- id: human-advisor
+  title: "Cuándo y cómo te atiende un asesor humano"
+  source: "equipo (ficticio); decisión 27"
+  text: >
+    Nova te pasa con un asesor humano si lo pides, si hay fraude o un cargo que no reconoces, si
+    quieres una queja formal o si necesitas algo que Nova no puede hacer. Se abre un caso con un
+    número, y el asesor recibe un resumen, tus datos ya verificados y la evidencia consultada, para
+    que no repitas nada. El asesor te responde en este mismo chat; mientras tanto Nova no responde.
+- id: data-freshness
+  title: "Qué tan actualizados están tus datos"
+  source: "equipo (ficticio); política de actualización"
+  text: >
+    Los saldos y movimientos que muestra Nova son una foto de los datos del banco con corte a una
+    fecha, que Nova indica en cada respuesta. Los movimientos nuevos pueden tardar hasta 24 horas en
+    aparecer. Las compras en proceso aparecen como pendientes hasta que se confirman. En este demo,
+    la fecha de corte es el 17 de junio de 2026.
+- id: account-opening
+  title: "Cómo abrir una cuenta en NovaBank"
+  source: "equipo (ficticio)"
+  text: >
+    Para abrir una cuenta escribe por WhatsApp al número de NovaBank de tu país, que aparece en la
+    página de ingreso: allí te ayudan con el proceso. Necesitas tu documento de identidad y un
+    celular. Mientras no tengas cuenta, no puedes ingresar a la banca en línea. Nova no puede abrir
+    cuentas.
+- id: privacy
+  title: "Cómo se protegen tus datos en el chat"
+  source: "equipo (ficticio); describe el sistema real"
+  text: >
+    Nova solo consulta tus datos después de verificar tu identidad, y solo los tuyos. Los números de
+    tarjeta, de cuenta y los correos se enmascaran antes de guardar la conversación. La conversación
+    se borra a las 24 horas sin actividad, y las métricas sin datos personales se guardan 30 días.
+    Los asesores ven solo lo necesario para atender tu caso.
+- id: unsupported-actions
+  title: "Lo que Nova no puede hacer"
+  source: "equipo (ficticio)"
+  text: >
+    Nova solo informa y orienta. No puede hacer transferencias ni pagos, bloquear o desbloquear
+    tarjetas, aprobar préstamos o aumentar cupos, cambiar tus datos (dirección, celular, clave) ni
+    cerrar productos. Para cualquiera de esas gestiones, Nova te comunica con un asesor.

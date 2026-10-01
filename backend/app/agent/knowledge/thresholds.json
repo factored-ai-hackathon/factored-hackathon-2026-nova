@@ -1,0 +1,8 @@
+{
+ "thresholds": {
+  "dense": 0.19,
+  "lexical": 0.45,
+  "lexical_only": 0.025
+ },
+ "calibrated_on": "dev split of ml/rag/questions.yaml (50 questions)"
+}
