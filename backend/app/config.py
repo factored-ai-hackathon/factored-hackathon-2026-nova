@@ -61,7 +61,8 @@ class Settings(BaseSettings):
     demo_password: str = "Nova2026"
     verification_max_attempts: int = 3
     otp_ttl_seconds: int = 300
-    verified_ttl_minutes: int = 30
+    verified_ttl_minutes: int = 30  # idle timeout: renewed by each chat turn and home page load
+    verified_max_hours: int = 8  # never beyond this since the login
     # Spend limits (see docs/api-contract.md). Unset = no limit (local development).
     daily_budget_usd: float | None = None
     rate_limit_per_hour: int | None = None

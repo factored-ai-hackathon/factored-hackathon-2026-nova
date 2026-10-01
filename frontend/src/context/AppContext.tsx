@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Customer, Language } from '../types';
+import { KEYS, clearCustomerSession, loadStored, saveStored } from '../utils/persist';
 
 interface AppState {
   customer: Customer | null;
@@ -27,17 +28,27 @@ interface AppContextValue extends AppState {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AppState>({
-    customer: null,
-    language: 'es',
-    isAuthenticated: false,
+  // A reload keeps the logged-in customer and the language until they log out.
+  const [state, setState] = useState<AppState>(() => {
+    const customer = loadStored<Customer>(KEYS.customer);
+    return {
+      customer,
+      language: loadStored<Language>(KEYS.language) ?? 'es',
+      isAuthenticated: customer !== null,
+    };
   });
+
+  useEffect(() => {
+    if (state.customer) saveStored(KEYS.customer, state.customer);
+    saveStored(KEYS.language, state.language);
+  }, [state.customer, state.language]);
 
   useEffect(() => {
     document.documentElement.lang = state.language === 'pt' ? 'pt-BR' : 'es';
   }, [state.language]);
 
   const setCustomer = useCallback((customer: Customer | null) => {
+    if (customer === null) clearCustomerSession();
     setState((prev) => ({
       ...prev,
       customer,
@@ -50,6 +61,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    clearCustomerSession();
     setState((prev) => ({ ...prev, customer: null, isAuthenticated: false }));
   }, []);
 

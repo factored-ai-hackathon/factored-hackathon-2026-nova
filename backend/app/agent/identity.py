@@ -12,7 +12,8 @@ Security choices:
 - `max_attempts` failures (wrong data or wrong code) lock verification for the whole session.
 - The code is stored hashed with a random salt, expires after `otp_ttl_seconds`, and is only shown
   through the delivery channel (in the demo, a `notice` event: there is no real SMS).
-- Verification lasts `verified_ttl_seconds`; after that the customer has to verify again.
+- Verification lasts `verified_ttl_seconds` from the last activity (renewed(): an idle timeout, with
+  a maximum since it was granted); after that the customer has to verify again.
 """
 
 import asyncio
@@ -373,6 +374,17 @@ def is_verified(auth: dict | None, now: float | None = None) -> bool:
     return auth.get("step") == "verified" and auth.get("verified_until", 0) > now
 
 
+def renewed(auth: dict, now: float, idle_seconds: int, max_seconds: int) -> dict:
+    """Idle timeout: while the customer is active, a verification lasts `idle_seconds` from the
+    last activity, but never beyond `max_seconds` since it was first granted. It never brings back
+    one that already expired."""
+    if not is_verified(auth, now):
+        return auth
+    since = auth.get("verified_at", now)  # sessions from before this field: counted from now
+    until = min(now + idle_seconds, since + max_seconds)
+    return {**auth, "verified_at": since, "verified_until": max(auth["verified_until"], until)}
+
+
 def verified_context(auth: dict, lang: str, as_of: date | None = None) -> str:
     day = as_of.strftime("%d/%m/%Y") if as_of else ""
     return text(lang, "verified_context", name=auth.get("first_name", ""), as_of=day)
@@ -478,7 +490,10 @@ class IdentityVerifier:
         for key in ("otp_hash", "otp_salt", "otp_expires_at", "phone_last4"):
             auth.pop(key, None)
         auth.update(
-            step="verified", failures=0, verified_until=self.now() + self.verified_ttl_seconds
+            step="verified",
+            failures=0,
+            verified_at=self.now(),
+            verified_until=self.now() + self.verified_ttl_seconds,
         )
         return AuthResult(text(lang, "verified", name=auth["first_name"]), auth)
 
@@ -527,7 +542,10 @@ class IdentityVerifier:
         for key in ("otp_hash", "otp_salt", "otp_expires_at", "phone_last4"):
             auth.pop(key, None)
         auth.update(
-            step="verified", failures=0, verified_until=self.now() + self.verified_ttl_seconds
+            step="verified",
+            failures=0,
+            verified_at=self.now(),
+            verified_until=self.now() + self.verified_ttl_seconds,
         )
         return "ok", auth
 
