@@ -1,0 +1,34 @@
+version: 2
+
+seeds:
+  - name: fixture_transactions
+    description: >
+      TEST FIXTURE, synthetic and clearly labeled (every id starts with FIXTURE-, no real customer,
+      product or merchant). A pretend delivery for the incremental update of fact_transaction:
+      batch 1 = new transactions after the end of the data (0001-0003) and two late arrivals dated
+      months earlier (0004, 0005); batch 2 = the re-delivery that corrects 0003 (Pending -> Approved)
+      plus one more new transaction (0006). Only built outside prod, and only used with
+      --vars '{include_fixture_batch: 1}' (or 2). See README, "Updates and freshness".
+    config:
+      column_types:
+        batch: varchar
+        transaction_id: varchar
+        transaction_date: varchar
+        process_date: varchar
+        product_id: varchar
+        customer_id: varchar
+        transaction_type: varchar
+        transaction_category: varchar
+        amount: varchar
+        currency: varchar
+        amount_usd: varchar
+        channel: varchar
+        branch_id: varchar
+        merchant_name: varchar
+        merchant_category: varchar
+        transaction_country: varchar
+        transaction_city: varchar
+        transaction_status: varchar
+        response_code: varchar
+        is_fraud: varchar
+        fraud_score: varchar

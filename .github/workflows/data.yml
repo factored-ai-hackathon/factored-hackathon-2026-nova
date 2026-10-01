@@ -1,15 +1,25 @@
 name: Data pipeline
 
 # Builds the production data model: dbt --target prod -> latam_curated (Athena).
-# Runs when a merge to main changes the data model, or by hand (Actions -> Run workflow).
+# It runs as a job of the Deploy workflow (deploy.yml, "Data pipeline"), which every merge to main
+# triggers: it is skipped when the merge does not touch data/dbt, uv.lock or pyproject.toml.
+# It can also be run by hand (Actions -> Data pipeline -> Run workflow), e.g. with full_refresh
+# to rebuild the incremental table from scratch.
 # Models and their tests run together (dbt build): a failing test stops the models that
 # depend on it, so broken data never replaces the published tables.
 # Everyone else builds in their own schema (--target dev, see data/dbt/README.md).
 on:
-  push:
-    branches: [main]
-    paths: ["data/dbt/**", "uv.lock", "pyproject.toml", ".github/workflows/data.yml"]
+  workflow_call:
+    inputs:
+      full_refresh:
+        type: boolean
+        default: false
   workflow_dispatch:
+    inputs:
+      full_refresh:
+        description: Rebuild the incremental table from scratch (dbt --full-refresh)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -43,7 +53,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: dbt build
-        run: uv run dbt build --target prod
+        run: uv run dbt build --target prod ${{ inputs.full_refresh && '--full-refresh' || '' }}
 
       - name: Keep the run log
         if: always()

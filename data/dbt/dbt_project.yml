@@ -18,6 +18,27 @@ vars:
   as_of_date: "2026-06-17"
   date_spine_start: "2023-06-01"
   date_spine_end: "2026-06-30"
+  # Update policy for fact_transaction (see README "Updates and freshness").
+  # A run re-reads every month that received a delivery newer than the table's latest
+  # process_date minus this many days, so late re-deliveries reach their month.
+  late_arrival_lookback_days: 3
+  # Freshness of fact_transaction: the newest process_date must be within these many days of
+  # as_of_date (the end of the data): warn first, then fail.
+  freshness_warn_days: 1
+  freshness_error_days: 3
+  # TEST FIXTURE ONLY (never in prod): 0 = off; 1 = add the first delivery of the labeled
+  # fixture in seeds/fixture_transactions.csv; 2 = also its late re-delivery.
+  include_fixture_batch: 0
+
+seeds:
+  latam_bank:
+    # The fixture is a clearly labeled synthetic test set: it exists only outside prod.
+    +enabled: "{{ target.name != 'prod' }}"
+
+tests:
+  latam_bank:
+    fixture:
+      +tags: ["fixture"]
 
 models:
   latam_bank:
