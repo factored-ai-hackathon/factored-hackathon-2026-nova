@@ -12,13 +12,14 @@ from the run, never typed by hand.
 """
 
 import json
+import statistics
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 import yaml  # noqa: E402
-from metrics import UNSAFE_TYPES, by, judge, percentile, summarize  # noqa: E402
+from metrics import UNSAFE_TYPES, by, judge, percentile, rate, summarize  # noqa: E402
 
 LANGS = {"es": "Spanish", "pt": "Portuguese"}
 
@@ -153,6 +154,134 @@ def failures(runs: list[dict], cases: dict[str, dict]) -> str:
         total = sum(1 for r in runs if r["id"] == case_id)
         out.append(f"| `{case_id}` | {len(group)}/{total} | {why} | {reply[:220]} |")
     return "\n".join(out)
+
+
+def _sd(values: list[float]) -> float:
+    return statistics.stdev(values) if len(values) > 1 else 0.0
+
+
+def passes_section(cases: dict[str, dict]) -> str:
+    """Many passes of the same frozen cases on the final system: the model's run-to-run variation."""
+    files = sorted((HERE / "results").glob("p[0-9][0-9].json"))
+    files = [HERE / "results" / "run6.json", *files] if files else []
+    if len(files) < 3:
+        return ""
+    passes = []
+    for path in files:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        runs, summary = rescored(data, cases)
+        passes.append(
+            {"name": path.stem, "runs": runs, "summary": summary, "errors": len(data["errors"])}
+        )
+    n = len(passes)
+    metrics = [
+        ("Safe automated resolution", lambda s: s["safe_automated_resolution"]["rate"], True),
+        ("Runs that did what the case expects", lambda s: s["pass_rate"]["rate"], True),
+        ("Containment", lambda s: s["containment"]["rate"], True),
+        ("Escalation recall (strict)", lambda s: s["escalation_recall"]["rate"], True),
+        (
+            "Escalation recall, counting a clear offer",
+            lambda s: s["escalation_recall_or_offer"]["rate"],
+            True,
+        ),
+        ("Runs with an unsafe outcome", lambda s: s["unsafe_runs"]["rate"], True),
+        ("Latency per message, p50 (s)", lambda s: s["latency_ms"]["p50"] / 1000, False),
+        ("Latency per message, p95 (s)", lambda s: s["latency_ms"]["p95"] / 1000, False),
+        ("Cost per case ($)", lambda s: s["cost_usd"]["mean_per_case"], False),
+        ("Faithfulness", lambda s: s["faithfulness_mean"], False),
+    ]
+    rows = []
+    for name, get, is_rate in metrics:
+        values = [get(p["summary"]) for p in passes]
+        fmt = (lambda v: f"{100 * v:.1f}%") if is_rate else (lambda v: f"{v:.4g}")
+        rows.append(
+            f"| {name} | {fmt(statistics.fmean(values))} | {fmt(_sd(values)) if is_rate else f'{_sd(values):.3g}'} "
+            f"| {fmt(min(values))} - {fmt(max(values))} |"
+        )
+    every = [r for p in passes for r in p["runs"]]
+    unsafe = sum(bool(r["unsafe"]) for r in every)
+    ci = rate(unsafe, len(every))["ci95"]
+    by_case: dict[str, list[dict]] = {}
+    for r in every:
+        by_case.setdefault(r["id"], []).append(r)
+    flaky = sorted(
+        (
+            (sum(x["passed"] for x in g) / len(g), cid, g)
+            for cid, g in by_case.items()
+            if not all(x["passed"] for x in g)
+        )
+    )
+    flaky_rows = []
+    for share, cid, group in flaky:
+        why = "; ".join(sorted({p for r in group for p in r["problems"] + r["unsafe"]}))
+        flaky_rows.append(
+            f"| `{cid}` | {100 * share:.0f}% ({sum(x['passed'] for x in group)}/{len(group)}) | {why} |"
+        )
+    return f"""## Repeated passes of the final system
+
+The same {len(cases)} frozen cases, {n} passes of 3 repetitions each (`run6` and `p01`...), all on the code that was
+deployed when they ran (after decision 34, **before decision 38**). This is the **model's run-to-run variation**, not new
+situations: the cases are the same every time, so pooling the passes does not make the sample of situations bigger.
+
+**What these passes found:** `es-amb-problem` ("tengo un problema con mi cuenta") passed 9 of 9 times before the shorter
+prompts of decision 34 and fails a third of the time in these passes (table below): a regression that one pass of 60
+cases could not show. It was fixed in decision 38 and measured on the four ambiguous cases, 10 repetitions each: 40 of
+40 (`docs/decisions.md`). The {n} passes were **not** repeated after that fix, so their numbers are the system before it.
+
+| Metric | Mean over passes | Standard deviation | Lowest - highest pass |
+|---|---|---|---|
+{chr(10).join(rows)}
+
+* Runs: {len(every)} ({n} passes x {len(every) // n}). Unsafe outcomes in all of them: **{unsafe}**
+  (95% interval for the rate: 0-{100 * ci[1]:.1f}%).
+* Runs that errored (provider errors): {sum(p["errors"] for p in passes)}.
+
+### Cases that did not pass every time
+{"No case failed in any pass." if not flaky_rows else "| Case | Passed | Why it failed |" + chr(10) + "|---|---|---|" + chr(10) + chr(10).join(flaky_rows)}
+"""
+
+
+def e2e_passes_section() -> str:
+    files = sorted((HERE / "results").glob("e2e-[0-9].json"))
+    if not files:
+        return ""
+    runs = [json.loads(f.read_text(encoding="utf-8")) for f in files]
+    rows = [
+        f"| {i + 1} | {r['meta']['date'][:16].replace('T', ' ')} | {r['summary']['messages']} "
+        f"| {r['summary']['passed']}/{r['summary']['messages']} | {secs(r['summary']['total_ms']['p50'])} "
+        f"/ {secs(r['summary']['total_ms']['p95'])} | {secs(r['summary']['first_token_ms']['p50'])} |"
+        for i, r in enumerate(runs)
+    ]
+    results = [x for r in runs for x in r["results"] if x.get("total_ms")]
+    totals = [x["total_ms"] for x in results]
+    firsts = [x["first_token_ms"] for x in results if x.get("first_token_ms")]
+    passed = sum(not x["problems"] for x in results)
+    before = HERE / "results" / "e2e.json"
+    earlier = ""
+    if before.exists():
+        b = json.loads(before.read_text(encoding="utf-8"))["summary"]
+        earlier = (
+            f"\nBefore the shorter answers (decision 34) the first pass measured {secs(b['total_ms']['p50'])} / "
+            f"{secs(b['total_ms']['p95'])} (total p50 / p95) and {secs(b['first_token_ms']['p50'])} to the first token.\n"
+        )
+    wrong = [x for x in results if x["problems"]]
+    wrong_rows = "".join(
+        f"\n| {x['kind']} | {x['text'][:60]} | {'; '.join(x['problems'])} |" for x in wrong
+    )
+    return f"""### Repeated end-to-end passes (final system)
+
+{len(runs)} passes through the live link, one per hour (the public API allows 30 messages per hour per visitor), both
+on the deployment before Deploy #64 (decisions 37 and 38 were released after them, at 16:05 UTC).
+
+| Pass | When (UTC) | Messages | Right and safe | Total p50 / p95 | First token p50 |
+|---|---|---|---|---|---|
+{chr(10).join(rows)}
+
+Pooled: **{passed}/{len(results)}** answers right and safe; total time p50 {secs(percentile(totals, 50))}, p95 {secs(percentile(totals, 95))};
+time to first token p50 {secs(percentile(firsts, 50))}, p95 {secs(percentile(firsts, 95))}.
+{earlier}
+{"All answers were right and safe." if not wrong else "Answers that were not right or safe:" + chr(10) + chr(10) + "| Kind | Question | Problem |" + chr(10) + "|---|---|---|" + wrong_rows}
+"""
 
 
 def e2e_section() -> str:
@@ -359,7 +488,9 @@ to see the model's variation: **{len(runs)} runs**.
 
 {"**Runs that errored (provider errors, left out of the numbers): " + ", ".join(errors) + "**" if errors else "No run errored."}
 
+{passes_section(cases)}
 {e2e_section()}
+{e2e_passes_section()}
 {ml_section()}
 ## Limitations (read before trusting the numbers)
 * **The cases were written by the team, and by the same people (with Claude) who wrote the prompts.** Held-out means they were not used to develop or tune anything, not that they are independent. Real customers phrase things we did not think of.
