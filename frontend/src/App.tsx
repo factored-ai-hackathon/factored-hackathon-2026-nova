@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { AgentProvider } from './context/AgentContext';
@@ -6,7 +7,11 @@ import { LoginPage } from './pages/Login/LoginPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { AgentPage } from './pages/Agent/AgentPage';
 import { AgentConsolePage } from './pages/AgentConsole/AgentConsolePage';
+
 import './styles/globals.css';
+
+// Loaded on demand: its charts and metrics stay out of the customer app's bundle.
+const ModelsPage = lazy(() => import('./pages/Models/ModelsPage'));
 
 /**
  * App — Root router and provider tree.
@@ -23,6 +28,8 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             {/* Human agent console: its own key, not the customer login */}
             <Route path="/asesor" element={<AgentConsolePage />} />
+            {/* How the learned components are evaluated: public, no customer data */}
+            <Route path="/modelos" element={<Suspense fallback={null}><ModelsPage /></Suspense>} />
             <Route
               path="/dashboard"
               element={

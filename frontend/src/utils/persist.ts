@@ -10,6 +10,7 @@ export const KEYS = {
   chat: 'chat', // the conversation on screen and an open handoff
   chatSession: 'chatSession', // the backend chat session ids (services/agentService.ts)
   console: 'console', // the human agent console's key and open case
+  models: 'models', // the /modelos page's demo password was entered
 } as const;
 
 export function loadStored<T>(key: string): T | null {
