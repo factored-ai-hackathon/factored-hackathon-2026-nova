@@ -72,3 +72,14 @@ def agent_client():
         return TestClient(app)
 
     return _make
+
+
+@pytest.fixture(autouse=True)
+def offline_knowledge(monkeypatch):
+    """Knowledge search never calls Bedrock in tests: lexical only, over the real documents."""
+    from app.agent import knowledge
+
+    chunks, _ = knowledge.load_chunks()
+    kb = knowledge.KnowledgeBase(chunks, knowledge.load_thresholds())
+    monkeypatch.setattr(knowledge, "get_knowledge_base", lambda: kb)
+    return kb

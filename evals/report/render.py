@@ -201,11 +201,14 @@ def render(datasets: list[dict]) -> str:
         LANGS[lang]: summarize(group, cases)
         for lang, group in by(runs, lambda r: r["lang"]).items()
     }
+    LABELS = ["before fixes", "after fixes", "with knowledge search"]
     if len(datasets) > 1:
-        first_runs, first = rescored(datasets[0], cases)
-        summaries = {"Run 1 · all (before fixes)": first, "Run 2 · all (after fixes)": final} | {
-            f"Run 2 · {name}": s for name, s in languages.items()
-        }
+        scored = [rescored(d, cases) for d in datasets]
+        first_runs = scored[0][0]
+        summaries = {
+            f"Run {i + 1} · all ({LABELS[i] if i < len(LABELS) else 'later'})": summary
+            for i, (_, summary) in enumerate(scored)
+        } | {f"Run {len(datasets)} · {name}": s for name, s in languages.items()}
         before = (
             "## What the first run found\n\n"
             "Run 1 is the agent before any change. The failures below led to the fixes in "
@@ -217,10 +220,17 @@ def render(datasets: list[dict]) -> str:
         first_runs, summaries = [], {"All": final} | languages
         before = ""
     reading_note = (
-        "> **How to read the two runs.** Run 1 is the held-out measurement: the agent as it was, on cases "
+        "> **How to read the runs.** Run 1 is the held-out measurement: the agent as it was, on cases "
         "written without looking at it. Run 2 repeats the *same* cases after fixes made looking at run 1's "
         "failures, so it is **no longer held-out for those fixes**: it shows that the fixes work, not how "
-        "the agent will do on new situations. Quote run 1 as the honest estimate."
+        "the agent will do on new situations. "
+        + (
+            "Run 3 repeats them again after adding the knowledge search (decision 32): a regression check "
+            "of the final system, not a new estimate. "
+            if len(datasets) > 2
+            else ""
+        )
+        + "Quote run 1 as the honest estimate."
         if len(datasets) > 1
         else ""
     )

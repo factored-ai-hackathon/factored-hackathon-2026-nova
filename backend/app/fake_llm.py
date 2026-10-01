@@ -83,6 +83,10 @@ _ACCOUNT_TOOL_WORDS = (
     ("get_my_complaints", ("queja", "reclam", "caso", "pqr")),
     ("get_my_transactions", ("movim", "transac", "rechaz", "recus", "extrat", "compra")),
     ("get_my_products", ("saldo", "cuenta", "tarjeta", "conta", "cart", "producto", "limite")),
+    (
+        "search_policies",
+        ("politica", "plazo", "prazo", "como funciona", "que significa", "horario"),
+    ),
 )
 
 # Asking for a person or reporting something risky: the offline model hands over.
@@ -126,6 +130,8 @@ class OfflineChatModel(BaseChatModel):
                     {"status": "declined"}
                     if name == "get_my_transactions"
                     and ("rechaz" in normalized or "recus" in normalized)
+                    else {"query": last}
+                    if name == "search_policies"
                     else {}
                 )
                 return {"name": name, "args": args, "id": f"call_offline_{name}"}

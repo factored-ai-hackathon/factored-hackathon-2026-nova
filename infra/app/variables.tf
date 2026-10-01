@@ -22,6 +22,12 @@ variable "bedrock_model_id" {
   default     = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
 
+variable "embedding_model_id" {
+  description = "Bedrock model that embeds the question for the knowledge search (decision 32)."
+  type        = string
+  default     = "amazon.titan-embed-text-v2:0"
+}
+
 variable "bedrock_regions" {
   description = "Regions the US cross-Region inference profile can route to."
   type        = list(string)

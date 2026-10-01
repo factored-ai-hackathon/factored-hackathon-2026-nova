@@ -114,6 +114,13 @@ async def test_search_understands_spanish_and_portuguese_words():
     ] == 0
 
 
+async def test_the_default_window_reaches_back_90_days():
+    """Found by the held-out report: with 30 days "any transfer in May?" missed one from May 2."""
+    result = await run("get_my_transactions", {"search": "transferencia"})
+    assert result["period"]["from"] == "2026-03-19"
+    assert result["total_found"] == 1
+
+
 async def test_transaction_arguments_are_clamped():
     result = await run("get_my_transactions", {"days": 100000, "limit": 999})
     assert result["period"]["from"] == "2025-06-17"  # at most 365 days
