@@ -39,6 +39,11 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          # Pushes (also when this workflow is called by deploy.yml on a push to main): compare
+          # with the previous tip. Without `base`, a push to main compared `development` with
+          # `main`, equal after a release, so every job below was skipped. Pull requests keep the
+          # action's default (the PR's base).
+          base: ${{ github.event_name == 'push' && github.event.before || '' }}
           # A file counts for a filter only if it matches every pattern in it.
           predicate-quantifier: every
           filters: |
