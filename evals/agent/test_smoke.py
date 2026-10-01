@@ -44,9 +44,11 @@ async def test_smoke_case(case):
 
     agent._graph = build_graph(_model(case["lang"]))
     try:
-        reply = "".join(
-            [p async for p in agent.stream_reply(f"eval-{case['id']}", case["input"], case["lang"])]
-        )
+        pieces = [
+            p async for p in agent.stream_reply(f"eval-{case['id']}", case["input"], case["lang"])
+        ]
+        # A handoff adds a Notice to the stream: only the text is the reply.
+        reply = "".join(p for p in pieces if isinstance(p, str))
     finally:
         agent._graph = None
     assert reply.strip(), "empty reply"

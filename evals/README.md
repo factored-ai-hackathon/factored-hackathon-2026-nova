@@ -25,6 +25,9 @@ From `backend/`: `uv run pytest ../evals/agent`. It uses a fake model by default
 | `agent/knowledge.yaml` | 16 (8 ES, 8 PT) | Knowledge search: answers a policy question from the documents (right figure, source named, search tool used); says it doesn't know and offers a person when the documents don't answer. Retrieval itself: `ml/rag` (recall@k, MRR vs baselines) |
 | `agent/language_switch.yaml` | 2 conversations (10 messages) | The customer switches language mid-conversation: every reply is in the language of its own message (decision 33) |
 
+## Intent classifier: ablation and Claude baseline (`ml/intent`)
+`ablation.py` runs 32 team-written messages (complaint/retention and controls) through the real agent with the classifier's hint ON and OFF; `llm_baseline.py` classifies the 210 held-out phrases with Claude; `cascade_estimate.py` combines both without new model calls. Results in `ml/README.md`, `ml/intent/ABLATION.md` and `ml/intent/LLM_BASELINE.md`.
+
 ## Held-out evaluation report (`report/`)
 `report/REPORT.md` is the evaluation the challenge asks for: 60 team-generated synthetic cases (30 ES, 30 PT) through the real agent on Bedrock, 3 repetitions each, measuring safe automated resolution, containment, escalation quality, unsafe outcomes, p50/p95 latency and cost per case, by language, with the data labeled. `report/cases.yaml` (the cases), `metrics.py` (scoring in code, tested), `run_report.py` (the runner), `render.py` (writes the report from `report/results/*.json`; the numbers are never typed by hand). Run 1 is the held-out measurement; run 2 repeats the same cases after the fixes run 1 led to. From `backend/`: `uv run python ../evals/report/run_report.py --repeats 3`, then `render.py`.
 

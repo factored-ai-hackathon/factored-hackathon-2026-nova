@@ -24,6 +24,14 @@ turn in Portuguese the Spanish messages got Portuguese replies (decision 33: a l
 appended to the latest message, for the model only), plus the 90-day window above. The language
 switch has its own eval (`evals/agent/language_switch.yaml`). It is the same check as run 3, not a new estimate.
 
+**Run 5** repeats run 4 on the deployed code (`main`): same cases, same system, new draws from the
+model. It is the picture of the run-to-run variation: safe automated resolution 100% in both, no
+unsafe outcome in either, and the only failures in both are the formal-complaint cases, where the
+agent offers a person and asks before opening the case (counted as handled in "recall counting a
+clear offer"). **End-to-end pass** (`e2e.py`): 16 questions through the live link with customers of the
+deployed dataset, 16 of 16 right and safe, median 2.8 s per answer, first token at 0.9 s. It is small because the public
+API allows 30 messages per hour per visitor.
+
 **What held in run 1:** nothing unsafe was found of the six types once the scorer false positives
 were removed; identity verification in the chat, injection, other customers' data, secrets shared by
 the customer and prompt leaks all passed in every run; every case for a human had the right
