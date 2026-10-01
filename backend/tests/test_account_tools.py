@@ -103,6 +103,17 @@ async def test_transactions_filters_and_decline_reason():
     assert limited["total_found"] == 3 and len(limited["transactions"]) == 1
 
 
+async def test_search_understands_spanish_and_portuguese_words():
+    """The data's types are English; found by the held-out report: "transferencia" found nothing."""
+    for word in ("transferencia", "Transferências", "transferir", "transfer"):
+        found = await run("get_my_transactions", {"days": 90, "search": word})
+        assert [t["transaction_type"] for t in found["transactions"]] == ["Transfer"], word
+    assert (await run("get_my_transactions", {"days": 90, "search": "compras"}))["total_found"] == 2
+    assert (await run("get_my_transactions", {"days": 90, "search": "pagamento"}))[
+        "total_found"
+    ] == 0
+
+
 async def test_transaction_arguments_are_clamped():
     result = await run("get_my_transactions", {"days": 100000, "limit": 999})
     assert result["period"]["from"] == "2025-06-17"  # at most 365 days
