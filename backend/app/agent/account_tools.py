@@ -7,6 +7,7 @@ model doesn't have to guess what "51" means.
 """
 
 import json
+import unicodedata
 from datetime import date, timedelta
 from typing import Literal
 
@@ -41,7 +42,9 @@ def get_my_transactions(
 ) -> str:
     """The customer's transactions, newest first, from the last `days` days (1-365) before
     the data date. Filter by `status` (e.g. "declined" for rejected payments) and/or `search`
-    (text in the merchant, category or type). Declined ones include the reason."""
+    (text in the merchant, category or type: Deposit, Withdrawal, Transfer, Payment, Purchase or
+    Adjustment; Spanish or Portuguese words like "transferencia" or "compra" work too). Declined
+    ones include the reason."""
     return ""
 
 
@@ -58,12 +61,48 @@ ACCOUNT_TOOL_NAMES = {t.name for t in ACCOUNT_TOOLS}
 OPEN_COMPLAINT = {"open", "in process", "escalated"}
 
 
-def _matches(row: dict, text: str) -> bool:
-    haystack = " ".join(
-        str(row.get(k, ""))
-        for k in ("merchant_name", "merchant_category", "transaction_category", "transaction_type")
+# The dataset's transaction types are English (Deposit, Withdrawal, Transfer, Payment, Purchase,
+# Adjustment) while customers write Spanish or Portuguese: a search for "transferencia" has to
+# find a Transfer. Keys are accent-free stems.
+SEARCH_SYNONYMS = {
+    "transferencia": "transfer", "transferir": "transfer",
+    "deposito": "deposit", "depositar": "deposit",
+    "retiro": "withdrawal", "retirada": "withdrawal", "saque": "withdrawal",
+    "pago": "payment", "pagamento": "payment",
+    "compra": "purchase",
+    "ajuste": "adjustment",
+}  # fmt: skip
+
+
+def _plain_text(text: str) -> str:
+    return "".join(
+        c for c in unicodedata.normalize("NFD", text.lower()) if unicodedata.category(c) != "Mn"
     )
-    return text.lower() in haystack.lower()
+
+
+def _search_terms(text: str) -> list[str]:
+    """The text as written, plus the English value it stands for (compra, compras -> purchase)."""
+    plain = _plain_text(text).strip()
+    terms = [plain]
+    for stem, english in SEARCH_SYNONYMS.items():
+        if plain.startswith(stem):
+            terms.append(english)
+    return terms
+
+
+def _matches(row: dict, text: str) -> bool:
+    haystack = _plain_text(
+        " ".join(
+            str(row.get(k, ""))
+            for k in (
+                "merchant_name",
+                "merchant_category",
+                "transaction_category",
+                "transaction_type",
+            )
+        )
+    )
+    return any(term in haystack for term in _search_terms(text))
 
 
 async def _transactions(data: AccountData, customer_id: str, as_of: date, args: dict) -> dict:
