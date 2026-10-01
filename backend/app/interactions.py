@@ -74,6 +74,10 @@ class Turn:
 class InteractionStore(Protocol):
     async def save_turn(self, turn: Turn) -> None: ...
 
+    async def save_audit(self, session_id: str, message_id: str, entries: list[dict]) -> None:
+        """The audit entries of a turn (app/audit.py): no text, no raw arguments, no customer id."""
+        ...
+
     async def set_feedback(
         self, session_id: str, message_id: str, rating: Rating, comment: str | None
     ) -> bool:
@@ -85,6 +89,9 @@ class NoopInteractionStore:
     async def save_turn(self, turn: Turn) -> None:
         return None
 
+    async def save_audit(self, session_id: str, message_id: str, entries: list[dict]) -> None:
+        return None
+
     async def set_feedback(self, *args: Any) -> bool:
         return False
 
@@ -94,9 +101,13 @@ class MemoryInteractionStore:
 
     def __init__(self) -> None:
         self.turns: dict[tuple[str, str], dict[str, Any]] = {}
+        self.audit: list[dict[str, Any]] = []
 
     async def save_turn(self, turn: Turn) -> None:
         self.turns[(turn.session_id, turn.message_id)] = asdict(turn.masked())
+
+    async def save_audit(self, session_id: str, message_id: str, entries: list[dict]) -> None:
+        self.audit += [{**e, "session_id": session_id, "message_id": message_id} for e in entries]
 
     async def set_feedback(
         self, session_id: str, message_id: str, rating: Rating, comment: str | None
@@ -138,6 +149,11 @@ class JsonlInteractionStore:
     async def save_turn(self, turn: Turn) -> None:
         await asyncio.to_thread(self._append, {"type": "turn", **asdict(turn.masked())})
 
+    async def save_audit(self, session_id: str, message_id: str, entries: list[dict]) -> None:
+        for e in entries:
+            record = {"type": "audit", "session_id": session_id, "message_id": message_id, **e}
+            await asyncio.to_thread(self._append, record)
+
     async def set_feedback(
         self, session_id: str, message_id: str, rating: Rating, comment: str | None
     ) -> bool:
@@ -168,6 +184,19 @@ class DynamoInteractionStore:
         item = {k: Decimal(str(v)) if isinstance(v, float) else v for k, v in item.items()}
         item["expires_at"] = int(time.time()) + self.ttl_days * 86400
         await asyncio.to_thread(self.table.put_item, Item=item)
+
+    async def save_audit(self, session_id: str, message_id: str, entries: list[dict]) -> None:
+        # Same table and expiry as the turns; the sort key says whose audit entry it is.
+        expires = int(time.time()) + self.ttl_days * 86400
+        for i, e in enumerate(entries):
+            item = {
+                **e,
+                "type": "audit",
+                "session_id": session_id,
+                "message_id": f"{message_id}#audit{i:02d}",
+                "expires_at": expires,
+            }
+            await asyncio.to_thread(self.table.put_item, Item=item)
 
     async def set_feedback(
         self, session_id: str, message_id: str, rating: Rating, comment: str | None

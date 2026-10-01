@@ -1,4 +1,5 @@
 import json
+import time
 
 import pytest
 from botocore.exceptions import ClientError
@@ -186,3 +187,22 @@ def test_store_failure_does_not_break_chat(client, interactions):
     interactions.save_turn = broken
     _, events = send(client)
     assert events[-1][0] == "done"
+
+
+async def test_audit_entries_go_next_to_the_turn_with_the_same_expiry_and_a_sortable_key(tmp_path):
+    table = FakeTable()
+    store = DynamoInteractionStore(table, ttl_days=30)
+    entries = [
+        {"event": "tool_call", "outcome": "ok", "tool": "get_my_products", "args_hash": "ab12"},
+        {"event": "handoff", "outcome": "opened"},
+    ]
+    await store.save_audit("s1", "m1", entries)
+    assert sorted(k for k in table.items) == [("s1", "m1#audit00"), ("s1", "m1#audit01")]
+    first = table.items[("s1", "m1#audit00")]
+    assert first["type"] == "audit" and first["tool"] == "get_my_products"
+    assert first["expires_at"] > time.time() + 29 * 86400
+
+    jsonl = JsonlInteractionStore(tmp_path / "turns.jsonl")
+    await jsonl.save_audit("s1", "m1", entries)
+    lines = [json.loads(x) for x in (tmp_path / "turns.jsonl").read_text().splitlines()]
+    assert [x["type"] for x in lines] == ["audit", "audit"] and lines[1]["event"] == "handoff"

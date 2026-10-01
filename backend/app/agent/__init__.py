@@ -5,7 +5,7 @@ Yields reply text chunks (str) and out-of-band notices for the customer (Notice)
 
 import time
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage
@@ -37,6 +37,7 @@ class TokenUsage:
     sensitive_input: bool = False
     intent: str | None = None  # the classifier's label for the customer's message
     intent_confidence: float | None = None
+    audit: list = field(default_factory=list)  # app/audit.py entries of the turn
 
     def add(self, usage: dict) -> None:
         self.input_tokens = (self.input_tokens or 0) + usage.get("input_tokens", 0)
@@ -108,11 +109,15 @@ async def stream_reply(
                 if not delta:
                     continue
                 case = delta.get("case", case)
+                if usage is not None and "audit" in delta:
+                    usage.audit = delta["audit"]  # each node returns the turn's entries so far
                 if usage is not None and (seen := delta.get("turn_intent")):
                     usage.intent, usage.intent_confidence = seen["label"], seen["confidence"]
                 if node not in FIXED_TEXT_NODES:
                     continue
                 for message in delta.get("messages", []):
+                    if message.type != "ai":  # e.g. the resumed question: not for the customer
+                        continue
                     piece = ("\n\n" if reply else "") + message.text
                     reply.append(piece)
                     yield piece
