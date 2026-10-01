@@ -123,7 +123,14 @@ async def test_conversation_continues_on_another_instance(monkeypatch):
 
     second_call = model.calls[1]
     assert [type(m) for m in second_call[1:]] == [HumanMessage, AIMessage, HumanMessage]
-    assert [m.content for m in second_call[1:]] == ["primera", "uno", "segunda"]
+    assert [m.content for m in second_call[1:]] == [
+        "primera",
+        "uno",
+        "segunda\n\n(Responde en español.)",
+    ]
+    # The reminder is for the model only: the stored history is the customer's own words.
+    stored = (await instance_b.get(session.id)).messages
+    assert [m.content for m in stored] == ["primera", "uno", "segunda", "dos"]
 
 
 async def test_failed_reply_is_not_saved(monkeypatch):
