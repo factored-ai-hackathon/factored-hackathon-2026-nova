@@ -24,7 +24,7 @@ from functools import cache
 from pathlib import Path
 
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, MessagesState, StateGraph
@@ -36,6 +36,11 @@ from app.agent.account_tools import ACCOUNT_TOOL_NAMES, ACCOUNT_TOOLS, run_accou
 from app.config import get_settings
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
+
+# Added to the customer's latest message for the model only (never stored or shown): when the
+# customer switches language mid-conversation, the earlier turns pull the model back to the old one
+# (found in the production smoke test), and a reminder next to the question beats one at the top.
+LANGUAGE_TAGS = {"es": "(Responde en español.)", "pt": "(Responda em português.)"}
 
 
 @cache
@@ -117,7 +122,14 @@ def build_graph(
             llm = model_with_accounts if rounds < MAX_TOOL_ROUNDS else model
         else:
             llm = model_with_verify if state.get("tool_rounds", 0) < MAX_TOOL_ROUNDS else model
-        reply = await llm.ainvoke([SystemMessage(prompt), *state["messages"]], config)
+        messages = list(state["messages"])
+        last_human = next(
+            (i for i in range(len(messages) - 1, -1, -1) if messages[i].type == "human"), None
+        )
+        if last_human is not None:
+            tagged = f"{messages[last_human].text}\n\n{LANGUAGE_TAGS.get(lang, '')}".rstrip()
+            messages[last_human] = HumanMessage(tagged)
+        reply = await llm.ainvoke([SystemMessage(prompt), *messages], config)
         return {"messages": [reply], "case": case, "turn_intent": seen.as_dict()}
 
     def after_respond(state: ChatState) -> str:

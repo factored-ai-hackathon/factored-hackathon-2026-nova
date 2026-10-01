@@ -44,7 +44,13 @@ async def test_system_prompt_follows_lang_and_memory_is_per_session():
     assert first[0].content == graph_module.system_prompt("es")
     assert second[0].content == graph_module.system_prompt("pt")
     # s1 remembers its first turn; s2 starts clean.
-    assert [m.content for m in second[1:]] == ["primera", "uno", "segunda"]
+    # Only the latest message carries the language reminder (for the model, never stored).
+    assert [m.content for m in second[1:]] == [
+        "primera",
+        "uno",
+        "segunda\n\n(Responda em português.)",
+    ]
+    assert first[1].content == "primera\n\n(Responde en español.)"
     assert [type(m) for m in third[1:]] == [HumanMessage]
 
 

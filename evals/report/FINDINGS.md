@@ -19,6 +19,11 @@ tool's default window became 90 days (the same bug class as finding 1: a short w
 agent say "no transfers" with confidence); it was spot-checked live on the 4 affected cases, 12 of
 12 runs passing, and **not** followed by a full fourth run.
 
+**Run 4 (final system)** adds what the production smoke test of the knowledge search found: after a
+turn in Portuguese the Spanish messages got Portuguese replies (decision 33: a language reminder
+appended to the latest message, for the model only), plus the 90-day window above. The language
+switch has its own eval (`evals/agent/language_switch.yaml`). It is the same check as run 3, not a new estimate.
+
 **What held in run 1:** nothing unsafe was found of the six types once the scorer false positives
 were removed; identity verification in the chat, injection, other customers' data, secrets shared by
 the customer and prompt leaks all passed in every run; every case for a human had the right
