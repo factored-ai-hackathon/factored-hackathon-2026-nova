@@ -1,0 +1,42 @@
+# Messages for the hint ablation (ablation.py). TEAM-GENERATED, SYNTHETIC, written after the
+# classifier and its test set, in new phrasings; the customer is the fictitious demo-001/002.
+#   group: target  = complaint or retention: the classifier should fire and Nova should offer a person
+#          control = anything else: Nova should just answer, an offer of a person is unneeded
+# The label is the intent a reader would give; the classifier's own reading is measured, not assumed.
+cases:
+  # ---------------------------------------------------------------- Spanish, target
+  - {id: es-c1, lang: es, group: target, label: complaint, say: "Estoy harto de que nadie me resuelva el cobro duplicado de la semana pasada"}
+  - {id: es-c2, lang: es, group: target, label: complaint, say: "El trato que me dieron en la sucursal fue pésimo y quiero que alguien responda por eso"}
+  - {id: es-c3, lang: es, group: target, label: complaint, say: "Ya es la tercera vez que reclamo lo mismo y sigo sin respuesta"}
+  - {id: es-c4, lang: es, group: target, label: complaint, say: "Me cobraron una comisión que no entiendo y exijo que me la devuelvan"}
+  - {id: es-c5, lang: es, group: target, label: complaint, say: "Quiero dejar constancia de mi inconformidad por la demora en atenderme"}
+  - {id: es-c6, lang: es, group: target, label: complaint, say: "Esto es una falta de respeto, el asesor me cortó la llamada sin resolver nada"}
+  - {id: es-r1, lang: es, group: target, label: retention, say: "Voy a cerrar todas mis cuentas con ustedes"}
+  - {id: es-r2, lang: es, group: target, label: retention, say: "Me cambio de banco, ya no aguanto más"}
+  - {id: es-r3, lang: es, group: target, label: retention, say: "Quiero dar de baja mi tarjeta y mi cuenta de ahorros"}
+  - {id: es-r4, lang: es, group: target, label: retention, say: "Cancelen todo, no quiero seguir siendo cliente"}
+  # ---------------------------------------------------------------- Spanish, control
+  - {id: es-t1, lang: es, group: control, label: transactional, say: "¿Cuánto gasté en comida este mes?"}
+  - {id: es-t2, lang: es, group: control, label: transactional, say: "¿Ya me llegó el pago que esperaba?"}
+  - {id: es-p1, lang: es, group: control, label: product, say: "¿Qué pasa si pago solo el mínimo de la tarjeta?"}
+  - {id: es-p2, lang: es, group: control, label: product, say: "¿Cuánto tarda una transferencia a otro banco?"}
+  - {id: es-k1, lang: es, group: control, label: technical, say: "No me abre la aplicación desde ayer"}
+  - {id: es-o1, lang: es, group: control, label: other, say: "Gracias, eso era todo"}
+  # ---------------------------------------------------------------- Portuguese, target
+  - {id: pt-c1, lang: pt, group: target, label: complaint, say: "Cansei de ninguém resolver a cobrança em duplicidade da semana passada"}
+  - {id: pt-c2, lang: pt, group: target, label: complaint, say: "O atendimento na agência foi péssimo e quero que alguém responda por isso"}
+  - {id: pt-c3, lang: pt, group: target, label: complaint, say: "É a terceira vez que reclamo da mesma coisa e continuo sem resposta"}
+  - {id: pt-c4, lang: pt, group: target, label: complaint, say: "Cobraram uma tarifa que eu não entendo e exijo o estorno"}
+  - {id: pt-c5, lang: pt, group: target, label: complaint, say: "Quero registrar minha insatisfação com a demora para me atenderem"}
+  - {id: pt-c6, lang: pt, group: target, label: complaint, say: "Isso é um desrespeito, o atendente desligou na minha cara sem resolver nada"}
+  - {id: pt-r1, lang: pt, group: target, label: retention, say: "Vou encerrar todas as minhas contas com vocês"}
+  - {id: pt-r2, lang: pt, group: target, label: retention, say: "Vou trocar de banco, não aguento mais"}
+  - {id: pt-r3, lang: pt, group: target, label: retention, say: "Quero cancelar meu cartão e minha conta poupança"}
+  - {id: pt-r4, lang: pt, group: target, label: retention, say: "Cancelem tudo, não quero mais ser cliente"}
+  # ---------------------------------------------------------------- Portuguese, control
+  - {id: pt-t1, lang: pt, group: control, label: transactional, say: "Quanto gastei com comida este mês?"}
+  - {id: pt-t2, lang: pt, group: control, label: transactional, say: "O pagamento que eu esperava já chegou?"}
+  - {id: pt-p1, lang: pt, group: control, label: product, say: "O que acontece se eu pagar só o mínimo do cartão?"}
+  - {id: pt-p2, lang: pt, group: control, label: product, say: "Quanto tempo leva uma transferência para outro banco?"}
+  - {id: pt-k1, lang: pt, group: control, label: technical, say: "O aplicativo não abre desde ontem"}
+  - {id: pt-o1, lang: pt, group: control, label: other, say: "Obrigado, era só isso"}
