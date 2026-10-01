@@ -5,6 +5,8 @@ data_gz/
 data/raw/
 data/local/
 *.csv
+# Exception: the dbt fixture seed is synthetic (FIXTURE- ids, decision 39), not dataset data
+!data/dbt/seeds/fixture_transactions.csv
 *.csv.gz
 *.parquet
 *.zip
