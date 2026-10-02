@@ -9,9 +9,9 @@ Goal: resolve more issues on the first contact, benchmark agents, track customer
 
 | Folder | What goes there | Owner |
 |---|---|---|
-| `data/` | Cleaning and the data model (dbt SQL) | Iris |
-| `ml/` | Notebooks and models | Iris |
-| `backend/` | API and the agent | Paul, Esteban, Iris |
+| `data/` | Cleaning and the data model (dbt SQL) | Paul |
+| `ml/` | Notebooks and models | Paul |
+| `backend/` | API and the agent | Paul, Esteban |
 | `frontend/` | Chat UI | Esteban, Miguel |
 | `evals/` | Tests of the agent and models | Miguel |
 | `infra/` | AWS setup (Terraform) | Paul, Miguel |

@@ -51,9 +51,8 @@ Details: @docs/architecture.md
 
 ## Team and responsibilities
 - **Miguel**: coordination, QA / reliability / evaluation; co-platform; co-frontend
-- **Iris**: agent/AI engineering and data/ML
 - **Esteban**: architecture; co-backend; co-frontend
-- **Paul**: backend (with Esteban); platform; Agent AI
+- **Paul**: backend (with Esteban); platform; Agent AI; data and ML
 
 ## AWS environment
 - Dedicated member account inside a separate AWS Organization, used only for the hackathon.

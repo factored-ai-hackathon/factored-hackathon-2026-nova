@@ -1,6 +1,6 @@
 # ml
 
-Contact center models. Owner: Iris. Large artifacts go to `s3://fh26-hackaton-data/models/`, not to git; the intent model below is the exception (1.4 MB of JSON the Lambda needs, derived only from team-written text).
+Contact center models. Owner: Paul. Large artifacts go to `s3://fh26-hackaton-data/models/`, not to git; the intent model below is the exception (1.4 MB of JSON the Lambda needs, derived only from team-written text).
 
 ## Intent classifier (decision 29): model card
 
