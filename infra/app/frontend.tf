@@ -72,6 +72,12 @@ data "aws_cloudfront_cache_policy" "disabled" {
   name = "Managed-CachingDisabled"
 }
 
+# AWS-managed security headers for the web app (HSTS, X-Content-Type-Options, X-Frame-Options,
+# Referrer-Policy, X-XSS-Protection). Free. No CSP yet: it would have to list the fonts and the API.
+data "aws_cloudfront_response_headers_policy" "security" {
+  name = "Managed-SecurityHeadersPolicy"
+}
+
 # Only what the API needs. Not Host: the function URL must see its own host name.
 # CloudFront-Viewer-Address is the visitor's IP, set by CloudFront (visitors can't fake it),
 # used for the per-visitor rate limit.
@@ -139,8 +145,9 @@ resource "aws_cloudfront_distribution" "app" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
-    cache_policy_id        = data.aws_cloudfront_cache_policy.optimized.id
-    compress               = true
+    cache_policy_id            = data.aws_cloudfront_cache_policy.optimized.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security.id
+    compress                   = true
 
     function_association {
       event_type   = "viewer-request"

@@ -7,6 +7,7 @@ import { LoginPage } from './pages/Login/LoginPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { AgentPage } from './pages/Agent/AgentPage';
 import { AgentConsolePage } from './pages/AgentConsole/AgentConsolePage';
+import { DemoPage } from './pages/Demo/DemoPage';
 
 import './styles/globals.css';
 
@@ -25,10 +26,14 @@ export default function App() {
       <AppProvider>
         <AgentProvider>
           <Routes>
+            {/* The entry point: the three parts of the demo, each with a line on what it is */}
+            <Route path="/demo" element={<DemoPage />} />
             <Route path="/login" element={<LoginPage />} />
-            {/* Human agent console: its own key, not the customer login */}
+            {/* Human agent console: its own key, not the customer login. /asesor is the original name */}
+            <Route path="/console" element={<AgentConsolePage />} />
             <Route path="/asesor" element={<AgentConsolePage />} />
-            {/* How the learned components are evaluated: public, no customer data */}
+            {/* How the learned components are evaluated: public, no customer data. /modelos: original name */}
+            <Route path="/models" element={<Suspense fallback={null}><ModelsPage /></Suspense>} />
             <Route path="/modelos" element={<Suspense fallback={null}><ModelsPage /></Suspense>} />
             <Route
               path="/dashboard"
@@ -46,8 +51,8 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            {/* Redirect root and unknown routes */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* The root opens the demo entry point; unknown routes go to the customer app */}
+            <Route path="/" element={<Navigate to="/demo" replace />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </AgentProvider>
