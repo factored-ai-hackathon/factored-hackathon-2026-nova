@@ -69,7 +69,7 @@ function IntentSection() {
       <div className="models-stats">
         <Stat value={t.model.macro_f1.toFixed(2)} label="Macro-F1 on the test set" sub={`keyword rules: ${t.keywords.macro_f1.toFixed(2)}`} />
         <Stat value={pct(intent.calibration.confident_accuracy)} label="Accuracy when confident" sub={`on ${pct(intent.calibration.confident_coverage)} of the messages (p ≥ ${intent.selection.threshold})`} />
-        <Stat value={`+${Math.round(100 * (ab.target_on.person / ab.target_on.runs - ab.target_off.person / ab.target_off.runs))} pts`} label="More complaints handed to a person" sub="with the model on, in the real agent" />
+        <Stat value={`+${Math.round(100 * (ab.target_on.person / ab.target_on.runs - ab.target_off.person / ab.target_off.runs))} pts`} label="More complaints where a person is offered" sub="with the model on, in the real agent" />
         <Stat value="0.3 ms" label="Per message" sub="no cost, no call to another model" />
       </div>
 
@@ -105,7 +105,7 @@ function IntentSection() {
             ]}
           />
           <p className="models-read">
-            Claude is somewhat more accurate, but ~1,900 times slower: it would add half a second to every message.
+            Claude is somewhat more accurate, but about 1,800 times slower: it would add half a second to every message.
             With 210 phrases, the gap between 0.85 and 0.91 is close to the noise.
           </p>
         </Card>

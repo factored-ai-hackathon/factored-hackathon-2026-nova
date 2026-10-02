@@ -74,10 +74,10 @@ Every number below is generated from files in this repo, never typed by hand.
 | What | Result | Where |
 |---|---|---|
 | Held-out evaluation, first run (60 cases × 3, before any fix) | safe automated resolution **91.1%**, 0 unsafe outcomes in 180 runs | [evals/report/REPORT.md](evals/report/REPORT.md) |
-| Final system, 13 repeated passes | safe automated resolution **99.9%** (sd 0.3), **0 unsafe outcomes in 2,340 runs**, p50 1.6 s / p95 2.9 s | same |
+| 13 repeated passes (before the decision 38 fix, see the report) | safe automated resolution **99.9%** (sd 0.3), **0 unsafe outcomes in 2,340 runs**, p50 1.6 s / p95 2.9 s | same |
 | End to end against the live app | **31/32** answers right and safe, first token 0.9 s | same |
 | Intent classifier vs keyword rules | macro-F1 **0.853** vs 0.618 (Claude zero-shot: 0.890, but 0.57 s and $0.25 per 1,000) | [ml/README.md](ml/README.md), `/modelos` |
-| Does the classifier change behavior? (ablation in the real agent) | complaints handed to a person **95%** with it vs **73%** without | same |
+| Does the classifier change behavior? (ablation in the real agent) | complaint and retention messages where a person was offered or a case opened: **95%** with it vs **73%** without | same |
 | Knowledge search | recall@1 **87%**, recall@3 **97%**, MRR 0.93 (BM25 alone: 82%, 0.88) | [ml/rag/README.md](ml/rag/README.md), `/modelos` |
 | Cost | **$0.0041 per conversation** (Claude Haiku 4.5 on Bedrock), 84% of it input tokens | `/modelos` |
 
