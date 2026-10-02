@@ -1,7 +1,8 @@
 import '@testing-library/jest-dom';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
+import App from '../App';
 import { DemoPage } from '../pages/Demo/DemoPage';
 
 describe('demo entry page', () => {
@@ -21,15 +22,10 @@ describe('demo entry page', () => {
     expect(screen.getByText(/Password Modelos2026/)).toBeInTheDocument();
   });
 
-  it('is where the root goes', () => {
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route path="/demo" element={<DemoPage />} />
-          <Route path="/" element={<Navigate to="/demo" replace />} />
-        </Routes>
-      </MemoryRouter>,
-    );
+  it.each(['/', '/demo'])('the real app shows it at %s, with the URL at the bare host name', (path) => {
+    window.history.pushState({}, '', path);
+    render(<App />);
     expect(screen.getByRole('heading', { name: 'Nova' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/');
   });
 });

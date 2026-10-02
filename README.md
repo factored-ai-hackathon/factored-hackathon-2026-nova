@@ -8,8 +8,8 @@ Factored AI & Data Hackathon 2026 · AI-first banking agent · Spanish and Portu
 
 | | |
 |---|---|
-| **Live demo** | https://d2k8cgrqduyk2o.cloudfront.net (opens the demo page with the three parts below) |
-| Customer login | open **"Modo demo: clientes de prueba"** on the login page; password `Nova2026`, the SMS code is shown on screen |
+| **Live demo** | [https://d2k8cgrqduyk2o.cloudfront.net](https://d2k8cgrqduyk2o.cloudfront.net): the demo page, with the three parts below |
+| Customer app | [`/login`](https://d2k8cgrqduyk2o.cloudfront.net/login): open **"Modo demo: clientes de prueba"** on the login page; password `Nova2026`, the SMS code is shown on screen |
 | Human agent console | [`/console`](https://d2k8cgrqduyk2o.cloudfront.net/console), key `Asesor2026` (shown in the field) |
 | How the models are measured | [`/models`](https://d2k8cgrqduyk2o.cloudfront.net/models), password `Modelos2026` (shown in the field) |
 | Full demo guide | [docs/demo.md](docs/demo.md) |
