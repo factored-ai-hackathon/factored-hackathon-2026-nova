@@ -63,6 +63,37 @@ describe('live metrics section', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("shows the faithfulness of the recent handed-over cases", async () => {
+    const faithfulness = {
+      cases: 12, scored: 10, mean: 0.91,
+      claims: { supported: 52, total: 58, rate: 0.897 },
+      buckets: { all: 7, most: 2, low: 1 },
+      window: { first: '2026-10-01T10:00:00+00:00', last: '2026-10-02T09:00:00+00:00' },
+      limit: 50,
+    };
+    vi.stubGlobal('fetch', vi.fn(async () => ok({ ...LIVE, faithfulness })));
+    render(<LiveSection />);
+    expect(await screen.findByRole('heading', { name: "Are Nova's answers faithful to the data?" })).toBeInTheDocument();
+    expect(screen.getByText('91%')).toBeInTheDocument();
+    expect(screen.getByText('52/58')).toBeInTheDocument();
+    expect(screen.getByText('10 of 12 cases had checkable claims')).toBeInTheDocument();
+  });
+
+  it('says when no case has been handed over yet, and works with an older backend', async () => {
+    const empty = {
+      cases: 0, scored: 0, mean: null, claims: { supported: 0, total: 0, rate: null },
+      buckets: { all: 0, most: 0, low: 0 }, window: { first: null, last: null }, limit: 50,
+    };
+    vi.stubGlobal('fetch', vi.fn(async () => ok({ ...LIVE, faithfulness: empty })));
+    const { unmount } = render(<LiveSection />);
+    expect(await screen.findByText('No case has been handed to a person yet.')).toBeInTheDocument();
+    unmount();
+    vi.stubGlobal('fetch', vi.fn(async () => ok(LIVE)));
+    render(<LiveSection />);
+    expect(await screen.findByText('$0.0049')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /faithful/ })).not.toBeInTheDocument();
+  });
+
   it('says so when production has no messages yet', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ok({ ...LIVE, turns: 0, conversations: 0, window: { first: null, last: null } })));
     render(<LiveSection />);

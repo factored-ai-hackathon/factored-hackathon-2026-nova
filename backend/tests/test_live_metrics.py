@@ -227,3 +227,50 @@ def test_endpoint_with_no_store(client):
     app.dependency_overrides[get_interaction_store] = NoopInteractionStore
     body = client.get("/v1/metrics/live").json()
     assert body["turns"] == 0 and body["window"] == {"first": None, "last": None}
+
+
+def _case(case_id: str, created_at: str, reply: str) -> dict:
+    from tests.test_faithfulness import EVIDENCE
+
+    return {
+        "case_id": case_id, "session_id": "s", "lang": "es", "status": "waiting",
+        "created_at": created_at, "reason": "dispute", "summary": "x", "open_questions": [],
+        "evidence": EVIDENCE, "messages": [], "agent_name": None,
+        "verified_facts": {"first_name": "Lucía"},
+        "transcript": [{"role": "assistant", "text": reply}],
+    }  # fmt: skip
+
+
+async def test_endpoint_reports_faithfulness_of_recent_cases_without_their_text(client):
+    from app.agent.handoff import InMemoryCaseStore, get_case_store
+    from app.main import app
+
+    store = InMemoryCaseStore()
+    await store.create(
+        _case("NB-1", "2026-10-01T10:00:00+00:00", "Compra en TecnoMundo por USD 301.05.")
+    )
+    await store.create(_case("NB-2", "2026-10-02T10:00:00+00:00", "Tu saldo es de USD 999.00."))
+    await store.create(_case("NB-3", "2026-10-02T11:00:00+00:00", "Te comunico con un asesor."))
+    app.dependency_overrides[get_case_store] = lambda: store
+    try:
+        res = client.get("/v1/metrics/live")
+    finally:
+        app.dependency_overrides.pop(get_case_store)
+    faith = res.json()["faithfulness"]
+    assert faith["cases"] == 3
+    assert faith["scored"] == 2  # the third answer has no checkable claim
+    assert faith["buckets"]["all"] == 1 and sum(faith["buckets"].values()) == 2
+    assert 0 < faith["mean"] < 1
+    assert faith["claims"]["supported"] < faith["claims"]["total"]
+    assert faith["window"] == {
+        "first": "2026-10-01T10:00:00+00:00",
+        "last": "2026-10-02T11:00:00+00:00",
+    }
+    for leaked in ("TecnoMundo", "999", "NB-1", "Lucía", "asesor"):
+        assert leaked not in res.text
+
+
+def test_faithfulness_summary_with_no_cases():
+    summary = metrics.faithfulness_summary([])
+    assert summary["cases"] == 0 and summary["scored"] == 0 and summary["mean"] is None
+    assert summary["claims"]["rate"] is None and summary["window"]["first"] is None

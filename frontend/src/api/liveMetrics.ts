@@ -13,6 +13,16 @@ export interface Group {
   conversations: number
 }
 
+export interface Faithfulness {
+  cases: number
+  scored: number
+  mean: number | null
+  claims: { supported: number; total: number; rate: number | null }
+  buckets: { all: number; most: number; low: number }
+  window: { first: string | null; last: string | null }
+  limit: number
+}
+
 export interface LiveMetrics {
   turns: number
   conversations: number
@@ -35,6 +45,7 @@ export interface LiveMetrics {
   }
   by_lang: Record<string, Group>
   by_channel: Record<string, Group>
+  faithfulness?: Faithfulness
   generated_at: string
   cache_seconds: number
 }

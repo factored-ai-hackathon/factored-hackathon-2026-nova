@@ -110,9 +110,14 @@ Where it goes depends on `INTERACTIONS_STORE`:
              "confident_share": 0.62, "threshold": 0.58},
   "by_lang": {"es": {"turns": 80, "conversations": 25}, "pt": {"turns": 40, "conversations": 15}},
   "by_channel": {"account": {"turns": 90, "conversations": 30}, "public": {"turns": 30, "conversations": 10}},
+  "faithfulness": {"cases": 12, "scored": 10, "mean": 0.91,
+                   "claims": {"supported": 52, "total": 58, "rate": 0.897},
+                   "buckets": {"all": 7, "most": 2, "low": 1},
+                   "window": {"first": "<iso>", "last": "<iso>"}, "limit": 50},
   "generated_at": "<iso>", "cache_seconds": 60
 }
 ```
+`faithfulness` scores the last `limit` handed-over cases with the agent console's check (decision 28): the share of checkable claims in Nova's answers (amounts, dates, last digits, names) found in the data it consulted. `scored` counts the cases with at least one claim; `buckets`: every claim found, 75-99%, under 75%. Only the scores: never the answers, case ids or names.
 Ratios and per-conversation values are `null` when there are no turns; percentiles are nearest-rank over the turns that reported the latency (`n`). Cost uses `LLM_PRICE_INPUT_PER_MTOK` / `LLM_PRICE_OUTPUT_PER_MTOK`; `threshold` is the intent model's confidence threshold.
 
 ## Python seam (API ↔ agent)

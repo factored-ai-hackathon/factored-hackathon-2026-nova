@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
-import { getLiveMetrics, type Group, type LiveMetrics } from '../../api/liveMetrics';
+import { getLiveMetrics, type Faithfulness, type Group, type LiveMetrics } from '../../api/liveMetrics';
 import { HBars } from './charts';
 import { Card, Stat } from './cards';
 import { C, INTENT, pct, usd } from './viz';
@@ -30,6 +30,45 @@ function groupBars(groups: Record<string, Group>, names: Record<string, string>,
       note: `(${g.turns.toLocaleString('en')})`,
       tip: `${names[k] ?? k}: ${g.turns.toLocaleString('en')} messages in ${g.conversations.toLocaleString('en')} conversations`,
     }));
+}
+
+function FaithfulnessCard({ f }: { f: Faithfulness }) {
+  return (
+    <Card
+      title="Are Nova's answers faithful to the data?"
+      question={`The last ${f.limit} cases handed to a person: each amount, date, last digits or name in Nova's answers, looked up in the data it consulted (the agent console's check).`}
+    >
+      {f.scored ? (
+        <>
+          <div className="models-stats models-stats-inner">
+            <Stat value={pct(f.mean ?? 0)} label="Mean faithfulness" sub={`${f.scored} of ${f.cases} cases had checkable claims`} />
+            <Stat
+              value={`${f.claims.supported}/${f.claims.total}`}
+              label="Claims found in the data"
+              sub={f.claims.rate == null ? undefined : `${pct(f.claims.rate)} of all claims`}
+            />
+          </div>
+          <HBars
+            labelWidth={190}
+            format={(v) => pct(v)}
+            bars={[
+              { label: 'Every claim found', value: f.buckets.all / f.scored, color: C.model, note: `(${f.buckets.all})` },
+              { label: '75–99% found', value: f.buckets.most / f.scored, color: C.base, note: `(${f.buckets.most})` },
+              { label: 'Under 75% found', value: f.buckets.low / f.scored, color: C.compare, note: `(${f.buckets.low})` },
+            ].map((b) => ({ ...b, tip: `${b.label}: ${b.note.slice(1, -1)} of ${f.scored} cases` }))}
+          />
+          <p className="models-read">
+            It checks grounding, not correctness: a real figure from the wrong row still counts as found. Only the
+            scores leave the server, never the answers.
+          </p>
+        </>
+      ) : (
+        <p className="models-read">
+          {f.cases ? 'No handed-over case has a checkable claim yet.' : 'No case has been handed to a person yet.'}
+        </p>
+      )}
+    </Card>
+  );
 }
 
 function LiveNumbers({ data }: { data: LiveMetrics }) {
@@ -92,6 +131,8 @@ function LiveNumbers({ data }: { data: LiveMetrics }) {
                 } per million.`}
           </p>
         </Card>
+
+        {data.faithfulness && <FaithfulnessCard f={data.faithfulness} />}
       </div>
     </>
   );
