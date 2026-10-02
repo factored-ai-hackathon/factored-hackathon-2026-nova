@@ -138,4 +138,4 @@ then open http://localhost:5173. Tests: `uv run pytest` (backend), `npm test` (f
 | [Paul Montero](https://github.com/lpaulmp) | Backend, platform, agent AI |
 | [Esteban Quintero Gómez](https://github.com/Estebanquingo) | Architecture, backend, frontend |
 | [Miguel Higorre](https://github.com/miguel-higorre-ch) | Coordination, QA and evaluation, frontend |
-| Iris | Agent AI engineering, data and ML |
+| Iris | Initial Kickoff data and ML |
