@@ -81,6 +81,18 @@ def test_answers_without_checkable_claims_have_no_score():
     assert analyze([], [])["answers"] == []
 
 
+def test_a_word_after_an_opening_question_or_exclamation_mark_is_not_a_name():
+    # Seen in production: "¿Podrías...", "¿Recuerdas..." counted as invented names.
+    text = (
+        "La compra en TecnoMundo fue de USD 301.05. ¿Podrías confirmar si la reconoces? "
+        "¡Gracias! ¿Prefieres hablar con un asesor? “Recuerdas el comercio” es la pregunta."
+    )
+    [answer] = analyze([{"role": "assistant", "text": text}], EVIDENCE)["answers"]
+    claims = {c["text"]: c["supported"] for c in answer["claims"]}
+    assert claims == {"301.05": True, "TecnoMundo": True, "USD": True}
+    assert answer["score"] == 1.0
+
+
 async def test_console_case_includes_faithfulness(client):
     from app.agent.handoff import InMemoryCaseStore, get_case_store
     from app.main import app
