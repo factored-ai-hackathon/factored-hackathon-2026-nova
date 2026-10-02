@@ -43,9 +43,9 @@ export function DemoPage() {
       </header>
       <nav className="demo-hub-cards" aria-label="Demo">
         {ENTRIES.map(({ to, icon: Icon, title, what, key }) => (
-          <Link key={to} to={to} className="demo-hub-card">
+          <Link key={to} to={to} className="demo-hub-card" aria-labelledby={`demo-${to.slice(1)}`}>
             <Icon size={28} aria-hidden="true" />
-            <h2>{title}</h2>
+            <h2 id={`demo-${to.slice(1)}`}>{title}</h2>
             <p className="demo-hub-what">{what}</p>
             <p className="demo-hub-key">{key}</p>
             <span className="demo-hub-go">
