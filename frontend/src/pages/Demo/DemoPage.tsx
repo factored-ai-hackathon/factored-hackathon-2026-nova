@@ -1,6 +1,7 @@
 /**
- * DemoPage — the entry point for visitors and judges, at the bare host name (/demo redirects here): the three parts of the demo,
- * each with one line on what it is and its published demo key. All data is synthetic.
+ * DemoPage — the entry point for visitors and judges, at the bare host name (/demo redirects
+ * here): the three parts of the demo, each with one line on what it is and its published demo
+ * key. All data is synthetic.
  */
 import { Link } from 'react-router-dom';
 import { ArrowRight, Headset, LineChart, MessageCircle } from 'lucide-react';
