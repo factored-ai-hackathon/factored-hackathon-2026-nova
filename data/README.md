@@ -1,6 +1,6 @@
 # data
 
-Data pipeline code for the LATAM Bank dataset. Owner: Iris. The dataset itself is never committed (public repo).
+Data pipeline code for the LATAM Bank dataset. Owner: Paul. The dataset itself is never committed (public repo).
 
 - `scripts/upload_raw_data.sh`: uploads the gzipped original data to the `data-root` bucket.
 - `scripts/convert_transcripts.py`: makes a Parquet copy of `call_transcripts` (its text has line breaks that Athena can't read from CSV). Upload it to `s3://fh26-hackaton-data/converted/call_transcripts/`.

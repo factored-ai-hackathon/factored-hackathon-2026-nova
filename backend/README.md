@@ -1,6 +1,6 @@
 # backend
 
-API (FastAPI) and the agent (LangGraph + LangChain). Owners: Paul, Esteban (API); Paul, Iris (agent).
+API (FastAPI) and the agent (LangGraph + LangChain). Owners: Paul, Esteban (API); Paul (agent).
 Separate uv project from the root data/ML one, so the image stays small. API contract: [docs/api-contract.md](../docs/api-contract.md).
 
 ## Run locally
