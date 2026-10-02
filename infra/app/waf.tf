@@ -89,48 +89,54 @@ resource "aws_wafv2_web_acl" "app" {
                 }
               }
             }
+            # NOT (agent OR handoff OR live), written as NOT agent AND NOT handoff AND NOT live:
+            # the provider allows only one level of nesting inside the scope-down AND.
             statement {
               not_statement {
                 statement {
-                  or_statement {
-                    statement {
-                      byte_match_statement {
-                        search_string         = "/v1/agent/"
-                        positional_constraint = "STARTS_WITH"
-                        field_to_match {
-                          uri_path {}
-                        }
-                        text_transformation {
-                          priority = 0
-                          type     = "NONE"
-                        }
-                      }
+                  byte_match_statement {
+                    search_string         = "/v1/agent/"
+                    positional_constraint = "STARTS_WITH"
+                    field_to_match {
+                      uri_path {}
                     }
-                    statement {
-                      byte_match_statement {
-                        search_string         = "/handoff"
-                        positional_constraint = "ENDS_WITH"
-                        field_to_match {
-                          uri_path {}
-                        }
-                        text_transformation {
-                          priority = 0
-                          type     = "NONE"
-                        }
-                      }
+                    text_transformation {
+                      priority = 0
+                      type     = "NONE"
                     }
-                    statement {
-                      byte_match_statement {
-                        search_string         = "/v1/metrics/live"
-                        positional_constraint = "EXACTLY"
-                        field_to_match {
-                          uri_path {}
-                        }
-                        text_transformation {
-                          priority = 0
-                          type     = "NONE"
-                        }
-                      }
+                  }
+                }
+              }
+            }
+            statement {
+              not_statement {
+                statement {
+                  byte_match_statement {
+                    search_string         = "/handoff"
+                    positional_constraint = "ENDS_WITH"
+                    field_to_match {
+                      uri_path {}
+                    }
+                    text_transformation {
+                      priority = 0
+                      type     = "NONE"
+                    }
+                  }
+                }
+              }
+            }
+            statement {
+              not_statement {
+                statement {
+                  byte_match_statement {
+                    search_string         = "/v1/metrics/live"
+                    positional_constraint = "EXACTLY"
+                    field_to_match {
+                      uri_path {}
+                    }
+                    text_transformation {
+                      priority = 0
+                      type     = "NONE"
                     }
                   }
                 }
