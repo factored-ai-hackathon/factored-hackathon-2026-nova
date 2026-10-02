@@ -8,10 +8,10 @@ Factored AI & Data Hackathon 2026 · AI-first banking agent · Spanish and Portu
 
 | | |
 |---|---|
-| **Live demo** | https://d2k8cgrqduyk2o.cloudfront.net |
+| **Live demo** | https://d2k8cgrqduyk2o.cloudfront.net (opens the demo page with the three parts below) |
 | Customer login | open **"Modo demo: clientes de prueba"** on the login page; password `Nova2026`, the SMS code is shown on screen |
-| Human agent console | [`/asesor`](https://d2k8cgrqduyk2o.cloudfront.net/asesor), key `Asesor2026` (shown in the field) |
-| How the models are measured | [`/modelos`](https://d2k8cgrqduyk2o.cloudfront.net/modelos), password `Modelos2026` (shown in the field) |
+| Human agent console | [`/console`](https://d2k8cgrqduyk2o.cloudfront.net/console), key `Asesor2026` (shown in the field) |
+| How the models are measured | [`/models`](https://d2k8cgrqduyk2o.cloudfront.net/models), password `Modelos2026` (shown in the field) |
 | Full demo guide | [docs/demo.md](docs/demo.md) |
 
 All customers are the challenge's **synthetic** dataset; no real person's data is used anywhere.
@@ -43,7 +43,7 @@ a complaint, and the human agent who receives the case and has to start over.
    funds). No verification again: the login already proved who they are.
 3. Say *"No reconozco este cargo"*. Fraud and disputes go to a person at once: Nova opens a case and
    tells the customer its number.
-4. Open **`/asesor`**. The case shows Nova's summary and open questions, the **facts the system
+4. Open **`/console`**. The case shows Nova's summary and open questions, the **facts the system
    verified** (from the session, not from the model's words), the **account data Nova actually
    read**, and how **faithful** each answer was to that data. The agent replies in the same chat.
 5. Switch the chat to Portuguese (*"Qual é o saldo das minhas contas?"*): same agent, same rules.
@@ -76,10 +76,10 @@ Every number below is generated from files in this repo, never typed by hand.
 | Held-out evaluation, first run (60 cases × 3, before any fix) | safe automated resolution **91.1%**, 0 unsafe outcomes in 180 runs | [evals/report/REPORT.md](evals/report/REPORT.md) |
 | 13 repeated passes (before the decision 38 fix, see the report) | safe automated resolution **99.9%** (sd 0.3), **0 unsafe outcomes in 2,340 runs**, p50 1.6 s / p95 2.9 s | same |
 | End to end against the live app (before Deploy #64, see the report) | **31/32** answers right and safe, first token 0.9 s | same |
-| Intent classifier vs keyword rules | macro-F1 **0.853** vs 0.618 (Claude zero-shot: 0.890, but 0.57 s and $0.25 per 1,000) | [ml/README.md](ml/README.md), `/modelos` |
+| Intent classifier vs keyword rules | macro-F1 **0.853** vs 0.618 (Claude zero-shot: 0.890, but 0.57 s and $0.25 per 1,000) | [ml/README.md](ml/README.md), `/models` |
 | Does the classifier change behavior? (ablation in the real agent) | complaint and retention messages where a person was offered or a case opened: **95%** with it vs **73%** without | same |
-| Knowledge search | recall@1 **87%**, recall@3 **97%**, MRR 0.93 (BM25 alone: 82%, 0.88) | [ml/rag/README.md](ml/rag/README.md), `/modelos` |
-| Cost | **$0.0041 per conversation** (Claude Haiku 4.5 on Bedrock), 84% of it input tokens | `/modelos` |
+| Knowledge search | recall@1 **87%**, recall@3 **97%**, MRR 0.93 (BM25 alone: 82%, 0.88) | [ml/rag/README.md](ml/rag/README.md), `/models` |
+| Cost | **$0.0041 per conversation** (Claude Haiku 4.5 on Bedrock), 84% of it input tokens | `/models` |
 
 The first run is the honest estimate: the later runs reuse the same cases after fixing what the first
 one found (the report lists every finding and fix).
@@ -89,7 +89,7 @@ one found (the report lists every finding and fix).
 ```mermaid
 flowchart LR
   U[Customer<br/>ES / PT] --> CF[CloudFront + S3<br/>React app]
-  H[Human agent<br/>/asesor] --> CF
+  H[Human agent<br/>/console] --> CF
   CF --> L[Lambda function URL<br/>FastAPI, streaming]
   L --> G[LangGraph agent<br/>identity, tools, handoff in code]
   G --> B[Amazon Bedrock<br/>Claude Haiku 4.5, Titan embeddings]

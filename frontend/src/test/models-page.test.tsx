@@ -30,7 +30,7 @@ describe('models page', () => {
   it('asks for the demo password, shown in the field, with a link to the agent console', async () => {
     renderPage();
     expect(screen.getByLabelText('Password')).toHaveAttribute('placeholder', MODELS_PASSWORD);
-    expect(screen.getByRole('link', { name: /human agent console/ })).toHaveAttribute('href', '/asesor');
+    expect(screen.getByRole('link', { name: /human agent console/ })).toHaveAttribute('href', '/console');
     await userEvent.type(screen.getByLabelText('Password'), 'otra');
     await userEvent.click(screen.getByRole('button', { name: 'Enter' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Wrong password');

@@ -472,7 +472,7 @@ function ModelsGate({ onEnter }: { onEnter: () => void }) {
           Enter
         </button>
         <p className="form-help">Demo: the password is the one shown in the field.</p>
-        <Link to="/asesor" className="models-gate-link">
+        <Link to="/console" className="models-gate-link">
           <Headset size={14} aria-hidden="true" /> Go to the human agent console
         </Link>
       </form>
@@ -490,7 +490,7 @@ export default function ModelsPage() {
           <Link to="/login" className="models-back">
             <ArrowLeft size={16} aria-hidden="true" /> NovaBank
           </Link>
-          <Link to="/asesor" className="models-back">
+          <Link to="/console" className="models-back">
             <Headset size={16} aria-hidden="true" /> Human agent console
           </Link>
         </div>

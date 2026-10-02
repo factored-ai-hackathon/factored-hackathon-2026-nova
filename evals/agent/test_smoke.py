@@ -1,4 +1,4 @@
-"""Smoke eval runner. Run from backend/: `uv run pytest ../evals/agent`.
+"""Smoke eval runner. Run from backend/: `uv run pytest -c pyproject.toml ../evals/agent`.
 
 By default the agent uses a fake model with fixed safe replies, so this checks the harness
 and the graph without a token. Set EVAL_LIVE=1 (and HF_TOKEN) to run the cases against the

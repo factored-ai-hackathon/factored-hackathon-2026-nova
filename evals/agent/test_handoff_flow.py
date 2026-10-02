@@ -1,4 +1,5 @@
-"""Handoff and hard-case eval runner. Run from backend/: `uv run pytest ../evals/agent`.
+"""Handoff and hard-case eval runner.
+Run from backend/: `uv run pytest -c pyproject.toml ../evals/agent`.
 
 Offline the fake model hands over on keywords, so this checks the handoff in code: a case with
 code-built facts, and the bot out of the conversation. EVAL_LIVE=1 measures the real model:

@@ -1,0 +1,56 @@
+/* /demo — the entry point with the three parts of the demo. Same blue as the login and /models. */
+
+.demo-hub {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-4);
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 55%, #1677c9 100%);
+  color: var(--color-text-inverse);
+}
+.demo-hub-head { max-width: 760px; text-align: center; }
+.demo-hub-eyebrow { font-size: var(--text-sm); letter-spacing: 3px; text-transform: uppercase; color: rgba(255, 255, 255, 0.75); }
+.demo-hub-head h1 { font-size: clamp(40px, 7vw, 64px); letter-spacing: -0.02em; margin: var(--space-2) 0; }
+.demo-hub-head p { color: rgba(255, 255, 255, 0.88); }
+
+.demo-hub-cards {
+  width: min(1100px, 100%);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-4);
+}
+.demo-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-xl);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.demo-hub-card:hover { text-decoration: none; transform: translateY(-2px); }
+.demo-hub-card:focus-visible { outline: 3px solid #9cc3ee; outline-offset: 3px; }
+.demo-hub-card > svg { color: var(--color-primary); }
+.demo-hub-card h2 { font-size: var(--text-xl); }
+.demo-hub-what { color: var(--color-text-secondary); flex: 1; }
+.demo-hub-key {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.demo-hub-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.demo-hub-note { font-size: var(--text-sm); color: rgba(255, 255, 255, 0.75); text-align: center; }

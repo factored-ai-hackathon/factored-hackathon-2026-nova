@@ -1,4 +1,5 @@
-"""Identity verification eval runner. Run from backend/: `uv run pytest ../evals/agent`.
+"""Identity verification eval runner.
+Run from backend/: `uv run pytest -c pyproject.toml ../evals/agent`.
 
 By default the offline model (LLM_PROVIDER=fake behaviour) decides when to ask for verification,
 so this checks the flow in code. EVAL_LIVE=1 uses the configured model instead: then the
