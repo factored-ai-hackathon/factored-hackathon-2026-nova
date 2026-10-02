@@ -108,6 +108,7 @@ resource "aws_cloudfront_distribution" "app" {
   price_class         = var.cloudfront_price_class
   http_version        = "http2and3"
   is_ipv6_enabled     = true
+  web_acl_id          = aws_wafv2_web_acl.app.arn # per-IP rate limits (waf.tf)
 
   origin {
     origin_id                = local.web_origin_id

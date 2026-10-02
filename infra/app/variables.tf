@@ -111,3 +111,21 @@ variable "create_github_oidc_provider" {
   type        = bool
   default     = true
 }
+
+variable "waf_api_limit" {
+  description = "Max API requests per IP in 5 minutes (WAF, decision 43). The agent console, the handoff poll and /v1/metrics/live are left out of it."
+  type        = number
+  default     = 100
+}
+
+variable "waf_flood_limit" {
+  description = "Max requests per IP in 5 minutes on every API path, polled ones included (WAF)."
+  type        = number
+  default     = 600
+}
+
+variable "waf_block" {
+  description = "false: the WAF rules only count (first rollout, check the metrics); true: they block with a 429."
+  type        = bool
+  default     = false
+}

@@ -48,7 +48,6 @@ export interface Faithfulness {
 }
 
 export interface CaseDetail extends Omit<CaseSummary, 'faithfulness' | 'intent'> {
-  session_id: string
   intent: CaseIntent | null
   open_questions: string[]
   verified_facts: {
