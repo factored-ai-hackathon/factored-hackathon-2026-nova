@@ -12,15 +12,15 @@ import { ArrowLeft, Brain, Coins, Headset, LineChart, Search } from 'lucide-reac
 import { KEYS, loadStored, saveStored } from '../../utils/persist';
 import metrics from '../../data/modelMetrics.json';
 import { Confusion, DotRows, HBars, Segmented } from '../../components/models/charts';
-import { C, pct } from '../../components/models/viz';
+import { C, INTENT, pct, usd } from '../../components/models/viz';
 import { AbstentionStrip, ChunkSizes, CrossLingual, EmbeddingMap } from '../../components/models/ragCharts';
+import { Card, Stat } from '../../components/models/cards';
+import LiveSection from '../../components/models/LiveSection';
 import '../../styles/models.css';
 
 const { intent, rag, cost } = metrics;
 
 export const MODELS_PASSWORD = 'Modelos2026';
-
-const usd = (v: number, digits = 4) => `$${v.toFixed(digits)}`;
 
 const KIND: Record<string, string> = {
   account: 'Questions about their accounts',
@@ -30,16 +30,6 @@ const KIND: Record<string, string> = {
   handoff: 'Hand over to a person',
   unsupported: 'Something Nova cannot do',
   unsafe: 'Unsafe attempt (blocked)',
-};
-
-const INTENT: Record<string, string> = {
-  transactional: 'Transactional',
-  product: 'Product',
-  complaint: 'Complaint',
-  technical: 'Technical',
-  commercial: 'Commercial',
-  retention: 'Retention',
-  other: 'Other',
 };
 
 /** A topic id ("declined-purchase") as a label ("Declined Purchase"): the documents are in ES and PT. */
@@ -54,28 +44,6 @@ const RETRIEVERS = [
 
 type Scope = 'all' | 'es' | 'pt';
 type RankMetric = 'recall@1' | 'recall@3' | 'mrr';
-
-function Stat({ value, label, sub }: { value: string; label: string; sub?: string }) {
-  return (
-    <div className="models-stat">
-      <div className="models-stat-value">{value}</div>
-      <div className="models-stat-label">{label}</div>
-      {sub && <div className="models-stat-sub">{sub}</div>}
-    </div>
-  );
-}
-
-function Card({ title, question, children }: { title: string; question?: string; children: React.ReactNode }) {
-  return (
-    <section className="models-card">
-      <header>
-        <h3>{title}</h3>
-        {question && <p className="models-question">{question}</p>}
-      </header>
-      {children}
-    </section>
-  );
-}
 
 function IntentSection() {
   const t = intent.test;
@@ -535,6 +503,7 @@ export default function ModelsPage() {
           <a href="#intent">Intent classifier</a>
           <a href="#rag">Knowledge search</a>
           <a href="#cost">Cost per token</a>
+          <a href="#live">Live, from production</a>
           <a href="#limits">Limitations</a>
         </nav>
       </header>
@@ -543,6 +512,7 @@ export default function ModelsPage() {
         <IntentSection />
         <RagSection />
         <CostSection />
+        <LiveSection />
 
         <section className="models-limits" id="limits">
           <h2>Limitations, in the open</h2>

@@ -1,4 +1,4 @@
-"""FastAPI app: CORS, health check, login, chat and demo routes."""
+"""FastAPI app: CORS, health check, login, chat, demo and live metrics routes."""
 
 import hmac
 import logging
@@ -13,6 +13,7 @@ from app.api.agent_console import router as agent_console_router
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.demo import router as demo_router
+from app.api.metrics import router as metrics_router
 from app.api.public import router as public_router
 from app.config import get_settings
 from app.llm import ensure_allowed_provider
@@ -61,4 +62,5 @@ app.include_router(accounts_router)
 app.include_router(agent_console_router)
 app.include_router(chat_router)
 app.include_router(demo_router)
+app.include_router(metrics_router)
 app.include_router(public_router)

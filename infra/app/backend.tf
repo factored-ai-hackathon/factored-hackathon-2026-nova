@@ -91,9 +91,11 @@ resource "aws_iam_role_policy" "api" {
         Resource = aws_dynamodb_table.sessions.arn
       },
       {
+        # Scan (decision 42): GET /v1/metrics/live aggregates the turns for /modelos, reading only
+        # numeric and label attributes, at most once a minute per warm Lambda (in-memory cache).
         Sid      = "RecordInteractions"
         Effect   = "Allow"
-        Action   = ["dynamodb:PutItem", "dynamodb:UpdateItem"]
+        Action   = ["dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Scan"]
         Resource = aws_dynamodb_table.interactions.arn
       },
       {
