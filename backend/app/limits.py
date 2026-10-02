@@ -128,6 +128,8 @@ def visitor_key(client_ip: str) -> str:
         address = ipaddress.ip_address(client_ip.strip("[]"))
     except ValueError:
         return client_ip
+    if address.version == 6 and address.ipv4_mapped:  # "::ffff:203.0.113.7" is an IPv4 visitor
+        return str(address.ipv4_mapped)
     if address.version == 6:
         return str(ipaddress.ip_network(f"{address}/64", strict=False))
     return str(address)

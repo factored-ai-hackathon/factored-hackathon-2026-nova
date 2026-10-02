@@ -34,11 +34,15 @@ resource "aws_wafv2_web_acl" "app" {
     allow {}
   }
 
-  # The same body the API sends for its own limit, so the app shows its usual message.
-  custom_response_body {
-    key          = "rate_limited"
-    content      = jsonencode({ detail = "rate_limited" })
-    content_type = "APPLICATION_JSON"
+  # The same body the API sends for its own limit, so the app shows its usual message. Only
+  # when the rules block: in count mode nothing references it.
+  dynamic "custom_response_body" {
+    for_each = var.waf_block ? [1] : []
+    content {
+      key          = "rate_limited"
+      content      = jsonencode({ detail = "rate_limited" })
+      content_type = "APPLICATION_JSON"
+    }
   }
 
   # The user-facing API: at most var.waf_api_limit requests per IP in 5 minutes. Left out: the

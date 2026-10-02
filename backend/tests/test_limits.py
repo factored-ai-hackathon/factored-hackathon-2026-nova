@@ -48,6 +48,7 @@ def test_visitor_key():
     assert visitor_key("2001:db8:1:2:3:4:5:6") == "2001:db8:1:2::/64"
     assert visitor_key("[2001:db8::1]") == "2001:db8::/64"
     assert visitor_key("not-an-ip") == "not-an-ip"
+    assert visitor_key("::ffff:203.0.113.7") == "203.0.113.7"  # not one shared ::/64 counter
 
 
 async def test_daily_budget_is_charged_with_real_tokens():
