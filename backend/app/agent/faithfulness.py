@@ -66,6 +66,9 @@ TRANSLATIONS = {
     "resolved": "resuelta resolvida",
 }
 MAX_ANSWERS = 12
+# A question or exclamation opens with these, anywhere in a sentence ("Hola, ¿Podrías...?"):
+# the word right after one is capitalized for that reason, not because it is a name.
+OPENERS = "¿¡"
 
 
 def _plain(text: str) -> str:
@@ -109,7 +112,9 @@ def _claims(text: str, ignore: set[str]) -> list[tuple[str, str]]:
     for sentence in _sentences(clean):
         for m in re.finditer(r"\b([A-ZÁÉÍÓÚÑ][\wáéíóúñ]{2,})(\s*:)?", sentence):
             word = _plain(m.group(1))
-            first = m.start() == 0  # capitalized because it starts the sentence
+            # Capitalized because it starts the sentence or follows an opening "¿" or "¡". After a
+            # quote or a parenthesis it stays a claim: «Starbucks» is a name to check.
+            first = m.start() == 0 or sentence[m.start() - 1] in OPENERS
             if first or m.group(2) or word in STOP_WORDS or word in MONTHS or word in ignore:
                 continue
             found.append((word, m.group(1)))
