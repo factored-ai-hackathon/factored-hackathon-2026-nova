@@ -209,3 +209,9 @@ def analyze(transcript: list[dict], evidence: list[dict], customer_name: str | N
         if total_claims
         else None,
     }
+
+
+def for_case(case: dict) -> dict:
+    """`analyze` for a handed-over case: its transcript against the evidence its tools returned."""
+    name = (case.get("verified_facts") or {}).get("first_name")
+    return analyze(case.get("transcript", []), case.get("evidence", []), name)

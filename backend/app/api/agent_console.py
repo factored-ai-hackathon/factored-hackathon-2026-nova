@@ -65,8 +65,7 @@ async def _tell_customer(store: SessionStore, case: dict, text: str, status_: st
 
 
 def _faithfulness(case: dict) -> dict:
-    name = (case.get("verified_facts") or {}).get("first_name")
-    return faithfulness.analyze(case.get("transcript", []), case.get("evidence", []), name)
+    return faithfulness.for_case(case)
 
 
 @router.post("/cases")

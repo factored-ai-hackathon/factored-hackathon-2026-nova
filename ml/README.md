@@ -1,6 +1,6 @@
 # ml
 
-Contact center models. Owner: Iris. Large artifacts go to `s3://fh26-hackaton-data/models/`, not to git; the intent model below is the exception (1.4 MB of JSON the Lambda needs, derived only from team-written text).
+Contact center models. Owner: Paul. Large artifacts go to `s3://fh26-hackaton-data/models/`, not to git; the intent model below is the exception (1.4 MB of JSON the Lambda needs, derived only from team-written text).
 
 ## Intent classifier (decision 29): model card
 
@@ -85,3 +85,10 @@ uv run python ml/intent/train.py        # from the repo root: ~30 s, no AWS; wri
 cd backend && uv run pytest tests/test_intent.py
 ```
 Rates: `ml/intent/resolution_rates.json` (query inside); numbers above: `ml/intent/metrics.json`.
+
+## Metrics page (`/modelos`, decision 41)
+The app's public `/modelos` page charts the numbers of both components (intent classifier and `rag/`). After re-running any of their scripts, re-export them (offline, no AWS):
+```bash
+cd backend && PYTHONPATH=. uv run python ../ml/export_metrics_page.py   # writes frontend/src/data/modelMetrics.json
+```
+`backend/tests/test_metrics_page.py` fails while that file is stale.

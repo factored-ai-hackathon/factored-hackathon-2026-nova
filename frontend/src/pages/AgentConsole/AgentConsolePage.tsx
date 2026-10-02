@@ -2,7 +2,8 @@
 // system verified, the evidence Nova consulted, and the live conversation (decision 27).
 
 import { useCallback, useEffect, useState } from 'react';
-import { Headset, LogOut, RefreshCw, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Headset, LineChart, LogOut, RefreshCw, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { t, LANGUAGES, type TranslationKey } from '../../i18n/translations';
 import * as consoleApi from '../../api/agentConsole';
@@ -14,6 +15,9 @@ import { KEYS, clearStored, loadStored, saveStored } from '../../utils/persist';
 import '../../styles/agent-console.css';
 
 const POLL_MS = 4000;
+// The public demo key (backend settings.agent_console_key, docs/demo.md), shown in the field so
+// judges can get in. It guards a demo queue, not real customers.
+const DEMO_KEY = 'Asesor2026';
 
 function when(iso: string, locale: string): string {
   return new Date(iso).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' });
@@ -121,11 +125,15 @@ export function AgentConsolePage() {
             className="form-input"
             value={key}
             onChange={(e) => setKey(e.target.value)}
+            placeholder={DEMO_KEY}
             autoComplete="off"
           />
           {error && <p className="form-error" role="alert">{error}</p>}
           <button type="submit" className="btn-primary">{t('console.enter', language)}</button>
           <p className="form-help">{t('console.demoKey', language)}</p>
+          <Link to="/modelos" className="console-login-link">
+            <LineChart size={14} aria-hidden="true" /> {t('console.modelsLink', language)}
+          </Link>
         </form>
       </div>
     );

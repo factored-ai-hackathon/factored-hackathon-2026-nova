@@ -1,0 +1,11 @@
+# How git shows each author (git log, git shortlog). It does not rewrite history: the original
+# name and email stay in the commits and on GitHub.
+# Format: Proper Name <proper@email> <email used in the commits>
+
+# github.com/miguel-higorre-ch (commits as "miguel-higorre-ch")
+Miguel Higorre <miguel.higorre@gmail.com>
+
+# github.com/Estebanquingo (2 commits of 2026-09-27 made with git's placeholder identity)
+Esteban Quintero Gómez <Estebanquingo@users.noreply.github.com> <your-github-email@example.com>
+
+# github.com/lpaulmp: already shown as Paul Montero, nothing to map.

@@ -1,0 +1,8 @@
+batch,transaction_id,transaction_date,process_date,product_id,customer_id,transaction_type,transaction_category,amount,currency,amount_usd,channel,branch_id,merchant_name,merchant_category,transaction_country,transaction_city,transaction_status,response_code,is_fraud,fraud_score
+1,FIXTURE-0001,2026-06-18 09:15:00,2026-06-18,FIXTURE-PRODUCT,FIXTURE-CUSTOMER,Purchase,Food,50000.0,COP,12.5,App,,FIXTURE MERCHANT A,Food,Colombia,Bogota,Approved,00,false,3.0
+1,FIXTURE-0002,2026-06-18 18:40:00,2026-06-18,FIXTURE-PRODUCT,FIXTURE-CUSTOMER,Purchase,Other,120000.0,COP,30.0,POS,,FIXTURE MERCHANT B,Retail,Colombia,Medellin,Declined,51,false,5.0
+1,FIXTURE-0003,2026-06-18 21:05:00,2026-06-18,FIXTURE-PRODUCT,FIXTURE-CUSTOMER,Transfer,Other,300000.0,COP,75.0,Web,,FIXTURE MERCHANT C,Other,Colombia,Cali,Pending,,false,2.0
+1,FIXTURE-0004,2025-11-14 10:00:00,2026-06-18,FIXTURE-PRODUCT,FIXTURE-CUSTOMER,Purchase,Food,80000.0,COP,20.0,POS,,FIXTURE MERCHANT D,Food,Colombia,Bogota,Approved,00,false,1.0
+1,FIXTURE-0005,2025-11-20 16:30:00,2026-06-18,FIXTURE-PRODUCT,FIXTURE-CUSTOMER,Payment,Other,45000.0,COP,11.25,Web,,FIXTURE MERCHANT E,Other,Colombia,Bogota,Approved,00,false,1.0
+2,FIXTURE-0003,2026-06-18 21:05:00,2026-06-19,FIXTURE-PRODUCT,FIXTURE-CUSTOMER,Transfer,Other,300000.0,COP,75.0,Web,,FIXTURE MERCHANT C,Other,Colombia,Cali,Approved,00,false,2.0
+2,FIXTURE-0006,2026-06-19 08:00:00,2026-06-19,FIXTURE-PRODUCT,FIXTURE-CUSTOMER,Deposit,Other,1000000.0,COP,250.0,Web,,FIXTURE MERCHANT F,Other,Colombia,Bogota,Approved,00,false,0.0

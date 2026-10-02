@@ -145,6 +145,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
     parser.add_argument("--customers", type=int, default=2)
+    parser.add_argument("--out", default="e2e.json", help="file name in evals/report/results")
     args = parser.parse_args()
     client = Client(args.url)
 
@@ -219,7 +220,7 @@ def main() -> None:
         "summary": summary,
         "results": results,
     }  # fmt: skip
-    path = HERE / "results" / "e2e.json"
+    path = HERE / "results" / args.out
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(summary, indent=1))
     print(f"wrote {path}")
