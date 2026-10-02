@@ -26,8 +26,9 @@ export default function App() {
       <AppProvider>
         <AgentProvider>
           <Routes>
-            {/* The entry point: the three parts of the demo, each with a line on what it is */}
-            <Route path="/demo" element={<DemoPage />} />
+            {/* The entry point, at the bare host name: the three parts of the demo, one line each */}
+            <Route path="/" element={<DemoPage />} />
+            <Route path="/demo" element={<Navigate to="/" replace />} />
             <Route path="/login" element={<LoginPage />} />
             {/* Human agent console: its own key, not the customer login. /asesor is the original name */}
             <Route path="/console" element={<AgentConsolePage />} />
@@ -51,8 +52,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            {/* The root opens the demo entry point; unknown routes go to the customer app */}
-            <Route path="/" element={<Navigate to="/demo" replace />} />
+            {/* Unknown routes go to the customer app */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </AgentProvider>

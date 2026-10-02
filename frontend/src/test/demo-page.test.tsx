@@ -21,12 +21,12 @@ describe('demo entry page', () => {
     expect(screen.getByText(/Password Modelos2026/)).toBeInTheDocument();
   });
 
-  it('is where the root goes', () => {
+  it('is the root, and /demo leads to it', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/demo']}>
         <Routes>
-          <Route path="/demo" element={<DemoPage />} />
-          <Route path="/" element={<Navigate to="/demo" replace />} />
+          <Route path="/" element={<DemoPage />} />
+          <Route path="/demo" element={<Navigate to="/" replace />} />
         </Routes>
       </MemoryRouter>,
     );

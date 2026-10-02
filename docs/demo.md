@@ -1,6 +1,6 @@
 # Demo guide
 
-Link: see the latest [release](../../releases). The root opens a demo page (`/demo`) with the three parts: the customer app (`/login`), the human agent console (`/console`, also `/asesor`) and the model metrics (`/models`, also `/modelos`). The customers are the challenge's **synthetic** dataset: no real people.
+Link: see the latest [release](../../releases). The link (the bare host name, https://d2k8cgrqduyk2o.cloudfront.net) opens the demo page with the three parts: the customer app (`/login`), the human agent console (`/console`, also `/asesor`) and the model metrics (`/models`, also `/modelos`). The customers are the challenge's **synthetic** dataset: no real people.
 
 ## Log in
 The login works like a bank's: **country**, **document type**, **document number** and **password**, then a **6-digit code** sent by SMS to the customer's phone.
