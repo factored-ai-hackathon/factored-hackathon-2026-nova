@@ -8,6 +8,7 @@ from app.limits import (
     MemoryCounterStore,
     client_ip_from,
     get_limiter,
+    visitor_key,
 )
 from app.main import app
 from tests.conftest import parse_sse
@@ -31,6 +32,23 @@ async def test_rate_limit_per_visitor():
     assert [await lim.check("1.2.3.4") for _ in range(4)] == [None, None, None, "rate_limited"]
     assert await lim.check("5.6.7.8") is None  # another visitor has their own count
     assert not any("1.2.3.4" in key for key in lim.store.counters)  # IPs are hashed
+
+
+async def test_an_ipv6_visitor_is_its_64_network():
+    # One connection owns a whole /64: rotating addresses inside it is still one visitor.
+    lim = limiter(rate_limit_per_hour=2)
+    assert await lim.check("2001:db8:1:2::1") is None
+    assert await lim.check("2001:db8:1:2:ffff::9") is None
+    assert await lim.check("2001:db8:1:2:abcd::5") == "rate_limited"
+    assert await lim.check("2001:db8:1:3::1") is None  # another /64, another visitor
+
+
+def test_visitor_key():
+    assert visitor_key("203.0.113.7") == "203.0.113.7"
+    assert visitor_key("2001:db8:1:2:3:4:5:6") == "2001:db8:1:2::/64"
+    assert visitor_key("[2001:db8::1]") == "2001:db8::/64"
+    assert visitor_key("not-an-ip") == "not-an-ip"
+    assert visitor_key("::ffff:203.0.113.7") == "203.0.113.7"  # not one shared ::/64 counter
 
 
 async def test_daily_budget_is_charged_with_real_tokens():
