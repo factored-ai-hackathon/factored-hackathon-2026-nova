@@ -107,7 +107,7 @@ def intent() -> dict:
         },
         "confusion": m["confusion_matrix"],
         "llm": [
-            llm_row("TF-IDF + regresión logística", "tfidf+logreg (shipped)"),
+            llm_row("TF-IDF + logistic regression", "tfidf+logreg (shipped)"),
             llm_row("Claude zero-shot", "claude zero-shot"),
             llm_row("Claude few-shot", "claude few-shot"),
         ],

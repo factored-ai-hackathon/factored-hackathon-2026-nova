@@ -116,7 +116,7 @@ export function DotRows({
   const x = (v: number) => labelWidth + v * plot;
   const height = rows.length * row + 22;
   return (
-    <Frame label="F1 por clase">
+    <Frame label="F1 per class">
       <Legend items={series} />
       <svg viewBox={`0 0 ${width} ${height}`} className="viz-svg" role="img">
         {[0, 0.25, 0.5, 0.75, 1].map((t) => (
@@ -175,10 +175,10 @@ export function Confusion({ labels, names, rows }: { labels: string[]; names: st
   const top = 92;
   const size = labels.length * cell;
   return (
-    <Frame label="Matriz de confusión">
+    <Frame label="Confusion matrix">
       <svg viewBox={`0 0 ${left + size + 10} ${top + size + 30}`} className="viz-svg viz-square" role="img">
         <text x={left + size / 2} y={14} className="viz-axis-title" textAnchor="middle">
-          Predicho por el modelo →
+          Predicted by the model →
         </text>
         {names.map((n, j) => (
           <text
@@ -204,9 +204,9 @@ export function Confusion({ labels, names, rows }: { labels: string[]; names: st
                     key={j}
                     onMouseMove={show(
                       <>
-                        Real <b>{names[i]}</b> → predicho <b>{names[j]}</b>
+                        True <b>{names[i]}</b> → predicted <b>{names[j]}</b>
                         <br />
-                        {v} de {total} frases ({pct(share)})
+                        {v} of {total} phrases ({pct(share)})
                       </>,
                     )}
                     onMouseLeave={hide}
@@ -241,7 +241,7 @@ export function Confusion({ labels, names, rows }: { labels: string[]; names: st
           transform={`translate(14, ${top + size / 2}) rotate(-90)`}
           textAnchor="middle"
         >
-          Intención real
+          True intent
         </text>
       </svg>
       {node}
