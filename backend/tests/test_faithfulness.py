@@ -85,12 +85,20 @@ def test_a_word_after_an_opening_question_or_exclamation_mark_is_not_a_name():
     # Seen in production: "¿Podrías...", "¿Recuerdas..." counted as invented names.
     text = (
         "La compra en TecnoMundo fue de USD 301.05. ¿Podrías confirmar si la reconoces? "
-        "¡Gracias! ¿Prefieres hablar con un asesor? “Recuerdas el comercio” es la pregunta."
+        "¡Gracias! ¿Prefieres hablar con un asesor? ¿Recuerdas el comercio?"
     )
     [answer] = analyze([{"role": "assistant", "text": text}], EVIDENCE)["answers"]
     claims = {c["text"]: c["supported"] for c in answer["claims"]}
     assert claims == {"301.05": True, "TecnoMundo": True, "USD": True}
     assert answer["score"] == 1.0
+
+
+def test_question_marks_mid_sentence_and_names_after_quotes():
+    text = "Hola, ¿Podrías confirmar el cargo? Claro: ¡Gracias por avisar! «Starbucks» cobró 99."
+    [answer] = analyze([{"role": "assistant", "text": text}], EVIDENCE)["answers"]
+    claims = {c["text"]: c["supported"] for c in answer["claims"]}
+    assert "Podrías" not in claims and "Gracias" not in claims
+    assert claims["Starbucks"] is False  # a name after a quote is still checked (invented here)
 
 
 async def test_console_case_includes_faithfulness(client):
