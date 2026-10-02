@@ -9,6 +9,19 @@ export const C = {
 
 export const pct = (x: number, digits = 0) => `${(100 * x).toFixed(digits)}%`;
 
+export const usd = (v: number, digits = 4) => `$${v.toFixed(digits)}`;
+
+/** The intent classifier's labels (backend/app/agent/intent.py). */
+export const INTENT: Record<string, string> = {
+  transactional: 'Transactional',
+  product: 'Product',
+  complaint: 'Complaint',
+  technical: 'Technical',
+  commercial: 'Commercial',
+  retention: 'Retention',
+  other: 'Other',
+};
+
 // ---- tooltip ------------------------------------------------------------------------------------
 
 type Tip = { x: number; y: number; body: ReactNode } | null;

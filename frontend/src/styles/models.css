@@ -111,6 +111,30 @@
   border-left: 3px solid var(--color-border);
 }
 
+/* Live, from production: the window line and the empty / error state */
+.models-live-window {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+.models-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  flex-shrink: 0;
+}
+.models-live-empty {
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+}
+
 .models-limits {
   margin-top: var(--space-10);
   background: var(--color-surface);

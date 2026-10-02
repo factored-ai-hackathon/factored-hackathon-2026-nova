@@ -22,6 +22,7 @@ The frontend and the backend both code against this file. Change it first, then 
 | `POST /v1/public/chat/sessions` | `{"lang":"es"\|"pt"}` (optional) | `201 {"session_id","lang"}`: a public session (no customer) |
 | `POST /v1/public/chat/sessions/{id}/messages` | `{"text","lang"}` | `200 text/event-stream`, same events as the account chat |
 | `POST /v1/chat/sessions/{id}/messages/{message_id}/feedback` | `{"rating":"up"\|"down","comment":"..."}` (`comment` optional, max 500 chars) | `204` |
+| `GET /v1/metrics/live` | – | `200` aggregates over the recorded turns (see "Live metrics" below) |
 
 Errors:
 - Login: any wrong data (password, document, country, document type, or a customer without a mobile phone) → `401 {"detail":"invalid_credentials"}`, the same for all. Verify: wrong code → `401 {"detail":"wrong_code"}`; expired code, 3 wrong codes, or an unknown `login_id` → `401 {"detail":"login_expired"}` (log in again). Login attempts count toward the per-visitor rate limit (`429`).
@@ -91,6 +92,33 @@ Where it goes depends on `INTERACTIONS_STORE`:
 - `jsonl` (default, local): appends to `backend/.interactions/interactions.jsonl` (gitignored).
 - `dynamodb` (deployed): table `INTERACTIONS_TABLE`, partition key `session_id` (S), sort key `message_id` (S), TTL attribute `expires_at` (records expire after `INTERACTIONS_TTL_DAYS`).
 - `none`: nothing is stored.
+
+## Live metrics (decision 42)
+`GET /v1/metrics/live` aggregates every recorded turn for the "Live, from production" section of `/modelos`. Only aggregates: no text, no session or message ids. Audit entries, feedback lines and the spend-limit counters are skipped. DynamoDB: a paginated `Scan` projecting only `session_id` (to count conversations), `status`, `lang`, `channel`, tokens, latencies, `intent`, `intent_confidence`, `created_at` and `type`. Cached in memory for 60 s (`cache_seconds`), so a warm Lambda scans at most once a minute; it never calls the model, so it doesn't count toward the spend limits.
+
+```json
+{
+  "turns": 120, "conversations": 40,
+  "window": {"first": "<iso>", "last": "<iso>"},
+  "errors": 3, "error_rate": 0.025,
+  "tokens": {"input_per_conversation": 3812.5, "output_per_conversation": 210.2},
+  "cost": {"per_conversation": 0.004863, "per_1000_conversations": 4.863, "per_1000_turns": 1.621,
+           "price_per_mtok": {"input": 1.0, "output": 5.0}},
+  "latency_ms": {"total": {"p50": 2400, "p95": 6100, "n": 117},
+                 "first_token": {"p50": 900, "p95": 2100, "n": 117}},
+  "intent": {"classified": 100, "distribution": {"other": 70, "complaint": 30},
+             "confident_share": 0.62, "threshold": 0.58},
+  "by_lang": {"es": {"turns": 80, "conversations": 25}, "pt": {"turns": 40, "conversations": 15}},
+  "by_channel": {"account": {"turns": 90, "conversations": 30}, "public": {"turns": 30, "conversations": 10}},
+  "faithfulness": {"cases": 12, "scored": 10, "mean": 0.91,
+                   "claims": {"supported": 52, "total": 58, "rate": 0.897},
+                   "buckets": {"all": 7, "most": 2, "low": 1},
+                   "window": {"first": "<iso>", "last": "<iso>"}, "limit": 50},
+  "generated_at": "<iso>", "cache_seconds": 60
+}
+```
+`faithfulness` scores the last `limit` handed-over cases with the agent console's check (decision 28): the share of checkable claims in Nova's answers (amounts, dates, last digits, names) found in the data it consulted. `scored` counts the cases with at least one claim; `buckets`: every claim found, 75-99%, under 75%. Only the scores: never the answers, case ids or names.
+Ratios and per-conversation values are `null` when there are no turns; percentiles are nearest-rank over the turns that reported the latency (`n`). Cost uses `LLM_PRICE_INPUT_PER_MTOK` / `LLM_PRICE_OUTPUT_PER_MTOK`; `threshold` is the intent model's confidence threshold.
 
 ## Python seam (API ↔ agent)
 `backend/app/agent/__init__.py`:

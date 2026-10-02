@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -20,7 +20,12 @@ async function enter() {
 }
 
 describe('models page', () => {
-  beforeEach(() => sessionStorage.clear());
+  beforeEach(() => {
+    sessionStorage.clear();
+    // The live section's endpoint is down: the static sections must still render.
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 503 })));
+  });
+  afterEach(() => vi.unstubAllGlobals());
 
   it('asks for the demo password, shown in the field, with a link to the agent console', async () => {
     renderPage();
@@ -41,6 +46,7 @@ describe('models page', () => {
     expect(screen.getAllByText('87%').length).toBeGreaterThan(0); // RAG recall@1
     expect(screen.getByText('$0.0041')).toBeInTheDocument(); // cost per conversation
     expect(screen.getByText('$0.000001')).toBeInTheDocument(); // input price per token
+    expect(await screen.findByText(/live numbers are not available/)).toBeInTheDocument();
   });
 
   it('remembers the password after a reload', async () => {
