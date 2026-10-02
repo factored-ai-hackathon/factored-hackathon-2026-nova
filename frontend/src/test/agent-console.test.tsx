@@ -15,7 +15,7 @@ vi.mock('../api/agentConsole', () => ({
 const CASE: CaseDetail = {
   case_id: 'NB-ABC123', status: 'waiting', created_at: '2026-06-17T10:00:00Z', reason: 'dispute',
   summary: 'Quiere disputar un rechazo en TecnoMundo', lang: 'es', agent_name: null, customer: 'Miguel',
-  session_id: 's1', open_questions: ['¿Reconoce el comercio?'],
+  open_questions: ['¿Reconoce el comercio?'],
   intent: { label: 'complaint', confidence: 0.91, reason_category: 'Queja', fcr_rate: 0.4339, confident: true, early_handoff: true },
   verified_facts: { identity_verified: true, customer_id: 'demo-001', first_name: 'Miguel', logged_in_customer_id: 'demo-001' },
   evidence: [{ tool: 'get_my_transactions', args: { status: 'declined' }, result: '{"total_found": 1}', at: '2026-06-17T09:59:00Z' }],

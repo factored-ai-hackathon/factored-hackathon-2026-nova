@@ -7,6 +7,7 @@ counters live in the interactions table (partition key "#limits"), updated atomi
 
 import asyncio
 import hashlib
+import ipaddress
 import time
 from datetime import UTC, datetime
 from functools import lru_cache
@@ -101,7 +102,7 @@ class Limiter:
         if self.rate_limit is not None and client_ip:
             hour = datetime.now(UTC).strftime("%Y-%m-%dT%H")
             # Visitors are counted by a hash of their IP; the IP itself is never stored.
-            visitor = hashlib.sha256(client_ip.encode()).hexdigest()[:16]
+            visitor = hashlib.sha256(visitor_key(client_ip).encode()).hexdigest()[:16]
             if not await self.store.add(
                 f"rate#{visitor}#{hour}", 1, below=self.rate_limit, ttl_seconds=2 * 3600
             ):
@@ -117,6 +118,21 @@ class Limiter:
         cost = self.cost_micro_usd(input_tokens, output_tokens)
         if self.budget is not None and cost > 0:
             await self.store.add(f"budget#{self._day()}", cost, below=None, ttl_seconds=2 * 86400)
+
+
+def visitor_key(client_ip: str) -> str:
+    """What one visitor is. An IPv4 address, or the /64 network of an IPv6 one: a single
+    connection usually owns a whole /64, so counting each IPv6 address apart would let one
+    visitor rotate addresses past the limit."""
+    try:
+        address = ipaddress.ip_address(client_ip.strip("[]"))
+    except ValueError:
+        return client_ip
+    if address.version == 6 and address.ipv4_mapped:  # "::ffff:203.0.113.7" is an IPv4 visitor
+        return str(address.ipv4_mapped)
+    if address.version == 6:
+        return str(ipaddress.ip_network(f"{address}/64", strict=False))
+    return str(address)
 
 
 def client_ip_from(headers: Any, fallback: str | None) -> str | None:

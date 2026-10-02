@@ -82,12 +82,18 @@ async def list_cases(body: KeyRequest, cases: Cases) -> dict:
     return {"cases": summaries, "stats": stats}
 
 
+def _shown(case: dict) -> dict:
+    """The case as the console shows it. Never the customer's session id: it is the customer's
+    credential for the chat, and the console key is a published demo value."""
+    return {k: v for k, v in case.items() if k != "session_id"}
+
+
 @router.post("/cases/{case_id}")
 async def get_case(case_id: str, body: KeyRequest, cases: Cases) -> dict:
     """The case, plus how faithful Nova's answers were to the data it consulted."""
     _check(body.key)
     case = await _case(cases, case_id)
-    return case | {"faithfulness": _faithfulness(case)}
+    return _shown(case) | {"faithfulness": _faithfulness(case)}
 
 
 @router.post("/cases/{case_id}/take")
@@ -101,7 +107,7 @@ async def take_case(case_id: str, body: TakeRequest, cases: Cases, store: Store)
     notice = handoff.text(case["lang"], "taken", name=name)
     case = await cases.add_message(case_id, "system", notice)
     await _tell_customer(store, case, notice, "active")
-    return case
+    return _shown(case)
 
 
 @router.post("/cases/{case_id}/reply")
@@ -112,7 +118,7 @@ async def reply(case_id: str, body: ReplyRequest, cases: Cases, store: Store) ->
         raise HTTPException(status.HTTP_409_CONFLICT, f"case_{case['status']}")
     case = await cases.add_message(case_id, "agent", body.text.strip())
     await _tell_customer(store, case, f"[{case['agent_name']}] {body.text.strip()}", "active")
-    return case
+    return _shown(case)
 
 
 @router.post("/cases/{case_id}/close")
@@ -120,9 +126,9 @@ async def close_case(case_id: str, body: KeyRequest, cases: Cases, store: Store)
     _check(body.key)
     case = await _case(cases, case_id)
     if case["status"] == "closed":
-        return case
+        return _shown(case)
     notice = handoff.text(case["lang"], "closed", case_id=case_id)
     await cases.update(case_id, status="closed")
     case = await cases.add_message(case_id, "system", notice)
     await _tell_customer(store, case, notice, None)
-    return case
+    return _shown(case)

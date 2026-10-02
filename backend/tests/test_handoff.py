@@ -115,6 +115,23 @@ def test_console_needs_the_key(client, cases):
     }
 
 
+async def test_the_console_never_returns_the_customers_session_id(client: TestClient, cases):
+    # The session id is the customer's chat credential; the console key is a published demo value.
+    session_id, case_id = await open_case(cases)
+    responses = [
+        client.post("/v1/agent/cases", json=KEY),
+        client.post(f"/v1/agent/cases/{case_id}", json=KEY),
+        client.post(f"/v1/agent/cases/{case_id}/take", json={**KEY, "agent_name": "Laura"}),
+        client.post(f"/v1/agent/cases/{case_id}/reply", json={**KEY, "text": "Hola"}),
+        client.post(f"/v1/agent/cases/{case_id}/close", json=KEY),
+        client.post(f"/v1/agent/cases/{case_id}/close", json=KEY),  # already closed
+    ]
+    for r in responses:
+        assert r.status_code == 200
+        assert session_id not in r.text and "session_id" not in r.json()
+    assert (await cases.get(case_id))["session_id"] == session_id  # still stored, just not shown
+
+
 async def test_agent_takes_replies_and_closes_and_the_customer_sees_it(client: TestClient, cases):
     session_id, case_id = await open_case(cases)
     [listed] = client.post("/v1/agent/cases", json=KEY).json()["cases"]
