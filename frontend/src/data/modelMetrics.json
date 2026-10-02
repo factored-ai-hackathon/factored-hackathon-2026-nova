@@ -333,7 +333,7 @@
   },
   "llm": [
    {
-    "name": "TF-IDF + regresión logística",
+    "name": "TF-IDF + logistic regression",
     "macro_f1": 0.853,
     "es": 0.797,
     "pt": 0.905,

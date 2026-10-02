@@ -46,18 +46,18 @@ export function EmbeddingMap({
   const activeQ = questions.find((q) => q.id === active);
 
   return (
-    <Frame label="Mapa de embeddings: fragmentos y preguntas proyectados a 2D">
+    <Frame label="Embedding map: chunks and questions projected to 2D">
       <div className="viz-toolbar">
         <Legend
           items={[
-            { label: 'Fragmento ES', color: LANG_COLOR.es },
-            { label: 'Fragmento PT', color: LANG_COLOR.pt, shape: 'square' },
-            { label: 'Pregunta de test', color: 'var(--viz-muted)' },
+            { label: 'Chunk ES', color: LANG_COLOR.es },
+            { label: 'Chunk PT', color: LANG_COLOR.pt, shape: 'square' },
+            { label: 'Test question', color: 'var(--viz-muted)' },
           ]}
         />
         <label className="viz-check">
           <input type="checkbox" checked={showQuestions} onChange={(e) => setShowQuestions(e.target.checked)} />
-          Mostrar preguntas
+          Show questions
         </label>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} className="viz-svg viz-map" role="img">
@@ -106,12 +106,12 @@ export function EmbeddingMap({
                     <br />
                     {q.gold ? (
                       <>
-                        Documento correcto: {q.gold}
+                        Right document: {q.gold}
                         <br />
-                        Posición en la búsqueda híbrida: {q.ranks.hybrid}
+                        Position in the hybrid search: {q.ranks.hybrid}
                       </>
                     ) : (
-                      <>Sin respuesta en la base: {q.abstained ? 'la búsqueda se abstuvo ✓' : 'la búsqueda devolvió algo'}</>
+                      <>Not answered by the documents: {q.abstained ? 'the search abstained ✓' : 'the search returned something'}</>
                     )}
                   </>,
                 )(e);
@@ -129,7 +129,7 @@ export function EmbeddingMap({
             <>
               <b>{c.title}</b>
               <br />
-              {c.lang.toUpperCase()} · {c.words} palabras · tema “{c.id}”
+              {c.lang.toUpperCase()} · {c.words} words · topic “{c.id}”
             </>,
           );
           return c.lang === 'es' ? (
@@ -140,10 +140,10 @@ export function EmbeddingMap({
         })}
       </svg>
       <figcaption>
-        Cada punto es un vector de 512 dimensiones (Titan V2) proyectado a 2D con PCA, que conserva el{' '}
-        {Math.round(100 * (variance[0] + variance[1]))}% de la varianza: las distancias son aproximadas. Las
-        líneas grises unen el mismo tema en español y en portugués. Pasa el ratón por una pregunta para ver
-        su documento correcto (las preguntas sin respuesta en la base son los círculos vacíos).
+        Each point is a 512-dimension vector (Titan V2) projected to 2D with PCA, which keeps{' '}
+        {Math.round(100 * (variance[0] + variance[1]))}% of the variance: distances are approximate. The gray
+        lines join the same topic in Spanish and in Portuguese. Hover over a question to see its right document
+        (questions the documents cannot answer are the hollow circles).
       </figcaption>
       {node}
     </Frame>
@@ -169,7 +169,7 @@ export function CrossLingual({
   const height = sorted.length * row + 30;
   const x = (v: number) => left + v * (width - left - 50);
   return (
-    <Frame label="Similitud entre el mismo tema en español y portugués">
+    <Frame label="Similarity of the same topic in Spanish and Portuguese">
       <svg viewBox={`0 0 ${width} ${height}`} className="viz-svg" role="img">
         {[0, 0.25, 0.5, 0.75, 1].map((t) => (
           <g key={t}>
@@ -191,7 +191,7 @@ export function CrossLingual({
                 <>
                   <b>{titles[it.id] ?? it.id}</b>
                   <br />
-                  Coseno ES↔PT: {it.cos.toFixed(3)} (temas distintos: media {otherMean.toFixed(2)})
+                  ES↔PT cosine: {it.cos.toFixed(3)} (different topics: mean {otherMean.toFixed(2)})
                 </>,
               )}
               onMouseLeave={hide}
@@ -207,8 +207,8 @@ export function CrossLingual({
         })}
       </svg>
       <figcaption>
-        Punto azul: similitud del mismo tema entre idiomas. Línea gris continua: media entre temas{' '}
-        <b>distintos</b> ({otherMean.toFixed(2)}). Línea tenue: el par de temas distintos más parecido (
+        Blue dot: similarity of the same topic across languages. Solid gray line: mean between{' '}
+        <b>different</b> topics ({otherMean.toFixed(2)}). Faint line: the most similar pair of different topics (
         {otherMax.toFixed(2)}).
       </figcaption>
       {node}
@@ -233,11 +233,11 @@ export function ChunkSizes({ chunks }: { chunks: ChunkPoint[] }) {
   const colW = (width - 40) / bins.length;
   const unit = (height - bottom - 10) / maxCount;
   return (
-    <Frame label="Tamaño de los fragmentos en palabras">
+    <Frame label="Chunk size in words">
       <Legend
         items={[
-          { label: 'Español', color: LANG_COLOR.es },
-          { label: 'Portugués', color: LANG_COLOR.pt },
+          { label: 'Spanish', color: LANG_COLOR.es },
+          { label: 'Portuguese', color: LANG_COLOR.pt },
         ]}
       />
       <svg viewBox={`0 0 ${width} ${height}`} className="viz-svg" role="img">
@@ -250,7 +250,7 @@ export function ChunkSizes({ chunks }: { chunks: ChunkPoint[] }) {
           const tip = show(
             <>
               <b>
-                {b.from}–{b.from + bin - 1} palabras
+                {b.from}–{b.from + bin - 1} words
               </b>
               <br />
               ES {b.es.length} · PT {b.pt.length}
@@ -289,11 +289,11 @@ export function AbstentionStrip({ questions, threshold }: { questions: QuestionP
   const [lo, hi] = [0.1, Math.max(0.7, ...vals)];
   const x = (v: number) => left + ((v - lo) / (hi - lo)) * (width - left - 20);
   const rows = [
-    { label: 'Con respuesta', items: questions.filter((q) => q.gold), y: 40 },
-    { label: 'Sin respuesta', items: questions.filter((q) => !q.gold), y: 95 },
+    { label: 'Answerable', items: questions.filter((q) => q.gold), y: 40 },
+    { label: 'Unanswerable', items: questions.filter((q) => !q.gold), y: 95 },
   ];
   return (
-    <Frame label="Similitud del mejor fragmento, por tipo de pregunta">
+    <Frame label="Similarity of the best chunk, by kind of question">
       <svg viewBox={`0 0 ${width} ${height}`} className="viz-svg" role="img">
         {[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7].map((t) => (
           <g key={t}>
@@ -306,7 +306,7 @@ export function AbstentionStrip({ questions, threshold }: { questions: QuestionP
         <rect x={x(lo)} y={10} width={x(threshold) - x(lo)} height={height - 32} className="viz-band" />
         <line x1={x(threshold)} x2={x(threshold)} y1={6} y2={height - 22} className="viz-ref" />
         <text x={x(threshold) + 6} y={16} className="viz-note">
-          umbral {threshold}
+          threshold {threshold}
         </text>
         {rows.map((r) => (
           <g key={r.label}>
@@ -325,9 +325,9 @@ export function AbstentionStrip({ questions, threshold }: { questions: QuestionP
                   <>
                     <b>“{q.q}”</b>
                     <br />
-                    Coseno del mejor fragmento: {(q.top_cos ?? 0).toFixed(3)}
+                    Cosine of the best chunk: {(q.top_cos ?? 0).toFixed(3)}
                     <br />
-                    {q.abstained ? 'La búsqueda se abstuvo' : `Devolvió “${q.top_hit}”`}
+                    {q.abstained ? 'The search abstained' : `Returned “${q.top_hit}”`}
                   </>,
                 )}
                 onMouseLeave={hide}
@@ -337,9 +337,9 @@ export function AbstentionStrip({ questions, threshold }: { questions: QuestionP
         ))}
       </svg>
       <figcaption>
-        Las preguntas sin respuesta (naranja) caen en la misma zona que las que sí la tienen: por eso
-        un umbral de similitud solo descarta las claramente fuera de tema, y el resto lo decide el
-        modelo al leer los fragmentos.
+        Unanswerable questions (orange) fall in the same range as answerable ones: that is why a
+        similarity threshold only drops the clearly off-topic ones, and the model decides the rest when
+        it reads the chunks.
       </figcaption>
       {node}
     </Frame>
