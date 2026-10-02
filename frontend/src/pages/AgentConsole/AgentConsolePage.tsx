@@ -131,7 +131,7 @@ export function AgentConsolePage() {
           {error && <p className="form-error" role="alert">{error}</p>}
           <button type="submit" className="btn-primary">{t('console.enter', language)}</button>
           <p className="form-help">{t('console.demoKey', language)}</p>
-          <Link to="/modelos" className="console-login-link">
+          <Link to="/models" className="console-login-link">
             <LineChart size={14} aria-hidden="true" /> {t('console.modelsLink', language)}
           </Link>
         </form>

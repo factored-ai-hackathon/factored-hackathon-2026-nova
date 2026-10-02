@@ -1,4 +1,4 @@
-"""Account tools eval runner. Run from backend/: `uv run pytest ../evals/agent`.
+"""Account tools eval runner. Run from backend/: `uv run pytest -c pyproject.toml ../evals/agent`.
 
 Offline (default) the model is the offline fake, so this checks the security in code: data is
 only read for the session's customer, never before verification. EVAL_LIVE=1 uses the configured
