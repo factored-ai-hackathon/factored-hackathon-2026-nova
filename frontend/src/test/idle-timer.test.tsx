@@ -6,7 +6,7 @@ import { AgentPanel } from '../components/agent/AgentPanel';
 import { AgentFAB } from '../components/agent/AgentFAB';
 import { AllProviders } from './testUtils';
 import { useIdleTimer } from '../hooks/useIdleTimer';
-import { IDLE_CLOSE_MS, IDLE_NOTICE_MS, IDLE_PROMPT_MS, MAX_KEEP_OPEN, idleTimerEnabled } from '../config/idleTimer';
+import { IDLE_CLOSE_MS, IDLE_NOTICE_MS, IDLE_PROMPT_MS, idleTimerEnabled, initIdleSwitchFromUrl } from '../config/idleTimer';
 import * as agentService from '../services/agentService';
 import { mockConversation } from '../data/mockData';
 import { KEYS, saveStored } from '../utils/persist';
@@ -72,7 +72,7 @@ describe('useIdleTimer', () => {
 
   it('allows 4 keep-opens, then no more; writing resets the counter', () => {
     const { result, rerender } = setup();
-    for (let i = 0; i < MAX_KEEP_OPEN; i++) {
+    for (let i = 0; i < 4; i++) {
       act(() => { vi.advanceTimersByTime(IDLE_PROMPT_MS); });
       expect(result.current.canKeepOpen).toBe(true);
       act(() => result.current.keepOpen());
@@ -87,7 +87,7 @@ describe('useIdleTimer', () => {
 
   it('with no keep-opens left it still closes after the same 2 minutes', () => {
     const { result, onTimeout } = setup();
-    for (let i = 0; i < MAX_KEEP_OPEN; i++) {
+    for (let i = 0; i < 4; i++) {
       act(() => { vi.advanceTimersByTime(IDLE_PROMPT_MS); });
       act(() => result.current.keepOpen());
     }
@@ -116,6 +116,24 @@ describe('useIdleTimer', () => {
   });
 });
 
+describe('sleep and wake', () => {
+  it('after a long clock jump the prompt shows first and the chat does not close in the same tick', () => {
+    const onTimeout = vi.fn();
+    const { result } = renderHook(() => useIdleTimer({ active: true, activityKey: 0, onTimeout }));
+    vi.setSystemTime(Date.now() + 60 * 60 * 1000); // the laptop slept for an hour
+    act(() => { vi.advanceTimersByTime(IDLE_PROMPT_MS); });
+    expect(result.current.phase).toBe('prompt');
+    expect(onTimeout).not.toHaveBeenCalled();
+    act(() => { vi.advanceTimersByTime(IDLE_CLOSE_MS - 1); }); // the 2 minutes count from the prompt
+    expect(result.current.phase).toBe('prompt');
+    act(() => { vi.advanceTimersByTime(1); });
+    expect(result.current.phase).toBe('closing');
+    expect(onTimeout).not.toHaveBeenCalled();
+    act(() => { vi.advanceTimersByTime(IDLE_NOTICE_MS); });
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('switch and durations', () => {
   it('is on by default', () => expect(idleTimerEnabled()).toBe(true));
 
@@ -124,14 +142,19 @@ describe('switch and durations', () => {
     expect(idleTimerEnabled()).toBe(false);
   });
 
-  it('?idle=off turns it off and is remembered for the tab; ?idle=on turns it on', () => {
+  it('?idle=off is remembered for the tab by the startup reader; ?idle=on turns it on', () => {
     window.history.pushState({}, '', '/?idle=off');
-    expect(idleTimerEnabled()).toBe(false);
+    initIdleSwitchFromUrl();
     window.history.pushState({}, '', '/dashboard');
     expect(idleTimerEnabled()).toBe(false);
-    window.history.pushState({}, '', '/?idle=on');
+    window.history.pushState({}, '', '/demo?idle=on');
+    initIdleSwitchFromUrl();
+    window.history.pushState({}, '', '/dashboard');
     expect(idleTimerEnabled()).toBe(true);
-    window.history.pushState({}, '', '/');
+  });
+
+  it('idleTimerEnabled itself does not read the URL', () => {
+    window.history.pushState({}, '', '/?idle=off');
     expect(idleTimerEnabled()).toBe(true);
   });
 
@@ -157,7 +180,7 @@ describe('idle timer in the customer chat', () => {
     saveStored(KEYS.chat, {
       customerId: null,
       conversation: mockConversation,
-      handoff: handoffStatus && { caseId: 'NB-1', status: handoffStatus, agentName: null, next: 0 },
+      handoff: handoffStatus && { caseId: 'NB-1', status: handoffStatus, agentName: null, next: 0, rated: true },
       isOpen: true,
     });
 
@@ -229,17 +252,46 @@ describe('idle timer in the customer chat', () => {
     expect(agentService.resetConversation).not.toHaveBeenCalled();
   });
 
-  it('does not run with ?idle=off', async () => {
-    window.history.pushState({}, '', '/?idle=off');
+  it('?idle=off given on the login page still disables the timer on the dashboard', async () => {
+    window.history.pushState({}, '', '/login?idle=off');
+    initIdleSwitchFromUrl(); // main.tsx, once at startup
+    window.history.pushState({}, '', '/dashboard'); // the login navigation drops the query string
     await openChat();
     await advance(IDLE_PROMPT_MS + IDLE_CLOSE_MS + IDLE_NOTICE_MS);
     expect(screen.queryByText(QUESTION)).not.toBeInTheDocument();
     expect(agentService.resetConversation).not.toHaveBeenCalled();
   });
 
+  it('?idle=on re-enables it after ?idle=off', async () => {
+    window.history.pushState({}, '', '/?idle=off');
+    initIdleSwitchFromUrl();
+    window.history.pushState({}, '', '/demo?idle=on');
+    initIdleSwitchFromUrl();
+    window.history.pushState({}, '', '/dashboard');
+    await openChat();
+    await advance(IDLE_PROMPT_MS);
+    expect(screen.getByText(QUESTION)).toBeInTheDocument();
+  });
+
+  it('pauses while the rating prompt is unanswered and resumes once dismissed', async () => {
+    saveStored(KEYS.chat, {
+      customerId: null, conversation: mockConversation, isOpen: true,
+      handoff: { caseId: 'NB-9', status: 'closed', agentName: null, next: 0 },
+    });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<AllProviders><AgentPanel /></AllProviders>);
+    await advance(IDLE_PROMPT_MS + IDLE_CLOSE_MS + IDLE_NOTICE_MS);
+    expect(screen.getByText('¿Cómo fue tu experiencia con el asesor?')).toBeInTheDocument();
+    expect(screen.queryByText(QUESTION)).not.toBeInTheDocument();
+    expect(agentService.resetConversation).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Ahora no' }));
+    await advance(IDLE_PROMPT_MS);
+    expect(screen.getByText(QUESTION)).toBeInTheDocument();
+  });
+
   it('shows the last prompt without a button after 4 keep-opens', async () => {
     await openChat();
-    for (let i = 0; i < MAX_KEEP_OPEN; i++) {
+    for (let i = 0; i < 4; i++) {
       await advance(IDLE_PROMPT_MS);
       await act(async () => { screen.getByRole('button', { name: KEEP }).click(); });
     }

@@ -22,12 +22,16 @@ export function idleDurations() {
 }
 
 /**
- * Off with VITE_IDLE_TIMER=off at build time, or at runtime with ?idle=off in the URL (remembered for
- * that browser tab in sessionStorage; ?idle=on turns it back on).
+ * Call ONCE at app start (main.tsx), before routing: ?idle=off or ?idle=on on any page of the app
+ * is remembered for this browser tab in sessionStorage, so it survives the login navigation.
  */
-export function idleTimerEnabled(): boolean {
-  if (import.meta.env.VITE_IDLE_TIMER === 'off') return false;
+export function initIdleSwitchFromUrl(): void {
   const param = new URLSearchParams(window.location.search).get('idle');
   if (param === 'off' || param === 'on') saveStored(KEYS.idle, param);
-  return (param ?? loadStored<string>(KEYS.idle)) !== 'off';
+}
+
+/** Off with VITE_IDLE_TIMER=off at build time, or when the tab's stored switch (see above) is off. */
+export function idleTimerEnabled(): boolean {
+  if (import.meta.env.VITE_IDLE_TIMER === 'off') return false;
+  return loadStored<string>(KEYS.idle) !== 'off';
 }

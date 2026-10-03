@@ -209,11 +209,13 @@ export function AgentPanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Inactivity: never while a human case is open, Nova is answering, the panel is closed or the
-  // close dialog is up. The automatic close skips the transcript dialog.
+  // Inactivity: never while a human case is open, Nova is answering, the panel is closed, the
+  // close dialog is up or the rating prompt (#99) waits for an answer. The automatic close skips
+  // the transcript dialog.
+  const [ratingOpen, setRatingOpen] = useState(false);
   const idle = useIdleTimer({
     active: (isOpen || isFullView) && !isTyping && !confirmClose
-      && (!handoff || handoff.status === 'closed') && idleTimerEnabled(),
+      && !ratingOpen && (!handoff || handoff.status === 'closed') && idleTimerEnabled(),
     activityKey: `${handoff?.caseId ?? ''}${handoff?.status ?? ''}|${conversation.messages.filter((m) => m.role === 'user').length}`,
     onTimeout: handleCloseChat,
   });
@@ -376,7 +378,7 @@ export function AgentPanel() {
           />
         ))}
         {isTyping && !isStreaming && <TypingIndicator language={language} />}
-        <SatisfactionPrompt handoff={handoff} language={language} />
+        <SatisfactionPrompt handoff={handoff} language={language} onPendingChange={setRatingOpen} />
         <IdlePrompt phase={idle.phase} canKeepOpen={idle.canKeepOpen} onKeepOpen={idle.keepOpen} language={language} />
         <div ref={messagesEndRef} aria-hidden="true" />
       </div>

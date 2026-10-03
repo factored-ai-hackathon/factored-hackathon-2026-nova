@@ -45,7 +45,7 @@ To see whether the models work, open **`/models`** (also `/modelos`; linked from
 
 The chat header can download the conversation, start a new one, minimize, and close; closing asks first and offers to download it or send it by email.
 
-The customer chat has an inactivity timer: after 5 minutes without a message Nova asks if there is anything else (a button keeps the chat open), and after 2 more minutes the chat closes. It does not run during a human handoff. **To record a video, open the app with `?idle=off`** (for example `https://<host>/login?idle=off`): it stays off for that browser tab, no redeploy needed (`?idle=on` turns it back on).
+The customer chat has an inactivity timer: after 5 minutes without a message Nova asks if there is anything else (a button keeps the chat open), and after 2 more minutes the chat closes. It does not run during a human handoff. **To record a video, open the app with `?idle=off`** on any page of the app, before logging in (for example `https://<host>/?idle=off`, `https://<host>/login?idle=off` or `https://<host>/demo?idle=off`): the app reads it once when it starts and remembers it for that browser tab only (a new tab needs it again), through the login and the dashboard, no redeploy needed. `?idle=on` turns it back on.
 
 ## Things to try
 - A wrong password or document: one message for every mistake (the form doesn't reveal who is a customer).
