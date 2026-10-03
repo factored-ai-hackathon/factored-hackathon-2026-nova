@@ -1,0 +1,25 @@
+/* Inactivity prompt of the customer chat (IdlePrompt.tsx). */
+.idle-prompt {
+  margin: var(--space-3) var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: var(--text-sm);
+}
+.idle-prompt p { margin: 0 0 var(--space-2); }
+.idle-prompt p:last-child { margin-bottom: 0; }
+.idle-prompt-keep {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: 10px;
+  background: #1d4ed8;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.idle-prompt-keep:focus-visible { outline: 3px solid #1e3a8a; outline-offset: 2px; }
