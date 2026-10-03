@@ -79,13 +79,16 @@ async def list_cases(body: KeyRequest, cases: Cases) -> dict:
     scores = [s["faithfulness"] for s in summaries if s["faithfulness"] is not None]
     stats = {status: sum(s["status"] == status for s in summaries) for status in handoff.STATUSES}
     stats["faithfulness_avg"] = round(sum(scores) / len(scores), 3) if scores else None
+    ratings = [{"rating": c["rating"]} for c in recent if c.get("rating") is not None]
+    stats["satisfaction_avg"] = handoff.satisfaction(ratings)["mean"]
+    stats["rated"] = len(ratings)
     return {"cases": summaries, "stats": stats}
 
 
 def _shown(case: dict) -> dict:
     """The case as the console shows it. Never the customer's session id: it is the customer's
     credential for the chat, and the console key is a published demo value."""
-    return {k: v for k, v in case.items() if k != "session_id"}
+    return {k: v for k, v in case.items() if k != "session_id"} | {"rating": case.get("rating")}
 
 
 @router.post("/cases/{case_id}")

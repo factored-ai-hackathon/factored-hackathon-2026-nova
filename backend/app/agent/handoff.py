@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Any, Literal, Protocol
 
+from botocore.exceptions import ClientError
 from langchain_core.tools import tool
 
 HANDOFF_TOOL = "request_human_agent"
@@ -107,12 +108,21 @@ def case_summary(case: dict) -> dict:
         k: case.get(k)
         for k in ("case_id", "status", "created_at", "reason", "summary", "lang", "agent_name")
     } | {
+        "rating": case.get("rating"),
         "customer": case.get("verified_facts", {}).get("first_name"),
         "intent": (case.get("intent") or {}).get("label"),
     }
 
 
 # --- storage ------------------------------------------------------------------------------------
+
+
+class AlreadyRated(Exception):
+    """The case already has a satisfaction rating (one per case)."""
+
+
+class RatingConflict(Exception):
+    """The case kept changing while rating it and the retries ran out (retryable)."""
 
 
 class CaseStore(Protocol):
@@ -123,6 +133,16 @@ class CaseStore(Protocol):
         ...
 
     async def update(self, case_id: str, **fields: Any) -> dict | None: ...
+    async def rate(self, case_id: str, rating: int, rated_at: str) -> dict | None:
+        """Atomically store the rating of a closed case that has none. None: no such case or not
+        closed. Raises AlreadyRated if it has one (also when two requests race)."""
+        ...
+
+    async def ratings(self) -> list[dict]:
+        """The customers' satisfaction ratings of closed cases: [{"rating", "rated_at"}], never
+        text or ids."""
+        ...
+
     async def add_message(self, case_id: str, sender: str, text: str) -> dict | None: ...
 
 
@@ -147,6 +167,23 @@ class InMemoryCaseStore:
         self.cases[case_id].update(fields)
         return await self.get(case_id)
 
+    async def rate(self, case_id: str, rating: int, rated_at: str) -> dict | None:
+        # No await between the check and the set: atomic on the event loop.
+        case = self.cases.get(case_id)
+        if case is None or case.get("status") != "closed":
+            return None
+        if case.get("rating") is not None:
+            raise AlreadyRated
+        case.update(rating=rating, rated_at=rated_at)
+        return json.loads(json.dumps(case))
+
+    async def ratings(self) -> list[dict]:
+        return [
+            {"rating": c["rating"], "rated_at": c.get("rated_at")}
+            for c in self.cases.values()
+            if c.get("rating") is not None
+        ]
+
     async def add_message(self, case_id: str, sender: str, text: str) -> dict | None:
         if case_id not in self.cases:
             return None
@@ -162,16 +199,37 @@ class DynamoCaseStore:
         self.table = table
         self.ttl_seconds = ttl_days * 86400
 
-    def _put(self, case: dict) -> None:
-        self.table.put_item(
-            Item={
-                "case_id": case["case_id"],
-                "status": case["status"],
-                "created_at": case["created_at"],
-                "case_json": json.dumps(case, ensure_ascii=False),
-                "expires_at": int(time.time()) + self.ttl_seconds,
-            }
-        )
+    def _put(self, case: dict, condition: dict | None = None) -> None:
+        item = {
+            "case_id": case["case_id"],
+            "status": case["status"],
+            "created_at": case["created_at"],
+            "case_json": json.dumps(case, ensure_ascii=False),
+            "expires_at": int(time.time()) + self.ttl_seconds,
+        }
+        if case.get("rating") is not None:
+            # Also top-level, so the metrics can scan the numbers without reading the case text.
+            item["rating"] = int(case["rating"])
+            item["rated_at"] = case.get("rated_at")
+        self.table.put_item(Item=item, **(condition or {}))
+
+    def _ratings(self) -> list[dict]:
+        found: list[dict] = []
+        kwargs: dict[str, Any] = {
+            "ProjectionExpression": "#r, rated_at",
+            "FilterExpression": "attribute_exists(#r)",
+            "ExpressionAttributeNames": {"#r": "rating"},
+        }
+        while True:
+            page = self.table.scan(**kwargs)
+            found.extend(
+                {"rating": int(i["rating"]), "rated_at": i.get("rated_at")}
+                for i in page.get("Items", [])
+                if i.get("rating") is not None
+            )
+            if "LastEvaluatedKey" not in page:
+                return found
+            kwargs["ExclusiveStartKey"] = page["LastEvaluatedKey"]
 
     def _get(self, case_id: str) -> dict | None:
         item = self.table.get_item(Key={"case_id": case_id}, ConsistentRead=True).get("Item")
@@ -198,6 +256,41 @@ class DynamoCaseStore:
         self._put(case)
         return case
 
+    def _rate(self, case_id: str, rating: int, rated_at: str) -> dict | None:
+        # Still PutItem only (the role has no UpdateItem): a conditional put of the freshly read
+        # case. It fails if the case got a rating, is not closed, or changed since the read (a
+        # message from the advisor), in which case we read again, so nothing is overwritten.
+        for _ in range(5):
+            item = self.table.get_item(Key={"case_id": case_id}, ConsistentRead=True).get("Item")
+            if item is None:
+                return None
+            case = json.loads(item["case_json"])
+            if case.get("rating") is not None:
+                raise AlreadyRated
+            if case.get("status") != "closed":
+                return None
+            case.update(rating=rating, rated_at=rated_at)
+            try:
+                self._put(
+                    case,
+                    condition={
+                        "ConditionExpression": (
+                            "attribute_not_exists(rating) AND #s = :closed AND case_json = :seen"
+                        ),
+                        "ExpressionAttributeNames": {"#s": "status"},
+                        "ExpressionAttributeValues": {
+                            ":closed": "closed",
+                            ":seen": item["case_json"],
+                        },
+                    },
+                )
+            except ClientError as error:
+                if error.response.get("Error", {}).get("Code") != "ConditionalCheckFailedException":
+                    raise
+                continue  # lost a race: read again and decide (rated, not closed, or retry)
+            return case
+        raise RatingConflict
+
     async def create(self, case: dict) -> None:
         await asyncio.to_thread(self._put, case)
 
@@ -209,6 +302,12 @@ class DynamoCaseStore:
 
     async def update(self, case_id: str, **fields: Any) -> dict | None:
         return await asyncio.to_thread(self._change, case_id, lambda c: c.update(fields))
+
+    async def rate(self, case_id: str, rating: int, rated_at: str) -> dict | None:
+        return await asyncio.to_thread(self._rate, case_id, rating, rated_at)
+
+    async def ratings(self) -> list[dict]:
+        return await asyncio.to_thread(self._ratings)
 
     async def add_message(self, case_id: str, sender: str, text: str) -> dict | None:
         message = {"from": sender, "text": text, "at": now_iso()}
@@ -259,6 +358,19 @@ TEXTS = {
 
 def text(lang: str, key: str, **values: Any) -> str:
     return TEXTS.get(lang, TEXTS["es"])[key].format(**values)
+
+
+def satisfaction(ratings: list[dict]) -> dict:
+    """Customer satisfaction with the advisor (CSAT, decision 46): count, mean, distribution 1-5
+    and the window of the ratings. Numbers only."""
+    values = [r["rating"] for r in ratings]
+    times = sorted(r["rated_at"] for r in ratings if r.get("rated_at"))
+    return {
+        "rated": len(values),
+        "mean": round(sum(values) / len(values), 2) if values else None,
+        "distribution": {str(n): values.count(n) for n in range(1, 6)},
+        "window": {"first": times[0] if times else None, "last": times[-1] if times else None},
+    }
 
 
 def is_open(case_state: dict | None) -> bool:

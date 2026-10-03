@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { MessageContent } from './MessageContent';
 import { FeedbackButtons } from './FeedbackButtons';
+import { SatisfactionPrompt } from './SatisfactionPrompt';
 import { useAgent } from '../../context/AgentContext';
 import { useApp } from '../../context/AppContext';
 import { t } from '../../i18n/translations';
@@ -363,6 +364,7 @@ export function AgentPanel() {
           />
         ))}
         {isTyping && !isStreaming && <TypingIndicator language={language} />}
+        <SatisfactionPrompt handoff={handoff} language={language} />
         <div ref={messagesEndRef} aria-hidden="true" />
       </div>
 
