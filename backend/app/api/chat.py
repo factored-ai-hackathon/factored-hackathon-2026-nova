@@ -8,12 +8,12 @@ from collections.abc import AsyncIterator, Callable
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, StrictInt, field_validator
 from sse_starlette import EventSourceResponse
 
 from app import agent
 from app.agent import Notice, TokenUsage
-from app.agent.handoff import CaseStore, get_case_store
+from app.agent.handoff import CaseStore, get_case_store, now_iso
 from app.agent.identity import (
     SESSION_CUSTOMER,
     CustomerDirectory,
@@ -236,9 +236,38 @@ async def handoff_updates(
         "status": case["status"],
         "case_id": case["case_id"],
         "agent_name": case.get("agent_name"),
+        "rating": case.get("rating"),
         "messages": new,
         "next": len(case["messages"]),
     }
+
+
+class HandoffRatingRequest(BaseModel):
+    rating: StrictInt = Field(ge=1, le=5)
+
+
+@router.post("/sessions/{session_id}/handoff/rating")
+async def rate_handoff(
+    session_id: str,
+    body: HandoffRatingRequest,
+    store: Store,
+    cases: Annotated[CaseStore, Depends(get_case_store)],
+) -> dict:
+    """The customer's satisfaction (1 to 5) with the human agent, once the case is closed.
+    One rating per case. The session id is the credential: only its own case can be rated."""
+    session = await store.get(session_id)
+    if session is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "session not found")
+    case_id = ((session.case or {}).get("handoff") or {}).get("case_id") or (
+        session.case or {}
+    ).get("last_case_id")
+    case = await cases.get(case_id) if case_id else None
+    if case is None or case["session_id"] != session_id or case["status"] != "closed":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "case_not_found")
+    if case.get("rating") is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "already_rated")
+    await cases.update(case_id, rating=body.rating, rated_at=now_iso())
+    return {"case_id": case_id, "rating": body.rating}
 
 
 @router.post(

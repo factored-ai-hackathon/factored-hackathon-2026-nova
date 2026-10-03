@@ -107,6 +107,7 @@ def case_summary(case: dict) -> dict:
         k: case.get(k)
         for k in ("case_id", "status", "created_at", "reason", "summary", "lang", "agent_name")
     } | {
+        "rating": case.get("rating"),
         "customer": case.get("verified_facts", {}).get("first_name"),
         "intent": (case.get("intent") or {}).get("label"),
     }
@@ -123,6 +124,11 @@ class CaseStore(Protocol):
         ...
 
     async def update(self, case_id: str, **fields: Any) -> dict | None: ...
+    async def ratings(self) -> list[dict]:
+        """The customers' satisfaction ratings of closed cases: [{"rating", "rated_at"}], never
+        text or ids."""
+        ...
+
     async def add_message(self, case_id: str, sender: str, text: str) -> dict | None: ...
 
 
@@ -147,6 +153,13 @@ class InMemoryCaseStore:
         self.cases[case_id].update(fields)
         return await self.get(case_id)
 
+    async def ratings(self) -> list[dict]:
+        return [
+            {"rating": c["rating"], "rated_at": c.get("rated_at")}
+            for c in self.cases.values()
+            if c.get("rating") is not None
+        ]
+
     async def add_message(self, case_id: str, sender: str, text: str) -> dict | None:
         if case_id not in self.cases:
             return None
@@ -163,15 +176,36 @@ class DynamoCaseStore:
         self.ttl_seconds = ttl_days * 86400
 
     def _put(self, case: dict) -> None:
-        self.table.put_item(
-            Item={
-                "case_id": case["case_id"],
-                "status": case["status"],
-                "created_at": case["created_at"],
-                "case_json": json.dumps(case, ensure_ascii=False),
-                "expires_at": int(time.time()) + self.ttl_seconds,
-            }
-        )
+        item = {
+            "case_id": case["case_id"],
+            "status": case["status"],
+            "created_at": case["created_at"],
+            "case_json": json.dumps(case, ensure_ascii=False),
+            "expires_at": int(time.time()) + self.ttl_seconds,
+        }
+        if case.get("rating") is not None:
+            # Also top-level, so the metrics can scan the numbers without reading the case text.
+            item["rating"] = int(case["rating"])
+            item["rated_at"] = case.get("rated_at")
+        self.table.put_item(Item=item)
+
+    def _ratings(self) -> list[dict]:
+        found: list[dict] = []
+        kwargs: dict[str, Any] = {
+            "ProjectionExpression": "#r, rated_at",
+            "FilterExpression": "attribute_exists(#r)",
+            "ExpressionAttributeNames": {"#r": "rating"},
+        }
+        while True:
+            page = self.table.scan(**kwargs)
+            found.extend(
+                {"rating": int(i["rating"]), "rated_at": i.get("rated_at")}
+                for i in page.get("Items", [])
+                if i.get("rating") is not None
+            )
+            if "LastEvaluatedKey" not in page:
+                return found
+            kwargs["ExclusiveStartKey"] = page["LastEvaluatedKey"]
 
     def _get(self, case_id: str) -> dict | None:
         item = self.table.get_item(Key={"case_id": case_id}, ConsistentRead=True).get("Item")
@@ -209,6 +243,9 @@ class DynamoCaseStore:
 
     async def update(self, case_id: str, **fields: Any) -> dict | None:
         return await asyncio.to_thread(self._change, case_id, lambda c: c.update(fields))
+
+    async def ratings(self) -> list[dict]:
+        return await asyncio.to_thread(self._ratings)
 
     async def add_message(self, case_id: str, sender: str, text: str) -> dict | None:
         message = {"from": sender, "text": text, "at": now_iso()}
@@ -259,6 +296,19 @@ TEXTS = {
 
 def text(lang: str, key: str, **values: Any) -> str:
     return TEXTS.get(lang, TEXTS["es"])[key].format(**values)
+
+
+def satisfaction(ratings: list[dict]) -> dict:
+    """Customer satisfaction with the advisor (CSAT, decision 46): count, mean, distribution 1-5
+    and the window of the ratings. Numbers only."""
+    values = [r["rating"] for r in ratings]
+    times = sorted(r["rated_at"] for r in ratings if r.get("rated_at"))
+    return {
+        "rated": len(values),
+        "mean": round(sum(values) / len(values), 2) if values else None,
+        "distribution": {str(n): values.count(n) for n in range(1, 6)},
+        "window": {"first": times[0] if times else None, "last": times[-1] if times else None},
+    }
 
 
 def is_open(case_state: dict | None) -> bool:

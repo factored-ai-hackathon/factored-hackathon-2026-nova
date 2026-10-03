@@ -11,8 +11,9 @@ The frontend and the backend both code against this file. Change it first, then 
 | `GET /v1/demo/scenarios` | – | `200 {"password","scenarios":[{"key","customer":{"customer_id","first_name","country","document_type","document_number","birth_date","phone_last4"}}]}` |
 | `GET /v1/demo/customers/{customer_id}` | – | `200 {"customer_id",...}` (same fields as a scenario's customer) |
 | `POST /v1/accounts/overview` | `{"session_id"}` (a verified chat session, from the login) | `200 {"data_as_of","products":[...],"recent_transactions":[...],"open_complaints":0}` |
-| `POST /v1/chat/sessions/{id}/handoff` | `{"after":0}` | `200 {"status":"none"\|"waiting"\|"active"\|"closed","case_id","agent_name","messages":[{"from":"agent"\|"system","text","at"}],"next"}` |
-| `POST /v1/agent/cases` | `{"key"}` | `200 {"cases":[{case_id,status,created_at,reason,summary,lang,agent_name,customer,faithfulness}],"stats":{"waiting","active","closed","faithfulness_avg"}}` |
+| `POST /v1/chat/sessions/{id}/handoff` | `{"after":0}` | `200 {"status":"none"\|"waiting"\|"active"\|"closed","case_id","agent_name","messages":[{"from":"agent"\|"system","text","at"}],"rating","next"}` (`rating`: the customer's 1-5 rating of the closed case, or `null`) |
+| `POST /v1/chat/sessions/{id}/handoff/rating` | `{"rating":1-5}` | `200 {"case_id","rating"}`: the customer's satisfaction with the human agent (decision 46) |
+| `POST /v1/agent/cases` | `{"key"}` | `200 {"cases":[{case_id,status,created_at,reason,summary,lang,agent_name,customer,faithfulness}],"stats":{"waiting","active","closed","faithfulness_avg","satisfaction_avg","rated"}}`; each case also has `rating` (1-5 or `null`) |
 | `POST /v1/agent/cases/{case_id}` | `{"key"}` | `200` the case (summary, open questions, verified facts, evidence, transcript, messages) plus `faithfulness` (see below) |
 | `POST /v1/agent/cases/{case_id}/take` | `{"key","agent_name"}` | `200` the case, now `active` (`409` if not `waiting`) |
 | `POST /v1/agent/cases/{case_id}/reply` | `{"key","text"}` | `200` the case (`409` if not `active`) |
@@ -31,6 +32,7 @@ Errors:
 - Unknown or expired session (24 h without activity) → `404`.
 - Empty text, text over 2,000 characters, or a `lang` other than `es`/`pt` → `422`.
 - Spend limits (deployed): too many messages from one visitor in the last hour → `429 {"detail":"rate_limited"}`; the day's model budget used up → `429 {"detail":"daily_budget_exhausted"}` (until 00:00 UTC). The model is not called.
+- Handoff rating: a session with no case, a case that is not `closed`, or a case that is not the session's → `404 {"detail":"case_not_found"}` (unknown session: `404`); a case already rated → `409 {"detail":"already_rated"}`; `rating` that is not an integer from 1 to 5 → `422`.
 - Feedback for a `message_id` that was not recorded → `404`. `message_id` is the one from the `done` event. Rating again replaces the previous rating.
 
 `lang` on a message also updates the session language.
@@ -78,6 +80,8 @@ The model can call `request_human_agent` (`reason`: customer_request, fraud_or_s
 
 While the case is `waiting` or `active`, the model isn't called: the customer's messages go to the case (the reply is a short "queued" note while waiting, and empty once an agent is on it). The chat polls `POST /v1/chat/sessions/{id}/handoff` with `after` = the last `next` for the agent's messages and case notices; the session id is the credential and only its own case is returned. When the agent closes the case, the bot answers again, with the agent's messages in the history as context.
 
+**Satisfaction (decision 46).** When the agent closes the case, the chat asks "How was your experience with the advisor?" (1 to 5, optional, shown once per case). `POST /v1/chat/sessions/{id}/handoff/rating` stores `rating` (int) and `rated_at` on the case, one rating per case; the session id is the credential. The console shows `rating` in the case and in the queue, and `stats.satisfaction_avg` (mean of the listed cases' ratings, `null` if none) with `stats.rated` (how many) next to `faithfulness_avg`. The console responses still never carry the customer's `session_id`.
+
 `faithfulness` (decision 28): `{"evidence":[{tool,args,at}],"answers":[{"index","text","claims":[{"token","text","supported"}],"score","sentences":[{"text","similarity":[per evidence item],"shared":[[tokens]]}]}],"overall"}`. `score` and `overall` are supported / total checkable claims, `null` without claims; `similarity` is the cosine of term-frequency vectors (0-1).
 
 The agent console (`/asesor`) uses `POST /v1/agent/...` with the shared demo key (`AGENT_CONSOLE_KEY`) in the body (`401 {"detail":"invalid_key"}` otherwise; unknown case → `404`).
@@ -114,9 +118,13 @@ Where it goes depends on `INTERACTIONS_STORE`:
                    "claims": {"supported": 52, "total": 58, "rate": 0.897},
                    "buckets": {"all": 7, "most": 2, "low": 1},
                    "window": {"first": "<iso>", "last": "<iso>"}, "limit": 50},
+  "satisfaction": {"rated": 4, "mean": 4.25, "distribution": {"1": 0, "2": 0, "3": 1, "4": 1, "5": 2},
+                   "window": {"first": "<iso>", "last": "<iso>"}},
   "generated_at": "<iso>", "cache_seconds": 60
 }
 ```
+
+`satisfaction` (decision 46) covers every rated case (window: first and last `rated_at`); `mean` is `null` with no ratings. DynamoDB: a `Scan` of the cases table projecting only `rating` and `rated_at` (stored as top-level attributes next to the case JSON), never the case text. It is the same `Scan` the console's queue already uses: no new IAM permission.
 `faithfulness` scores the last `limit` handed-over cases with the agent console's check (decision 28): the share of checkable claims in Nova's answers (amounts, dates, last digits, names) found in the data it consulted. `scored` counts the cases with at least one claim; `buckets`: every claim found, 75-99%, under 75%. Only the scores: never the answers, case ids or names.
 Ratios and per-conversation values are `null` when there are no turns; percentiles are nearest-rank over the turns that reported the latency (`n`). Cost uses `LLM_PRICE_INPUT_PER_MTOK` / `LLM_PRICE_OUTPUT_PER_MTOK`; `threshold` is the intent model's confidence threshold.
 

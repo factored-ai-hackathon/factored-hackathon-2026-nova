@@ -274,3 +274,37 @@ def test_faithfulness_summary_with_no_cases():
     summary = metrics.faithfulness_summary([])
     assert summary["cases"] == 0 and summary["scored"] == 0 and summary["mean"] is None
     assert summary["claims"]["rate"] is None and summary["window"]["first"] is None
+
+
+async def test_endpoint_reports_satisfaction_without_ids_or_text(client):
+    from app.agent.handoff import InMemoryCaseStore, get_case_store
+    from app.main import app
+
+    store = InMemoryCaseStore()
+    for n, (rating, at) in enumerate(
+        [(5, "2026-10-02T10:00:00+00:00"), (3, "2026-10-02T11:00:00+00:00"), (None, None)]
+    ):
+        await store.create(
+            _case(f"NB-{n}", "2026-10-01T10:00:00+00:00", "Te comunico con un asesor.")
+        )
+        if rating:
+            await store.update(f"NB-{n}", rating=rating, rated_at=at)
+    app.dependency_overrides[get_case_store] = lambda: store
+    try:
+        res = client.get("/v1/metrics/live")
+    finally:
+        app.dependency_overrides.pop(get_case_store)
+    sat = res.json()["satisfaction"]
+    assert sat == {
+        "rated": 2,
+        "mean": 4.0,
+        "distribution": {"1": 0, "2": 0, "3": 1, "4": 0, "5": 1},
+        "window": {"first": "2026-10-02T10:00:00+00:00", "last": "2026-10-02T11:00:00+00:00"},
+    }
+    for leaked in ("NB-0", "asesor", "Lucía"):
+        assert leaked not in str(sat)
+
+
+def test_endpoint_satisfaction_is_empty_with_no_ratings(client):
+    sat = client.get("/v1/metrics/live").json()["satisfaction"]
+    assert sat["rated"] == 0 and sat["mean"] is None

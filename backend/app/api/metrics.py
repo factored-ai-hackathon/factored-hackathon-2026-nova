@@ -18,7 +18,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 
 from app.agent import faithfulness
-from app.agent.handoff import CaseStore, get_case_store
+from app.agent.handoff import CaseStore, get_case_store, satisfaction
 from app.agent.intent import get_intent_model
 from app.api.chat import Interactions
 from app.config import get_settings
@@ -85,6 +85,7 @@ async def live_metrics(interactions: Interactions, cases: Cases) -> dict[str, An
                 settings.llm_price_input_per_mtok, settings.llm_price_output_per_mtok, threshold
             )
             body["faithfulness"] = faithfulness_summary(await cases.list_recent(CASES_LIMIT))
+            body["satisfaction"] = satisfaction(await cases.ratings())
             body["generated_at"] = datetime.now(UTC).isoformat()
             body["cache_seconds"] = CACHE_SECONDS
             _cache.update(at=time.monotonic(), body=body)
