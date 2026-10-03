@@ -86,13 +86,15 @@ ID_COLUMN = {
     "COMPLAINT": "complaint_id",
 }
 
-# Customers who can log in (a mobile phone for the code) and show each demo path. Picked by a hash
+# Customers who can log in (a mobile phone for the code) and have at least one product (else the home
+# page is empty). They also show each demo path. Picked by a hash
 # of customer_id, so reruns offer the same people (docs/demo.md stays valid).
 LOGIN_READY = f"""
 select c.customer_id from (select *, row_number() over (partition by customer_id
                                                         order by last_updated desc) rn
                            from {RAW_DB}.customers) c
 where c.rn = 1 and length({PHONE_DIGITS}) >= 4
+  and exists (select 1 from {CURATED_DB}.dim_product p where p.customer_id = c.customer_id)
 """
 SCENARIOS = {
     # A card payment declined for insufficient funds in the last 30 days.
@@ -103,7 +105,8 @@ SCENARIOS = {
     # A complaint still being handled: the path that ends with a human.
     "open_complaint": f"""
         select distinct customer_id from {CURATED_DB}.stg_complaints
-        where status in ('Open', 'In Process', 'Escalated')""",
+        where status in ('Open', 'In Process', 'Escalated')
+          and customer_id in (select customer_id from {CURATED_DB}.dim_product)""",
     # A product more than 30 days past due.
     "past_due": f"""
         select distinct customer_id from {CURATED_DB}.dim_product where days_past_due > 30""",
