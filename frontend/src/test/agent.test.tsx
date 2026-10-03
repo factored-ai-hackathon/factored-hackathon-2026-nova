@@ -118,6 +118,50 @@ describe('Agent FAB and panel', () => {
     }, { timeout: 3000 });
   });
 
+  it('does not show the escalation notice or a stale draft after closing and reopening the chat', async () => {
+    const { sendMessage } = await import('../services/agentService');
+    vi.mocked(sendMessage).mockResolvedValueOnce({
+      conversation_id: 'conv-test-esc-reset',
+      message: 'Para ayudarte, puedo transferir a un especialista.',
+      intent: 'general_inquiry',
+      sentiment: 'neutral',
+      confidence: 0.7,
+      status: 'escalation',
+      requires_human: true,
+      recommended_action: 'Preparar escalamiento',
+      suggested_actions: ['Transferir a especialista', 'Continuar con Nova'],
+    });
+
+    const user = userEvent.setup();
+    render(
+      <AllProviders>
+        <AgentFAB />
+        <AgentPanel />
+      </AllProviders>
+    );
+
+    await user.click(screen.getByLabelText(/abrir asistente nova/i));
+    await user.type(screen.getByPlaceholderText(/escribe tu consulta/i), 'Quiero hablar con un agente');
+    await user.click(screen.getByLabelText(/enviar/i));
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/transferir a especialista/i);
+    }, { timeout: 3000 });
+
+    // Leave a draft in the input, then close the chat through the dialog.
+    await user.type(screen.getByPlaceholderText(/escribe tu consulta/i), 'borrador');
+    const closeBtn = screen.getAllByRole('button', { name: /cerrar/i }).at(-1)!;
+    await user.click(closeBtn);
+    const dialog = screen.getByRole('alertdialog', { name: /cerrar el chat/i });
+    await user.click(within(dialog).getByRole('button', { name: /sí, cerrar/i }));
+    expect(screen.queryByRole('complementary', { name: /nova/i })).not.toBeInTheDocument();
+
+    // Reopen: a fresh conversation, without the notice or the old draft.
+    await user.click(screen.getByLabelText(/abrir asistente nova/i));
+    expect(screen.getByRole('complementary', { name: /nova/i })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/escribe tu consulta/i)).toHaveValue('');
+  });
+
   it('closes the agent panel when close button is clicked', async () => {
     const user = userEvent.setup();
     render(

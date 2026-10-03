@@ -256,7 +256,10 @@ export function AgentPanel() {
   const transcript = () => transcriptText(conversation.messages, customer?.name ?? '', language);
 
   function handleCloseChat() {
+    // The panel stays mounted when closed, so reset its local state here.
     setConfirmClose(false);
+    setShowEscalation(false);
+    setInputValue('');
     resetConversation();
     closeAgent();
   }
