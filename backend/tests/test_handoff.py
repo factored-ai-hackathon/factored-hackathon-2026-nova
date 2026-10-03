@@ -1,14 +1,19 @@
 """Human handoff: the case the agent receives, the bot staying out while it's open, the agent
 console and the customer's polling (decision 27)."""
 
+import asyncio
+import json
+import threading
+
 import pytest
+from botocore.exceptions import ClientError
 from fastapi.testclient import TestClient
 from langchain_core.messages import AIMessage
 
 from app import agent
 from app.agent import Notice
 from app.agent.graph import build_graph
-from app.agent.handoff import DynamoCaseStore, InMemoryCaseStore, get_case_store
+from app.agent.handoff import AlreadyRated, DynamoCaseStore, InMemoryCaseStore, get_case_store
 from app.agent.identity import SESSION_CUSTOMER
 from app.main import app
 from app.sessions import get_session_store
@@ -228,9 +233,24 @@ async def test_replying_before_taking_or_to_unknown_cases_is_refused(client, cas
 class FakeCasesTable:
     def __init__(self):
         self.items = {}
+        self.lock = threading.Lock()
 
-    def put_item(self, Item):
-        self.items[Item["case_id"]] = Item
+    def put_item(self, Item, **kwargs):
+        with self.lock:
+            old = self.items.get(Item["case_id"])
+            if kwargs.get("ConditionExpression"):
+                values = kwargs["ExpressionAttributeValues"]
+                ok = (
+                    old is not None
+                    and "rating" not in old
+                    and old["status"] == values[":closed"]
+                    and old["case_json"] == values[":seen"]
+                )
+                if not ok:
+                    raise ClientError(
+                        {"Error": {"Code": "ConditionalCheckFailedException"}}, "PutItem"
+                    )
+            self.items[Item["case_id"]] = Item
 
     def get_item(self, Key, ConsistentRead=False):
         item = self.items.get(Key["case_id"])
@@ -271,8 +291,11 @@ async def test_the_customer_rates_the_advisor_once_after_the_case_closes(client,
     assert rate(client, session_id, 5).status_code == 404
     client.post(f"/v1/agent/cases/{case_id}/close", json=KEY)
 
-    for bad in (0, 6, "5", None):
+    for bad in (True, 3.5, "4", None, 0, 6, -1):
         assert rate(client, session_id, bad).status_code == 422
+    missing = client.post(f"/v1/chat/sessions/{session_id}/handoff/rating", json={})
+    assert missing.status_code == 422
+    assert (await cases.get(case_id)).get("rating") is None
     poll = client.post(f"/v1/chat/sessions/{session_id}/handoff", json={"after": 0}).json()
     assert poll["status"] == "closed" and poll["rating"] is None
 
@@ -358,3 +381,75 @@ async def test_dynamo_store_keeps_the_rating_on_the_item_and_scans_only_that():
     assert table.items["NB-1"]["rating"] == 5 and "rating" not in table.items["NB-2"]
     assert await store.ratings() == [{"rating": 5, "rated_at": "2026-10-02T10:00:00+00:00"}]
     assert seen[-1]["ProjectionExpression"] == "#r, rated_at"  # never the case text
+
+
+async def closed_pair(store, n=1):
+    for i in range(1, n + 1):
+        await store.create(
+            {"case_id": f"NB-{i}", "status": "closed", "created_at": "x", "messages": []}
+        )
+
+
+async def test_memory_rate_is_one_per_case_and_atomic_under_gather():
+    store = InMemoryCaseStore()
+    await store.create({"case_id": "NB-1", "status": "active", "created_at": "x", "messages": []})
+    assert await store.rate("NB-1", 5, "t") is None  # not closed
+    assert await store.rate("NB-9", 5, "t") is None  # unknown
+    await store.update("NB-1", status="closed")
+    results = await asyncio.gather(
+        store.rate("NB-1", 4, "t1"), store.rate("NB-1", 2, "t2"), return_exceptions=True
+    )
+    assert sum(isinstance(r, AlreadyRated) for r in results) == 1
+    assert sum(isinstance(r, dict) for r in results) == 1
+    winner = next(r for r in results if isinstance(r, dict))
+    assert (await store.get("NB-1"))["rating"] == winner["rating"]
+    with pytest.raises(AlreadyRated):
+        await store.rate("NB-1", 1, "t3")
+
+
+async def test_dynamo_rate_is_conditional_and_atomic_under_concurrency():
+    table = FakeCasesTable()
+    store = DynamoCaseStore(table, ttl_days=7)
+    await closed_pair(store)
+    results = await asyncio.gather(
+        *(store.rate("NB-1", n, f"t{n}") for n in (1, 2, 3, 4)), return_exceptions=True
+    )
+    assert sum(isinstance(r, dict) for r in results) == 1
+    assert sum(isinstance(r, AlreadyRated) for r in results) == 3
+    winner = next(r for r in results if isinstance(r, dict))["rating"]
+    assert table.items["NB-1"]["rating"] == winner
+    with pytest.raises(AlreadyRated):
+        await store.rate("NB-1", 5, "later")
+    assert await store.rate("NB-9", 5, "t") is None
+
+
+async def test_dynamo_rate_requires_closed_and_keeps_a_concurrent_message():
+    table = FakeCasesTable()
+    store = DynamoCaseStore(table, ttl_days=7)
+    await store.create({"case_id": "NB-1", "status": "active", "created_at": "x", "messages": []})
+    assert await store.rate("NB-1", 5, "t") is None and "rating" not in table.items["NB-1"]
+    await store.update("NB-1", status="closed")
+    put = table.put_item
+    raced = []
+
+    def put_after_a_message(Item, **kwargs):  # the advisor's message lands before our put
+        if not raced:
+            raced.append(1)
+            put(
+                **{
+                    "Item": {
+                        **table.items["NB-1"],
+                        "case_json": json.dumps(
+                            {
+                                **json.loads(table.items["NB-1"]["case_json"]),
+                                "messages": [{"text": "hi"}],
+                            }
+                        ),
+                    }
+                }
+            )
+        return put(Item, **kwargs)
+
+    table.put_item = put_after_a_message
+    saved = await store.rate("NB-1", 3, "t")
+    assert saved["rating"] == 3 and saved["messages"] == [{"text": "hi"}]

@@ -39,7 +39,7 @@ const doneKey = (caseId: string) => `rated.${caseId}`;
  * Shown once per closed case (an answer or a dismissal is remembered for the browser session).
  */
 export function SatisfactionPrompt({ handoff, language }: { handoff: HandoffState | null; language: string }) {
-  const caseId = handoff?.status === 'closed' ? handoff.caseId : '';
+  const caseId = handoff?.status === 'closed' && !handoff.rated ? handoff.caseId : '';
   const [phases, setPhases] = useState<Record<string, Phase>>({});
   const [failed, setFailed] = useState(false);
   if (!caseId) return null;

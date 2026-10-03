@@ -37,6 +37,11 @@ describe('advisor satisfaction prompt in the chat', () => {
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
+  it('does not appear when the poll says the case was already rated', () => {
+    render(<SatisfactionPrompt handoff={{ ...handoff('closed'), rated: true }} language="es" />);
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+  });
+
   it('appears once the case is closed and submits the rating once', async () => {
     const user = userEvent.setup();
     render(<SatisfactionPrompt handoff={handoff('closed')} language="es" />);

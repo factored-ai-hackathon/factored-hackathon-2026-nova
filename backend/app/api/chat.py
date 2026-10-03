@@ -13,7 +13,7 @@ from sse_starlette import EventSourceResponse
 
 from app import agent
 from app.agent import Notice, TokenUsage
-from app.agent.handoff import CaseStore, get_case_store, now_iso
+from app.agent.handoff import AlreadyRated, CaseStore, get_case_store, now_iso
 from app.agent.identity import (
     SESSION_CUSTOMER,
     CustomerDirectory,
@@ -266,7 +266,13 @@ async def rate_handoff(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "case_not_found")
     if case.get("rating") is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "already_rated")
-    await cases.update(case_id, rating=body.rating, rated_at=now_iso())
+    try:
+        # Atomic in the store: two racing requests cannot both succeed.
+        saved = await cases.rate(case_id, body.rating, now_iso())
+    except AlreadyRated:
+        raise HTTPException(status.HTTP_409_CONFLICT, "already_rated") from None
+    if saved is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "case_not_found")
     return {"case_id": case_id, "rating": body.rating}
 
 
