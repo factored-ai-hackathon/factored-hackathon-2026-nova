@@ -182,14 +182,14 @@ export async function handoffUpdates(sessionId: string, after: number): Promise<
   return res.json()
 }
 
-/** The customer rates the human agent (1-5) once the case is closed. 409: already rated. */
+/** The customer rates the human agent (1-5) once the case is closed. 409 `already_rated`: already rated; 409 `rating_conflict`: try again. */
 export async function rateHandoff(sessionId: string, rating: number): Promise<void> {
   const res = await fetch(`${BASE_URL}/v1/chat/sessions/${sessionId}/handoff/rating`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ rating }),
   })
-  if (!res.ok) throw new ApiError(res.status, `rate handoff failed: ${res.status}`)
+  if (!res.ok) throw await errorFrom(res, 'rate handoff')
 }
 
 export async function sendFeedback(sessionId: string, messageId: string, rating: Rating): Promise<void> {

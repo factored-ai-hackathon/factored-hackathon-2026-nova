@@ -121,6 +121,10 @@ class AlreadyRated(Exception):
     """The case already has a satisfaction rating (one per case)."""
 
 
+class RatingConflict(Exception):
+    """The case kept changing while rating it and the retries ran out (retryable)."""
+
+
 class CaseStore(Protocol):
     async def create(self, case: dict) -> None: ...
     async def get(self, case_id: str) -> dict | None: ...
@@ -285,7 +289,7 @@ class DynamoCaseStore:
                     raise
                 continue  # lost a race: read again and decide (rated, not closed, or retry)
             return case
-        raise RuntimeError("case changed too often to rate")
+        raise RatingConflict
 
     async def create(self, case: dict) -> None:
         await asyncio.to_thread(self._put, case)

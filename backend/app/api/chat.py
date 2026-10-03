@@ -13,7 +13,13 @@ from sse_starlette import EventSourceResponse
 
 from app import agent
 from app.agent import Notice, TokenUsage
-from app.agent.handoff import AlreadyRated, CaseStore, get_case_store, now_iso
+from app.agent.handoff import (
+    AlreadyRated,
+    CaseStore,
+    RatingConflict,
+    get_case_store,
+    now_iso,
+)
 from app.agent.identity import (
     SESSION_CUSTOMER,
     CustomerDirectory,
@@ -271,6 +277,8 @@ async def rate_handoff(
         saved = await cases.rate(case_id, body.rating, now_iso())
     except AlreadyRated:
         raise HTTPException(status.HTTP_409_CONFLICT, "already_rated") from None
+    except RatingConflict:
+        raise HTTPException(status.HTTP_409_CONFLICT, "rating_conflict") from None
     if saved is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "case_not_found")
     return {"case_id": case_id, "rating": body.rating}

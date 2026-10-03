@@ -32,7 +32,7 @@ Errors:
 - Unknown or expired session (24 h without activity) → `404`.
 - Empty text, text over 2,000 characters, or a `lang` other than `es`/`pt` → `422`.
 - Spend limits (deployed): too many messages from one visitor in the last hour → `429 {"detail":"rate_limited"}`; the day's model budget used up → `429 {"detail":"daily_budget_exhausted"}` (until 00:00 UTC). The model is not called.
-- Handoff rating: a session with no case, a case that is not `closed`, or a case that is not the session's → `404 {"detail":"case_not_found"}` (unknown session: `404`); a case already rated → `409 {"detail":"already_rated"}`; `rating` that is not an integer from 1 to 5 → `422`.
+- Handoff rating: a session with no case, a case that is not `closed`, or a case that is not the session's → `404 {"detail":"case_not_found"}` (unknown session: `404`); a case already rated → `409 {"detail":"already_rated"}`; a case that kept changing while the rating was saved (retries ran out, DynamoDB only) → `409 {"detail":"rating_conflict"}` (the customer can retry); `rating` that is not an integer from 1 to 5 → `422`.
 - Feedback for a `message_id` that was not recorded → `404`. `message_id` is the one from the `done` event. Rating again replaces the previous rating.
 
 `lang` on a message also updates the session language.

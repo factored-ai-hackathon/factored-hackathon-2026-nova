@@ -68,7 +68,7 @@ export function SatisfactionPrompt({ handoff, language }: { handoff: HandoffStat
       await rateAdvisor(rating);
       finish('thanks', true);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) finish('thanks', true); // already rated
+      if (err instanceof ApiError && err.status === 409 && err.code !== 'rating_conflict') finish('thanks', true); // already rated
       else {
         setFailed(true);
         setPhases((p) => ({ ...p, [caseId]: 'asking' }));

@@ -13,7 +13,13 @@ from langchain_core.messages import AIMessage
 from app import agent
 from app.agent import Notice
 from app.agent.graph import build_graph
-from app.agent.handoff import AlreadyRated, DynamoCaseStore, InMemoryCaseStore, get_case_store
+from app.agent.handoff import (
+    AlreadyRated,
+    DynamoCaseStore,
+    InMemoryCaseStore,
+    RatingConflict,
+    get_case_store,
+)
 from app.agent.identity import SESSION_CUSTOMER
 from app.main import app
 from app.sessions import get_session_store
@@ -391,6 +397,8 @@ async def closed_pair(store, n=1):
 
 
 async def test_memory_rate_is_one_per_case_and_atomic_under_gather():
+    # Documents the guarantee, not a regression guard: the memory store checks and sets with no
+    # await in between, so this passes even without the fix. The Dynamo fake tests are the guard.
     store = InMemoryCaseStore()
     await store.create({"case_id": "NB-1", "status": "active", "created_at": "x", "messages": []})
     assert await store.rate("NB-1", 5, "t") is None  # not closed
@@ -453,3 +461,32 @@ async def test_dynamo_rate_requires_closed_and_keeps_a_concurrent_message():
     table.put_item = put_after_a_message
     saved = await store.rate("NB-1", 3, "t")
     assert saved["rating"] == 3 and saved["messages"] == [{"text": "hi"}]
+
+
+async def test_dynamo_rate_gives_up_with_rating_conflict_and_writes_nothing(client):
+    table = FakeCasesTable()
+    store = DynamoCaseStore(table, ttl_days=7)
+    app.dependency_overrides[get_case_store] = lambda: store
+    try:
+        session_id, case_id = await open_case(store)
+        client.post(f"/v1/agent/cases/{case_id}/close", json=KEY)
+        before = dict(table.items[case_id])
+        put = table.put_item
+        attempts = []
+
+        def always_changed(Item, **kwargs):  # case_json changes between our read and our write
+            attempts.append(1)
+            row = table.items[case_id]
+            put(**{"Item": {**row, "case_json": row["case_json"] + " "}})
+            return put(Item, **kwargs)  # fails: case_json is not what we saw, rating still unset
+
+        table.put_item = always_changed
+        with pytest.raises(RatingConflict):
+            await store.rate(case_id, 4, "t")
+        res = rate(client, session_id, 4)
+        assert res.status_code == 409 and res.json() == {"detail": "rating_conflict"}
+        assert len(attempts) == 10  # 5 retries per call, bounded
+        assert "rating" not in table.items[case_id]
+        assert json.loads(table.items[case_id]["case_json"]) == json.loads(before["case_json"])
+    finally:
+        app.dependency_overrides.pop(get_case_store, None)
