@@ -30,31 +30,31 @@ const DATA: Faithfulness = {
 
 describe('faithfulness panel', () => {
   it('shows the score and marks each claim as found or not found in the data', () => {
-    render(<FaithfulnessPanel data={DATA} language="es" />);
+    render(<FaithfulnessPanel data={DATA} />);
     expect(screen.getAllByText('67%').length).toBeGreaterThan(0);
     const found = screen.getByText('TecnoMundo').closest('mark')!;
     const invented = screen.getByText('9999').closest('mark')!;
     expect(found).toHaveClass('supported');
     expect(found).toHaveTextContent('✓');
     expect(invented).toHaveClass('unsupported');
-    expect(invented).toHaveTextContent(/✗.*no aparece en ningún dato/);
+    expect(invented).toHaveTextContent(/✗.*does not appear in any consulted data/);
   });
 
   it('draws one heatmap cell per sentence and evidence item, with the shared tokens on hover', () => {
-    const { container } = render(<FaithfulnessPanel data={DATA} language="es" />);
+    const { container } = render(<FaithfulnessPanel data={DATA} />);
     const cells = container.querySelectorAll('.faith-heatmap rect');
     expect(cells).toHaveLength(4);
     fireEvent.mouseMove(cells[0], { clientX: 10, clientY: 10 });
     expect(screen.getByRole('tooltip')).toHaveTextContent('0.62');
     expect(screen.getByRole('tooltip')).toHaveTextContent('301, tecnomundo');
     // Table view with the same numbers (not color alone).
-    expect(screen.getByText('Ver como tabla')).toBeInTheDocument();
+    expect(screen.getByText('View as table')).toBeInTheDocument();
     expect(screen.getAllByText('0.62').length).toBeGreaterThan(0);
   });
 
   it('says when there was nothing to check', () => {
-    render(<FaithfulnessPanel data={{ evidence: [], answers: [], overall: null }} language="es" />);
-    expect(screen.getByText(/no hizo afirmaciones verificables/i)).toBeInTheDocument();
-    expect(screen.getByText(/no hay evidencia/i)).toBeInTheDocument();
+    render(<FaithfulnessPanel data={{ evidence: [], answers: [], overall: null }} />);
+    expect(screen.getByText(/made no checkable claims/i)).toBeInTheDocument();
+    expect(screen.getByText(/no evidence to compare/i)).toBeInTheDocument();
   });
 });

@@ -103,16 +103,16 @@ describe('the human agent console survives a reload', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
     const first = render(<AllProviders><AgentConsolePage /></AllProviders>);
-    await userEvent.type(screen.getByLabelText(/clave/i), 'Asesor2026');
-    await userEvent.click(screen.getByRole('button', { name: /entrar|ingresar/i }));
-    expect(await screen.findByText(/cerrar sesión|salir/i)).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/agent key/i), 'Asesor2026');
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(await screen.findByText(/sign out/i)).toBeInTheDocument();
     first.unmount(); // reload
 
     render(<AllProviders><AgentConsolePage /></AllProviders>);
-    const logout = await screen.findByText(/cerrar sesión|salir/i);
-    expect(screen.queryByLabelText(/clave/i)).not.toBeInTheDocument();
+    const logout = await screen.findByText(/sign out/i);
+    expect(screen.queryByLabelText(/agent key/i)).not.toBeInTheDocument();
     await userEvent.click(logout);
-    expect(await screen.findByLabelText(/clave/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/agent key/i)).toBeInTheDocument();
     expect(loadStored(KEYS.console)).toBeNull();
   });
 
@@ -120,7 +120,7 @@ describe('the human agent console survives a reload', () => {
     sessionStorage.setItem('nb.console', JSON.stringify({ key: 'old', agentName: '' }));
     vi.stubGlobal('fetch', vi.fn(async () => new Response('{"detail":"invalid_key"}', { status: 401 })));
     render(<AllProviders><AgentConsolePage /></AllProviders>);
-    expect(await screen.findByLabelText(/clave/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/agent key/i)).toBeInTheDocument();
     await waitFor(() => expect(loadStored(KEYS.console)).toBeNull());
   });
 });
