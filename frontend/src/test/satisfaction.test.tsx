@@ -78,6 +78,34 @@ describe('advisor satisfaction prompt in the chat', () => {
     expect(await screen.findByText('¡Gracias por tu opinión!')).toBeInTheDocument();
   });
 
+  it('shows the thanks state on 409 already_rated', async () => {
+    const user = userEvent.setup();
+    vi.mocked(rateAdvisor).mockRejectedValueOnce(new ApiError(409, 'already_rated', 'already_rated'));
+    render(<SatisfactionPrompt handoff={handoff('closed')} language="es" />);
+    await user.click(screen.getByRole('button', { name: '3 de 5' }));
+    expect(await screen.findByText('¡Gracias por tu opinión!')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['es', '¿Cómo fue tu experiencia con el asesor?', /inténtalo de nuevo/i, '4 de 5', '¡Gracias por tu opinión!'],
+    ['pt', 'Como foi sua experiência com o atendente?', /tente novamente/i, '4 de 5', 'Obrigado pela sua avaliação!'],
+    ['en', 'How was your experience with the advisor?', /please try again/i, '4 out of 5', 'Thanks for your feedback!'],
+  ] as const)('keeps the prompt and offers a retry on 409 rating_conflict (%s)', async (lang, question, retry, star, thanks) => {
+    const user = userEvent.setup();
+    vi.mocked(rateAdvisor).mockRejectedValueOnce(new ApiError(409, 'rating_conflict', 'rating_conflict'));
+    render(<SatisfactionPrompt handoff={handoff('closed')} language={lang} />);
+    await user.click(screen.getByRole('button', { name: star }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(retry);
+    expect(screen.getByRole('group', { name: question })).toBeInTheDocument();
+    expect(screen.queryByText(thanks)).not.toBeInTheDocument();
+    for (const b of screen.getAllByRole('button')) expect(b).toBeEnabled();
+    await user.click(screen.getByRole('button', { name: star }));
+    expect(rateAdvisor).toHaveBeenCalledTimes(2);
+    expect(await screen.findByText(thanks)).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('follows the session language, with an English fallback', () => {
     const { unmount } = render(<SatisfactionPrompt handoff={handoff('closed')} language="pt" />);
     expect(screen.getByText('Como foi sua experiência com o atendente?')).toBeInTheDocument();
