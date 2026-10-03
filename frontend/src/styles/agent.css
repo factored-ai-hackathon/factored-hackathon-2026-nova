@@ -75,7 +75,11 @@
   bottom: 80px;
   right: var(--space-6);
   width: var(--agent-panel-width);
-  max-height: 560px;
+  max-width: calc(100vw - 2 * var(--space-6));
+  height: min(640px, calc(100vh - 104px));
+  height: min(640px, calc(100dvh - 104px));
+  max-height: calc(100vh - 104px);
+  max-height: calc(100dvh - 104px);
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
@@ -92,7 +96,9 @@
   position: fixed;
   inset: 0;
   width: 100vw;
+  max-width: none;
   height: 100vh;
+  height: 100dvh;
   max-height: none;
   border-radius: 0;
   bottom: auto;
@@ -191,12 +197,34 @@
   flex-direction: column;
   gap: var(--space-3);
   background: var(--color-agent-bg);
+  overscroll-behavior: contain;
 }
 
 .message-row {
   display: flex;
   gap: var(--space-2);
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/* Bubble + timestamp column: the timestamp always sits under its bubble,
+   on the same side as the avatar (left for Nova/advisor, right for the customer).
+   Bare .msg-bubble children (public assistant, system notices) keep their own layout. */
+.message-row > :not(.msg-avatar):not(.msg-bubble) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: calc(100% - 28px - var(--space-2));
+}
+
+.message-row.user > :not(.msg-avatar):not(.msg-bubble) {
   align-items: flex-end;
+}
+
+.message-row.system > :not(.msg-avatar):not(.msg-bubble) {
+  max-width: 100%;
+  align-items: center;
 }
 
 .message-row.user {
@@ -226,11 +254,14 @@
 }
 
 .msg-bubble {
-  max-width: 78%;
+  max-width: 100%;
+  min-width: 0;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
+  font-size: var(--text-base, 15px);
   line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .msg-bubble.agent {
@@ -251,14 +282,15 @@
   background: #f0f4f8;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  max-width: 100%;
   text-align: center;
   font-style: italic;
 }
 
 .msg-time {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--color-text-muted);
   margin-top: var(--space-1);
   display: block;
@@ -346,11 +378,13 @@
   flex: 1;
   border: none;
   background: transparent;
-  font-size: var(--text-sm);
+  min-width: 0;
+  font-size: 16px;
   color: var(--color-text-primary);
   outline: none;
   resize: none;
   font-family: inherit;
+  max-height: 120px;
 }
 
 .agent-input::placeholder {
@@ -784,6 +818,7 @@
 
 .msg-author {
   font-size: var(--text-xs);
+  overflow-wrap: anywhere;
   color: #6d28d9;
   font-weight: 600;
   margin-bottom: 2px;
@@ -875,4 +910,85 @@
   font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
+}
+
+/* ------ Roomier panel on desktop, full screen on phones ------ */
+.agent-messages { padding: var(--space-4) var(--space-5); }
+.msg-markdown { overflow-wrap: anywhere; }
+.msg-markdown pre { white-space: pre-wrap; overflow-x: auto; max-width: 100%; }
+.msg-markdown img, .msg-markdown table { max-width: 100%; }
+.suggested-btn { max-width: 100%; text-align: left; overflow-wrap: anywhere; }
+.panel-action-btn { flex-shrink: 0; }
+.agent-panel-header > div:nth-child(2) { min-width: 0; }
+
+@media (min-width: 641px) {
+  .agent-panel:not(.agent-panel--full) { --agent-panel-width: 440px; }
+  .agent-panel--full .agent-messages {
+    padding: var(--space-5) max(var(--space-5), calc((100% - 760px) / 2));
+  }
+  .agent-panel--full .agent-input-area {
+    padding-left: max(var(--space-4), calc((100% - 760px) / 2));
+    padding-right: max(var(--space-4), calc((100% - 760px) / 2));
+  }
+}
+
+@media (max-width: 640px) {
+  .agent-panel,
+  .agent-panel--full {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    z-index: 250; /* above the floating button so it never covers the input */
+    /* Safe-area insets are 0 unless the page opts in with viewport-fit=cover (it does not), so no top padding here. */
+  }
+
+  .agent-panel-header {
+    padding: var(--space-3) var(--space-4);
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
+  }
+
+  .agent-panel-actions { gap: var(--space-1); }
+  .panel-action-btn { width: 40px; height: 40px; }
+  .panel-action-btn svg { width: 18px; height: 18px; }
+
+  .agent-messages {
+    padding: var(--space-3);
+    padding-left: max(var(--space-3), env(safe-area-inset-left));
+    padding-right: max(var(--space-3), env(safe-area-inset-right));
+  }
+
+  .agent-input-area {
+    padding: var(--space-2) var(--space-3);
+    padding-left: max(var(--space-3), env(safe-area-inset-left));
+    padding-right: max(var(--space-3), env(safe-area-inset-right));
+    padding-bottom: max(var(--space-2), env(safe-area-inset-bottom, 0px));
+  }
+
+  .agent-input { min-height: 40px; padding: 8px 0; }
+  .send-btn { width: 44px; height: 44px; }
+  .suggested-btn,
+  .btn-escalate,
+  .btn-continue,
+  .btn-danger,
+  .close-dialog .btn-secondary,
+  .close-dialog .btn-ghost { min-height: 40px; font-size: 15px; }
+  .suggested-btn { padding: 8px var(--space-4); }
+  .feedback-btn { width: 40px; height: 40px; }
+  .msg-bubble.system { font-size: 14px; }
+  .msg-time { font-size: 12px; }
+  .handoff-banner { font-size: 13px; padding-left: var(--space-4); padding-right: var(--space-4); }
+  .escalation-card { margin: var(--space-2) var(--space-3); }
+  .close-dialog-actions { flex-wrap: wrap; }
+  .close-dialog-actions button { flex: 1 1 auto; }
+
+  /* Public assistant keeps its button; when its panel is open the panel covers it. */
+  .agent-fab { bottom: max(var(--space-4), env(safe-area-inset-bottom)); right: var(--space-4); }
 }
