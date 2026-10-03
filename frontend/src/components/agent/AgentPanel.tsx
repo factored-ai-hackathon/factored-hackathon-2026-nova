@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Maximize2,
+  Minimize2,
   X,
   Send,
   Download,
@@ -185,10 +186,13 @@ export function AgentPanel() {
   const { language, customer } = useApp();
   const {
     isOpen,
+    isFullView,
     conversation,
     isTyping,
     isStreaming,
+    openAgent,
     closeAgent,
+    closeFullView,
     openFullView,
     sendMessage,
     resetConversation,
@@ -208,10 +212,10 @@ export function AgentPanel() {
 
   // Focus input when panel opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || isFullView) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen]);
+  }, [isOpen, isFullView]);
 
   // Check if escalation is needed
   useEffect(() => {
@@ -220,7 +224,7 @@ export function AgentPanel() {
     }
   }, [conversation.agentContext.requiresHuman]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isFullView) return null;
 
   async function handleSend() {
     const text = inputValue.trim();
@@ -252,14 +256,17 @@ export function AgentPanel() {
   const transcript = () => transcriptText(conversation.messages, customer?.name ?? '', language);
 
   function handleCloseChat() {
+    // The panel stays mounted when closed, so reset its local state here.
     setConfirmClose(false);
+    setShowEscalation(false);
+    setInputValue('');
     resetConversation();
     closeAgent();
   }
 
   return (
     <div
-      className="agent-panel"
+      className={`agent-panel${isFullView ? ' agent-panel--full' : ''}`}
       role="complementary"
       aria-label={t('agent.title', language)}
     >
@@ -290,22 +297,35 @@ export function AgentPanel() {
           >
             <RotateCcw size={14} />
           </button>
-          <button
-            className="panel-action-btn"
-            onClick={openFullView}
-            aria-label={t('agent.openFullView', language)}
-            title={t('agent.openFullView', language)}
-          >
-            <Maximize2 size={14} />
-          </button>
-          <button
-            className="panel-action-btn"
-            onClick={closeAgent}
-            aria-label={t('agent.minimize', language)}
-            title={t('agent.minimize', language)}
-          >
-            <Minus size={14} />
-          </button>
+          {isFullView ? (
+            <button
+              className="panel-action-btn"
+              onClick={() => { closeFullView(); openAgent(); }}
+              aria-label={t('agent.minimize', language)}
+              title={t('agent.minimize', language)}
+            >
+              <Minimize2 size={14} />
+            </button>
+          ) : (
+            <button
+              className="panel-action-btn"
+              onClick={openFullView}
+              aria-label={t('agent.openFullView', language)}
+              title={t('agent.openFullView', language)}
+            >
+              <Maximize2 size={14} />
+            </button>
+          )}
+          {!isFullView && (
+            <button
+              className="panel-action-btn"
+              onClick={closeAgent}
+              aria-label={t('agent.minimize', language)}
+              title={t('agent.minimize', language)}
+            >
+              <Minus size={14} />
+            </button>
+          )}
           <button
             className="panel-action-btn"
             onClick={() => setConfirmClose(true)}

@@ -114,7 +114,7 @@ function realNotices(overview: AccountsOverview | null, language: 'es' | 'pt', l
 
 export function DashboardPage() {
   const { customer, language, logout } = useApp();
-  const { isOpen, isFullView, openAgent } = useAgent();
+  const { isFullView, openAgent } = useAgent();
   const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
 
   const locale = language === 'pt' ? 'pt-BR' : 'es-CO';
@@ -294,12 +294,8 @@ export function DashboardPage() {
       </main>
 
       {/* AI Agent layer */}
-      {!isFullView && (
-        <>
-          <AgentFAB />
-          {isOpen && <AgentPanel />}
-        </>
-      )}
+      {!isFullView && <AgentFAB />}
+      <AgentPanel />
 
       {/* Transaction detail modal */}
       {selectedTxn && (
