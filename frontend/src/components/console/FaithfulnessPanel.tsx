@@ -8,7 +8,7 @@
 
 import { useState } from 'react';
 import type { Faithfulness } from '../../api/agentConsole';
-import { t } from '../../i18n/translations';
+import { ct } from '../../i18n/consoleText';
 
 // Reference sequential ramp (blue 100 -> 700), one step per bin of cosine similarity.
 const RAMP = ['#cde2fb', '#9ec5f4', '#6da7ec', '#3987e5', '#256abf', '#184f95', '#0d366b'];
@@ -23,10 +23,9 @@ function pct(value: number | null): string {
 }
 
 /** The answer's text with its claims marked: a claim is shown where it first appears. */
-function MarkedAnswer({ text, claims, language }: {
+function MarkedAnswer({ text, claims }: {
   text: string;
   claims: Faithfulness['answers'][number]['claims'];
-  language: 'es' | 'pt';
 }) {
   const parts: React.ReactNode[] = [];
   let rest = text.replace(/\*\*/g, '');
@@ -44,10 +43,10 @@ function MarkedAnswer({ text, claims, language }: {
       <mark
         key={key++}
         className={`claim ${claim.supported ? 'supported' : 'unsupported'}`}
-        title={t(claim.supported ? 'faith.found' : 'faith.notFound', language)}
+        title={ct(claim.supported ? 'faith.found' : 'faith.notFound')}
       >
         <span aria-hidden="true">{claim.supported ? '✓' : '✗'}</span> {claim.text}
-        <span className="sr-only"> ({t(claim.supported ? 'faith.found' : 'faith.notFound', language)})</span>
+        <span className="sr-only"> ({ct(claim.supported ? 'faith.found' : 'faith.notFound')})</span>
       </mark>,
     );
     rest = rest.slice(at + claim.text.length);
@@ -69,10 +68,9 @@ const CELL_W = 64;
 const CELL_H = 26;
 const LABEL_W = 180;
 
-function Heatmap({ answer, evidence, language }: {
+function Heatmap({ answer, evidence }: {
   answer: Faithfulness['answers'][number];
   evidence: Faithfulness['evidence'];
-  language: 'es' | 'pt';
 }) {
   const [hover, setHover] = useState<Hover | null>(null);
   const rows = answer.sentences;
@@ -85,7 +83,7 @@ function Heatmap({ answer, evidence, language }: {
         viewBox={`0 0 ${width} ${height}`}
         width="100%"
         role="img"
-        aria-label={t('faith.heatmapAria', language)}
+        aria-label={ct('faith.heatmapAria')}
         onMouseLeave={() => setHover(null)}
       >
         {evidence.map((e, j) => (
@@ -128,7 +126,7 @@ function Heatmap({ answer, evidence, language }: {
           <strong>{hover.value.toFixed(2)}</strong> · {hover.tool}
           <div className="faith-tooltip-sentence">{hover.sentence}</div>
           <div>
-            {t('faith.shared', language)}: {hover.shared.length ? hover.shared.join(', ') : '—'}
+            {ct('faith.shared')}: {hover.shared.length ? hover.shared.join(', ') : '—'}
           </div>
         </div>
       )}
@@ -138,14 +136,14 @@ function Heatmap({ answer, evidence, language }: {
           {RAMP.map((c) => <span key={c} style={{ background: c }} />)}
         </span>
         <span>1</span>
-        <span className="faith-legend-label">{t('faith.cosine', language)}</span>
+        <span className="faith-legend-label">{ct('faith.cosine')}</span>
       </div>
       <details className="faith-table">
-        <summary>{t('faith.table', language)}</summary>
+        <summary>{ct('faith.table')}</summary>
         <table>
           <thead>
             <tr>
-              <th>{t('faith.sentence', language)}</th>
+              <th>{ct('faith.sentence')}</th>
               {evidence.map((e, j) => <th key={j}>{e.tool}</th>)}
             </tr>
           </thead>
@@ -163,25 +161,25 @@ function Heatmap({ answer, evidence, language }: {
   );
 }
 
-export function FaithfulnessPanel({ data, language }: { data?: Faithfulness; language: 'es' | 'pt' }) {
+export function FaithfulnessPanel({ data }: { data?: Faithfulness }) {
   if (!data) return null;
   const answers = data.answers.filter((a) => a.claims.length > 0 || a.sentences.length > 0);
   return (
     <section className="console-card faith" aria-labelledby="faith-title">
-      <h3 id="faith-title">{t('faith.title', language)}</h3>
+      <h3 id="faith-title">{ct('faith.title')}</h3>
       <div className="faith-hero">
         <span className="faith-hero-number">{pct(data.overall)}</span>
         <span className="faith-hero-label">
-          {data.overall == null ? t('faith.noClaims', language) : t('faith.overall', language)}
+          {data.overall == null ? ct('faith.noClaims') : ct('faith.overall')}
         </span>
       </div>
-      {data.evidence.length === 0 && <p className="form-help">{t('faith.noEvidence', language)}</p>}
+      {data.evidence.length === 0 && <p className="form-help">{ct('faith.noEvidence')}</p>}
       {answers.map((answer, n) => (
         <div key={answer.index} className="faith-answer">
           <div className="faith-answer-head">
-            <span>{t('faith.answer', language)} {n + 1}</span>
+            <span>{ct('faith.answer')} {n + 1}</span>
             {answer.score != null && (
-              <span className="faith-bar" aria-label={`${t('faith.score', language)} ${pct(answer.score)}`}>
+              <span className="faith-bar" aria-label={`${ct('faith.score')} ${pct(answer.score)}`}>
                 <svg viewBox="0 0 100 8" width="120" height="8" aria-hidden="true">
                   <rect x="0" y="0" width="100" height="8" rx="4" fill="#e5e7eb" />
                   <rect x="0" y="0" width={Math.max(answer.score * 100, 4)} height="8" rx="4" fill={SERIES} />
@@ -190,13 +188,13 @@ export function FaithfulnessPanel({ data, language }: { data?: Faithfulness; lan
               </span>
             )}
           </div>
-          <MarkedAnswer text={answer.text} claims={answer.claims} language={language} />
+          <MarkedAnswer text={answer.text} claims={answer.claims} />
           {data.evidence.length > 0 && answer.sentences.length > 0 && (
-            <Heatmap answer={answer} evidence={data.evidence} language={language} />
+            <Heatmap answer={answer} evidence={data.evidence} />
           )}
         </div>
       ))}
-      <p className="form-help">{t('faith.method', language)}</p>
+      <p className="form-help">{ct('faith.method')}</p>
     </section>
   );
 }
