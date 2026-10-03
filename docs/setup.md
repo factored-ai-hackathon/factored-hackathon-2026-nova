@@ -21,8 +21,8 @@ Close and reopen the terminal afterwards. In VS Code, install the **Python** and
 
 ## 2. Get the code (once)
 ```bash
-git clone https://github.com/factored-ai-hackathon/factored-hackathon-2026.git
-cd factored-hackathon-2026
+git clone https://github.com/factored-ai-hackathon/factored-hackathon-2026-nova.git
+cd factored-hackathon-2026-nova
 git config --global user.name "Your Name"
 git config --global user.email "your-github-email@example.com"
 ```
@@ -52,7 +52,7 @@ Your key is **personal**. Never share it or paste it in code, notebooks, `.env` 
 ## Every day
 Go to the project folder and put `uv run` in front of Python tools. Nothing to activate.
 ```bash
-cd factored-hackathon-2026
+cd factored-hackathon-2026-nova
 uv run jupyter lab
 ```
 
