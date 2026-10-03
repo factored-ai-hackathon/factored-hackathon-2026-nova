@@ -20,6 +20,8 @@ The login works like a bank's: **country**, **document type**, **document number
 
 Customers without a mobile phone in the dataset (~3%) can't receive the code, so they can't log in.
 
+The random customers ("Cliente al azar") and the scenario customers always have at least one product: about 7% of the dataset's customers have none, and the loader leaves them out because their home page would be empty and Nova would (correctly) say they have no products.
+
 ## Nova
 After the login, Nova already knows who you are and reads **your own** products, transactions and complaints from the dataset, without verifying again. The data ends on **17/06/2026**, so Nova treats that day as "today". Try, depending on the scenario:
 
