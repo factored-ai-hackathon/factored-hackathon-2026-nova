@@ -13,6 +13,9 @@ import {
 import { MessageContent } from './MessageContent';
 import { FeedbackButtons } from './FeedbackButtons';
 import { SatisfactionPrompt } from './SatisfactionPrompt';
+import { IdlePrompt } from './IdlePrompt';
+import { useIdleTimer } from '../../hooks/useIdleTimer';
+import { idleTimerEnabled } from '../../config/idleTimer';
 import { useAgent } from '../../context/AgentContext';
 import { useApp } from '../../context/AppContext';
 import { t } from '../../i18n/translations';
@@ -206,6 +209,15 @@ export function AgentPanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Inactivity: never while a human case is open, Nova is answering, the panel is closed or the
+  // close dialog is up. The automatic close skips the transcript dialog.
+  const idle = useIdleTimer({
+    active: (isOpen || isFullView) && !isTyping && !confirmClose
+      && (!handoff || handoff.status === 'closed') && idleTimerEnabled(),
+    activityKey: `${handoff?.caseId ?? ''}${handoff?.status ?? ''}|${conversation.messages.filter((m) => m.role === 'user').length}`,
+    onTimeout: handleCloseChat,
+  });
+
   // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' });
@@ -365,6 +377,7 @@ export function AgentPanel() {
         ))}
         {isTyping && !isStreaming && <TypingIndicator language={language} />}
         <SatisfactionPrompt handoff={handoff} language={language} />
+        <IdlePrompt phase={idle.phase} canKeepOpen={idle.canKeepOpen} onKeepOpen={idle.keepOpen} language={language} />
         <div ref={messagesEndRef} aria-hidden="true" />
       </div>
 
