@@ -44,6 +44,7 @@ export interface HandoffState {
   status: 'waiting' | 'active' | 'closed';
   agentName: string | null;
   next: number; // case messages already received
+  rated?: boolean; // the customer already rated this closed case
 }
 
 const POLL_MS = 3000;
@@ -319,6 +320,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
           status: update.status as HandoffState['status'],
           agentName: update.agent_name,
           next: update.next,
+          rated: update.rating != null,
         });
       } catch {
         // Try again on the next tick: a missed poll only delays the agent's message.

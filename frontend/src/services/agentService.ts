@@ -195,6 +195,12 @@ export async function pollHandoff(after: number): Promise<api.HandoffUpdate | nu
   return api.handoffUpdates(sessionId, after);
 }
 
+/** Rate the human agent (1-5) after the case closed. No-op in mock mode. */
+export async function rateAdvisor(rating: number): Promise<void> {
+  if (USE_MOCK || !sessionId) return;
+  await api.rateHandoff(sessionId, rating);
+}
+
 /**
  * Rate an agent reply. `conversationId` is the backend session. No-op in mock mode.
  */

@@ -16,6 +16,8 @@ export interface CaseSummary {
   /** The intent classifier's label for the conversation (backend/app/agent/intent.py). */
   intent?: string | null
   faithfulness?: number | null
+  /** The customer's 1-5 rating of the advisor, null until rated. */
+  rating?: number | null
 }
 
 export interface CaseIntent {
@@ -32,6 +34,9 @@ export interface QueueStats {
   active: number
   closed: number
   faithfulness_avg: number | null
+  /** Mean customer rating of the advisor (1-5) and how many cases were rated. */
+  satisfaction_avg?: number | null
+  rated?: number
 }
 
 /** How Nova's answers match the data it consulted (backend/app/agent/faithfulness.py). */

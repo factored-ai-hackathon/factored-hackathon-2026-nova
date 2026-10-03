@@ -194,7 +194,8 @@ async def test_endpoint_returns_aggregates_without_text_or_ids(client, interacti
     _check(body)
     assert body["cache_seconds"] == 60 and body["generated_at"]
     assert body["intent"]["threshold"] == pytest.approx(THRESHOLD)
-    raw = json.dumps(body)
+    # The clock is random, so leave it out; ensure_ascii=False so accented markers can match.
+    raw = json.dumps({k: v for k, v in body.items() if k != "generated_at"}, ensure_ascii=False)
     for leaked in ("s1", "s2", "m1", "m2", "tarjeta", "Revisaré", "test-model"):
         assert leaked not in raw
 
@@ -256,7 +257,8 @@ async def test_endpoint_reports_faithfulness_of_recent_cases_without_their_text(
         res = client.get("/v1/metrics/live")
     finally:
         app.dependency_overrides.pop(get_case_store)
-    faith = res.json()["faithfulness"]
+    body = res.json()
+    faith = body["faithfulness"]
     assert faith["cases"] == 3
     assert faith["scored"] == 2  # the third answer has no checkable claim
     assert faith["buckets"]["all"] == 1 and sum(faith["buckets"].values()) == 2
@@ -266,11 +268,47 @@ async def test_endpoint_reports_faithfulness_of_recent_cases_without_their_text(
         "first": "2026-10-01T10:00:00+00:00",
         "last": "2026-10-02T11:00:00+00:00",
     }
+    # generated_at is a random clock reading (its microseconds contain "999" by chance): skip it
+    raw = json.dumps({k: v for k, v in body.items() if k != "generated_at"}, ensure_ascii=False)
     for leaked in ("TecnoMundo", "999", "NB-1", "Lucía", "asesor"):
-        assert leaked not in res.text
+        assert leaked not in raw
 
 
 def test_faithfulness_summary_with_no_cases():
     summary = metrics.faithfulness_summary([])
     assert summary["cases"] == 0 and summary["scored"] == 0 and summary["mean"] is None
     assert summary["claims"]["rate"] is None and summary["window"]["first"] is None
+
+
+async def test_endpoint_reports_satisfaction_without_ids_or_text(client):
+    from app.agent.handoff import InMemoryCaseStore, get_case_store
+    from app.main import app
+
+    store = InMemoryCaseStore()
+    for n, (rating, at) in enumerate(
+        [(5, "2026-10-02T10:00:00+00:00"), (3, "2026-10-02T11:00:00+00:00"), (None, None)]
+    ):
+        await store.create(
+            _case(f"NB-{n}", "2026-10-01T10:00:00+00:00", "Te comunico con un asesor.")
+        )
+        if rating:
+            await store.update(f"NB-{n}", rating=rating, rated_at=at)
+    app.dependency_overrides[get_case_store] = lambda: store
+    try:
+        res = client.get("/v1/metrics/live")
+    finally:
+        app.dependency_overrides.pop(get_case_store)
+    sat = res.json()["satisfaction"]
+    assert sat == {
+        "rated": 2,
+        "mean": 4.0,
+        "distribution": {"1": 0, "2": 0, "3": 1, "4": 0, "5": 1},
+        "window": {"first": "2026-10-02T10:00:00+00:00", "last": "2026-10-02T11:00:00+00:00"},
+    }
+    for leaked in ("NB-0", "asesor", "Lucía"):
+        assert leaked not in str(sat)
+
+
+def test_endpoint_satisfaction_is_empty_with_no_ratings(client):
+    sat = client.get("/v1/metrics/live").json()["satisfaction"]
+    assert sat["rated"] == 0 and sat["mean"] is None

@@ -23,6 +23,14 @@ export interface Faithfulness {
   limit: number
 }
 
+export interface Satisfaction {
+  rated: number
+  mean: number | null
+  /** Ratings per score, keys "1" to "5". */
+  distribution: Record<string, number>
+  window: { first: string | null; last: string | null }
+}
+
 export interface LiveMetrics {
   turns: number
   conversations: number
@@ -46,6 +54,7 @@ export interface LiveMetrics {
   by_lang: Record<string, Group>
   by_channel: Record<string, Group>
   faithfulness?: Faithfulness
+  satisfaction?: Satisfaction
   generated_at: string
   cache_seconds: number
 }

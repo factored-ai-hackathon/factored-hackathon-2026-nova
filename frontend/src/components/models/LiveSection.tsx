@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
-import { getLiveMetrics, type Faithfulness, type Group, type LiveMetrics } from '../../api/liveMetrics';
+import { getLiveMetrics, type Faithfulness, type Group, type LiveMetrics, type Satisfaction } from '../../api/liveMetrics';
 import { HBars } from './charts';
 import { Card, Stat } from './cards';
 import { C, INTENT, pct, usd } from './viz';
@@ -66,6 +66,43 @@ function FaithfulnessCard({ f }: { f: Faithfulness }) {
         <p className="models-read">
           {f.cases ? 'No handed-over case has a checkable claim yet.' : 'No case has been handed to a person yet.'}
         </p>
+      )}
+    </Card>
+  );
+}
+
+function SatisfactionCard({ s }: { s: Satisfaction }) {
+  return (
+    <Card
+      title="Are customers satisfied with the human advisor?"
+      question="After an advisor closes a case, the customer can rate the experience from 1 to 5 (CSAT). Optional, so only those who chose to answer."
+    >
+      {s.rated ? (
+        <>
+          <div className="models-stats models-stats-inner">
+            <Stat value={`${(s.mean ?? 0).toFixed(1)} / 5`} label="Mean rating" sub={`${s.rated} rated ${s.rated === 1 ? 'case' : 'cases'}`} />
+          </div>
+          <HBars
+            labelWidth={90}
+            format={(v) => pct(v)}
+            bars={[5, 4, 3, 2, 1].map((n) => {
+              const count = s.distribution[String(n)] ?? 0;
+              return {
+                label: `${n} ${n === 1 ? 'star' : 'stars'}`,
+                value: count / s.rated,
+                color: n >= 4 ? C.model : n === 3 ? C.base : C.compare,
+                note: `(${count})`,
+                tip: `${n} of 5: ${count} of ${s.rated} ratings`,
+              };
+            })}
+          />
+          <p className="models-read">
+            Self-selected: customers who rate are not a representative sample of all handed-over cases. Only the
+            scores leave the server, never the conversations.
+          </p>
+        </>
+      ) : (
+        <p className="models-read">No customer has rated an advisor yet.</p>
       )}
     </Card>
   );
@@ -133,6 +170,7 @@ function LiveNumbers({ data }: { data: LiveMetrics }) {
         </Card>
 
         {data.faithfulness && <FaithfulnessCard f={data.faithfulness} />}
+        {data.satisfaction && <SatisfactionCard s={data.satisfaction} />}
       </div>
     </>
   );
