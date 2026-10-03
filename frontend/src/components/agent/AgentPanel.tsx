@@ -313,14 +313,16 @@ export function AgentPanel() {
               <Maximize2 size={14} />
             </button>
           )}
-          <button
-            className="panel-action-btn"
-            onClick={closeAgent}
-            aria-label={t('agent.minimize', language)}
-            title={t('agent.minimize', language)}
-          >
-            <Minus size={14} />
-          </button>
+          {!isFullView && (
+            <button
+              className="panel-action-btn"
+              onClick={closeAgent}
+              aria-label={t('agent.minimize', language)}
+              title={t('agent.minimize', language)}
+            >
+              <Minus size={14} />
+            </button>
+          )}
           <button
             className="panel-action-btn"
             onClick={() => setConfirmClose(true)}
