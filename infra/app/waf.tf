@@ -3,8 +3,9 @@
 # A CloudFront web ACL must live in us-east-1. ~$5/month for the ACL + $1/month per rule +
 # $0.60 per million requests checked.
 #
-# Rollout: apply with waf_block = false (rules only count, visible in the WAF metrics), check that
-# the demo pages don't trip them, then apply again with waf_block = true.
+# Rollout: it ran first with waf_block = false (rules only count, visible in the WAF metrics) to
+# check that the demo pages don't trip them; it now blocks by default (waf_block = true). Set it
+# to false to go back to counting.
 
 provider "aws" {
   alias   = "us_east_1"
