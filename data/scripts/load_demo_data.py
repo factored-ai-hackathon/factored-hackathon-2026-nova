@@ -86,9 +86,9 @@ ID_COLUMN = {
     "COMPLAINT": "complaint_id",
 }
 
-# Customers who can log in (a mobile phone for the code) and have at least one product (else the home
-# page is empty). They also show each demo path. Picked by a hash
-# of customer_id, so reruns offer the same people (docs/demo.md stays valid).
+# Customers who can log in (a mobile phone for the code) and have at least one product (without
+# one the home page is empty), and who show each demo path. Picked by a hash of customer_id, so
+# reruns offer the same people (docs/demo.md stays valid).
 LOGIN_READY = f"""
 select c.customer_id from (select *, row_number() over (partition by customer_id
                                                         order by last_updated desc) rn
