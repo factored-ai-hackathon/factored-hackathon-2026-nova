@@ -127,5 +127,5 @@ variable "waf_flood_limit" {
 variable "waf_block" {
   description = "false: the WAF rules only count (first rollout, check the metrics); true: they block with a 429."
   type        = bool
-  default     = false
+  default     = true
 }
