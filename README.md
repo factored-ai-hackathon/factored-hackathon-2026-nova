@@ -124,6 +124,12 @@ reason in [docs/decisions.md](docs/decisions.md).
   learns from team-written phrases and takes the FCR rates from the dataset.
 - Abstention is the weak part of the knowledge search; the model reading the chunks does most of it.
 - NovaBank's policies and figures are fictitious.
+- **Known security limits** (this is a public demo with a synthetic dataset, so we accepted these on purpose; the review is in [docs/decisions.md](docs/decisions.md), decision 43):
+  - The demo password, the agent console key and the model page password are **published** in this README so judges can get in. They are demo props, not security.
+  - The **$5/day model budget is global**: a determined visitor can use it up, and then every visitor gets `429 daily_budget_exhausted` until 00:00 UTC. The per-visitor limit (30 messages per hour) counts an IPv6 visitor by its /64, but it is still a cost cap, not a guarantee of availability.
+  - **AWS WAF** on CloudFront adds two per-IP rate limits (100 requests per 5 minutes on `/v1/*`, 600 on every `/v1/*` path). At the time of writing the rules run in **count mode** (they record but do not block) until we check the metrics for false positives, then they switch to block mode (`waf_block = true`).
+  - The Lambda **function URL can still be called directly**, bypassing WAF; it answers 403 without the secret header CloudFront adds, but it is still invoked. WAF also counts each IPv6 address separately, so rotating addresses inside a /64 dodges the WAF rule (the app limit still caps the model spend).
+  - There is no Content-Security-Policy yet (HSTS, X-Frame-Options, X-Content-Type-Options and Referrer-Policy are set).
 
 ## Run it locally
 
