@@ -141,7 +141,7 @@ then open http://localhost:5173. Tests: `uv run pytest` (backend), `npm test` (f
 
 | | Role |
 |---|---|
-| [Paul Montero](https://github.com/lpaulmp) | Backend, platform, agent AI |
+| [Paul Montero](https://github.com/lpaulmp) | Architecture decisions after the MVP, backend, platform, agent AI |
 | [Esteban Quintero Gómez](https://github.com/Estebanquingo) | Architecture, backend, frontend (the MVP chat foundation and its plan) |
 | [Miguel Higorre](https://github.com/miguel-higorre-ch) | Coordination, QA and evaluation, frontend |
 | Iris | Initial Kickoff data and ML |
@@ -151,6 +151,7 @@ then open http://localhost:5173. Tests: `uv run pytest` (backend), `npm test` (f
 What each person did, from the repository history and the [decisions log](docs/decisions.md). The code was written with Claude Code (an AI coding assistant). Since Oct 2 every pull request also gets a review comment from a review agent (PulMAgent), and every merge and every release is done by a person.
 
 - **Paul Montero**:
+  - Architecture decisions after the MVP (permissions in code, the data in DynamoDB, the human handoff, the security perimeter), each recorded in the [decisions log](docs/decisions.md).
   - The agent and its backend: identity verification in code, the account tools, the handoff to a human agent with the agent console and its faithfulness view, the intent classifier and its ablation, the knowledge search and the public assistant.
   - Evaluation: the held-out report and its repeated passes.
   - Data: the incremental pipeline with its freshness policy.
