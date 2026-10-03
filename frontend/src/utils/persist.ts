@@ -11,6 +11,7 @@ export const KEYS = {
   chatSession: 'chatSession', // the backend chat session ids (services/agentService.ts)
   console: 'console', // the human agent console's key and open case
   models: 'models', // the /modelos page's demo password was entered
+  idle: 'idle', // ?idle=off: the chat inactivity timer is off for this tab
 } as const;
 
 export function loadStored<T>(key: string): T | null {

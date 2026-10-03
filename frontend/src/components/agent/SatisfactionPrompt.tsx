@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Star, X } from 'lucide-react';
 import { ApiError } from '../../api/client';
 import { rateAdvisor } from '../../services/agentService';
@@ -38,14 +38,19 @@ const doneKey = (caseId: string) => `rated.${caseId}`;
  * After the human agent closes the case: "How was your experience with the advisor?", 1 to 5.
  * Shown once per closed case (an answer or a dismissal is remembered for the browser session).
  */
-export function SatisfactionPrompt({ handoff, language }: { handoff: HandoffState | null; language: string }) {
+export function SatisfactionPrompt({ handoff, language, onPendingChange }: { handoff: HandoffState | null; language: string; onPendingChange?: (pending: boolean) => void }) {
   const caseId = handoff?.status === 'closed' && !handoff.rated ? handoff.caseId : '';
   const [phases, setPhases] = useState<Record<string, Phase>>({});
   const [failed, setFailed] = useState(false);
-  if (!caseId) return null;
+  const phase: Phase | null = caseId ? phases[caseId] ?? (loadStored<string>(doneKey(caseId)) ? 'dismissed' : 'asking') : null;
+  const pending = phase === 'asking' || phase === 'sending'; // visible and not answered or dismissed
+  useEffect(() => {
+    onPendingChange?.(pending);
+    return () => onPendingChange?.(false);
+  }, [pending, onPendingChange]);
+  if (!caseId || !phase) return null;
 
   const texts = language === 'es' || language === 'pt' ? TEXTS[language] : TEXTS.en;
-  const phase: Phase = phases[caseId] ?? (loadStored<string>(doneKey(caseId)) ? 'dismissed' : 'asking');
   const finish = (next: Phase, remember: boolean) => {
     if (remember) saveStored(doneKey(caseId), next);
     setPhases((p) => ({ ...p, [caseId]: next }));
