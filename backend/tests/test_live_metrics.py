@@ -194,7 +194,8 @@ async def test_endpoint_returns_aggregates_without_text_or_ids(client, interacti
     _check(body)
     assert body["cache_seconds"] == 60 and body["generated_at"]
     assert body["intent"]["threshold"] == pytest.approx(THRESHOLD)
-    raw = json.dumps({k: v for k, v in body.items() if k != "generated_at"})  # the clock is random
+    # The clock is random, so leave it out; ensure_ascii=False so accented markers can match.
+    raw = json.dumps({k: v for k, v in body.items() if k != "generated_at"}, ensure_ascii=False)
     for leaked in ("s1", "s2", "m1", "m2", "tarjeta", "Revisaré", "test-model"):
         assert leaked not in raw
 
