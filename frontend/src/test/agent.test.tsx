@@ -134,4 +134,42 @@ describe('Agent FAB and panel', () => {
     await user.click(within(dialog).getByRole('button', { name: /sí, cerrar/i }));
     expect(screen.queryByRole('complementary', { name: /nova/i })).not.toBeInTheDocument();
   });
+
+  it('toggles to full view and back to floating panel', async () => {
+    const user = userEvent.setup();
+    render(
+      <AllProviders>
+        <AgentFAB />
+        <AgentPanel />
+      </AllProviders>
+    );
+
+    // Open the panel
+    await user.click(screen.getByLabelText(/abrir asistente nova/i));
+    const panel = screen.getByRole('complementary', { name: /nova/i });
+    expect(panel).toBeInTheDocument();
+    expect(panel).not.toHaveClass('agent-panel--full');
+
+    // Click to open full view
+    const fullViewBtn = screen.getByLabelText(/abrir vista completa/i);
+    await user.click(fullViewBtn);
+
+    // Verify panel is still mounted with full view class
+    await waitFor(() => {
+      const fullViewPanel = screen.getByRole('complementary', { name: /nova/i });
+      expect(fullViewPanel).toBeInTheDocument();
+      expect(fullViewPanel).toHaveClass('agent-panel--full');
+    });
+
+    // Click minimize to return to floating panel
+    const minimizeBtn = screen.getByLabelText(/minimizar/i);
+    await user.click(minimizeBtn);
+
+    // Verify floating panel is restored
+    await waitFor(() => {
+      const floatingPanel = screen.getByRole('complementary', { name: /nova/i });
+      expect(floatingPanel).toBeInTheDocument();
+      expect(floatingPanel).not.toHaveClass('agent-panel--full');
+    });
+  });
 });
