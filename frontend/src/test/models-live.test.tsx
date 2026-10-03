@@ -105,4 +105,21 @@ describe('live metrics section', () => {
     render(<LiveSection />);
     expect(await screen.findByRole('status')).toHaveTextContent('not available right now');
   });
+
+  it('shows the customer satisfaction with the advisor, or an empty state', async () => {
+    const satisfaction = {
+      rated: 4, mean: 4.25, distribution: { '1': 0, '2': 0, '3': 1, '4': 1, '5': 2 },
+      window: { first: '2026-10-01T10:00:00+00:00', last: '2026-10-02T09:00:00+00:00' },
+    };
+    vi.stubGlobal('fetch', vi.fn(async () => ok({ ...LIVE, satisfaction })));
+    const { unmount } = render(<LiveSection />);
+    expect(await screen.findByRole('heading', { name: 'Are customers satisfied with the human advisor?' })).toBeInTheDocument();
+    expect(screen.getByText('4.3 / 5')).toBeInTheDocument();
+    expect(screen.getByText('4 rated cases')).toBeInTheDocument();
+    expect(screen.getByText(/Self-selected/)).toBeInTheDocument();
+    unmount();
+    vi.stubGlobal('fetch', vi.fn(async () => ok({ ...LIVE, satisfaction: { ...satisfaction, rated: 0, mean: null, distribution: {} } })));
+    render(<LiveSection />);
+    expect(await screen.findByText('No customer has rated an advisor yet.')).toBeInTheDocument();
+  });
 });

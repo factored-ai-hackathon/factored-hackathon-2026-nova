@@ -1,0 +1,40 @@
+/* The advisor satisfaction prompt (SatisfactionPrompt.tsx), shown in the chat after a case closes. */
+.satisfaction {
+  margin: var(--space-3) var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid #ddd6fe;
+  border-radius: 12px;
+  background: #f5f3ff;
+  color: #3b0764;
+  font-size: var(--text-sm);
+}
+.satisfaction-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.satisfaction-head p { margin: 0; font-weight: 600; }
+.satisfaction-stars { display: flex; gap: 4px; margin-top: var(--space-2); }
+.satisfaction-star,
+.satisfaction-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #7c3aed;
+  cursor: pointer;
+}
+.satisfaction-star { flex-direction: column; gap: 0; font-size: var(--text-xs); }
+.satisfaction-star:hover:not(:disabled),
+.satisfaction-dismiss:hover { background: #ede9fe; }
+.satisfaction-star:hover:not(:disabled) svg { fill: #fbbf24; color: #d97706; }
+.satisfaction-star:focus-visible,
+.satisfaction-dismiss:focus-visible { outline: 2px solid #5b21b6; outline-offset: 2px; }
+.satisfaction-star:disabled { opacity: 0.5; cursor: default; }
+.satisfaction-thanks { margin: var(--space-3) var(--space-4); font-size: var(--text-sm); color: #5b21b6; text-align: center; }
+.satisfaction-error { margin: var(--space-2) 0 0; color: #b91c1c; font-size: var(--text-xs); }

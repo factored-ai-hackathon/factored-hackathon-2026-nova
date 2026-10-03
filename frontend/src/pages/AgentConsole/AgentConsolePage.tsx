@@ -165,6 +165,10 @@ export function AgentConsolePage() {
               <span>{stats?.faithfulness_avg == null ? '—' : `${Math.round(stats.faithfulness_avg * 100)}%`}</span>
               {ct('console.faithAvg')}
             </div>
+            <div className="console-kpi" title={ct('console.ratingHint')}>
+              <span>{stats?.satisfaction_avg == null ? '—' : `${stats.satisfaction_avg.toFixed(1)}/5`}</span>
+              {ct('console.ratingAvg')}{stats?.rated ? ` (${stats.rated})` : ''}
+            </div>
           </div>
           <h2 className="console-section-title">{ct('console.queue')}</h2>
           {cases.length === 0 && <p className="console-empty">{ct('console.empty')}</p>}
@@ -184,6 +188,7 @@ export function AgentConsolePage() {
                   <span className="console-case-time">
                     {when(c.created_at, locale)}
                     {c.faithfulness != null && ` · ${ct('console.faith')} ${Math.round(c.faithfulness * 100)}%`}
+                    {c.rating != null && ` · ${ct('console.ratingShort')} ${c.rating}/5`}
                   </span>
                 </button>
               </li>
@@ -205,6 +210,9 @@ export function AgentConsolePage() {
                   {ct(`console.status.${selected.status}`)}
                 </span>
                 <span>{customerLabel} · {reasonLabel(selected.reason)} · {selected.lang.toUpperCase()}</span>
+                <span className="console-rating">
+                  {selected.rating != null ? `${ct('console.rating')}: ${selected.rating}/5` : ct('console.notRated')}
+                </span>
               </div>
               <ol className="console-thread">
                 {selected.transcript.map((m, i) => (

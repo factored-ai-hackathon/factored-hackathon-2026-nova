@@ -165,6 +165,8 @@ export interface HandoffUpdate {
   agent_name: string | null
   /** The human agent's messages and case notices since `after`. */
   messages: { from: 'agent' | 'system'; text: string; at: string }[]
+  /** The customer's 1-5 satisfaction rating of the closed case, if given. */
+  rating?: number | null
   /** Pass it as `after` on the next poll. */
   next: number
 }
@@ -178,6 +180,16 @@ export async function handoffUpdates(sessionId: string, after: number): Promise<
   })
   if (!res.ok) throw new ApiError(res.status, `handoff updates failed: ${res.status}`)
   return res.json()
+}
+
+/** The customer rates the human agent (1-5) once the case is closed. 409: already rated. */
+export async function rateHandoff(sessionId: string, rating: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/v1/chat/sessions/${sessionId}/handoff/rating`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rating }),
+  })
+  if (!res.ok) throw new ApiError(res.status, `rate handoff failed: ${res.status}`)
 }
 
 export async function sendFeedback(sessionId: string, messageId: string, rating: Rating): Promise<void> {
