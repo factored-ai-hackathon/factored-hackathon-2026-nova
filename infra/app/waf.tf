@@ -88,7 +88,7 @@ locals {
 resource "aws_wafv2_ip_set" "admin_v4" {
   provider           = aws.us_east_1
   name               = "${var.prefix}-admin-v4"
-  description        = "Operators allowed past every WAF rule (from terraform.tfvars)"
+  description        = "Operators allowed past every WAF rule, set in terraform.tfvars"
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
   addresses          = local.waf_admin_ipv4
@@ -97,7 +97,7 @@ resource "aws_wafv2_ip_set" "admin_v4" {
 resource "aws_wafv2_ip_set" "admin_v6" {
   provider           = aws.us_east_1
   name               = "${var.prefix}-admin-v6"
-  description        = "Operators allowed past every WAF rule (from terraform.tfvars)"
+  description        = "Operators allowed past every WAF rule, set in terraform.tfvars"
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV6"
   addresses          = local.waf_admin_ipv6
