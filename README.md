@@ -6,6 +6,8 @@ faithfulness check, so the customer repeats nothing.**
 
 Factored AI & Data Hackathon 2026 · AI-first banking agent · Spanish and Portuguese.
 
+Team: **Nova** · Repository: `factored-hackathon-2026-nova`.
+
 | | |
 |---|---|
 | **Live demo** | [https://d2k8cgrqduyk2o.cloudfront.net](https://d2k8cgrqduyk2o.cloudfront.net): the demo page, with the three parts below |
