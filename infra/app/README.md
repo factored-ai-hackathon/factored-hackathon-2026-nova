@@ -31,7 +31,7 @@ Then:
 
 If `terraform apply` says the GitHub OIDC provider already exists, set `create_github_oidc_provider = false`.
 
-If the deploy fails with `Not authorized to perform sts:AssumeRoleWithWebIdentity`, the role's trust policy doesn't match the token's `sub` claim. CloudTrail shows the `sub` GitHub sent (event `AssumeRoleWithWebIdentity`, field `userIdentity.userName`); set `github_repo` to its repository part. This organization's claims use immutable IDs (`owner@id/repo@id`).
+If the deploy fails with `Not authorized to perform sts:AssumeRoleWithWebIdentity`, the role's trust policy doesn't match the token's `sub` claim. CloudTrail shows the `sub` GitHub sent (event `AssumeRoleWithWebIdentity`, field `userIdentity.userName`); set `github_repos` (a list, it may hold the old and the new repository name during a rename) to include its repository part. This organization's claims use immutable IDs (`owner@id/repo@id`).
 
 ## Cost (demo traffic)
 | Resource | Cost |
