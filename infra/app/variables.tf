@@ -135,19 +135,19 @@ variable "waf_site_limit" {
 variable "waf_live_limit" {
   description = "Max GET /v1/metrics/live per IP in 5 minutes (WAF, decision 49). The /models page polls it once a minute."
   type        = number
-  default     = 30
+  default     = 60
 }
 
 variable "waf_auth_limit" {
-  description = "Max /v1/auth/* requests per IP in 5 minutes (WAF, decision 49). A login is 2 requests; judges may share one NAT."
+  description = "Max /v1/auth/* requests per IP in 5 minutes (WAF, decision 49). A login is 2 requests; several judges may share one NAT."
   type        = number
-  default     = 30
+  default     = 60
 }
 
 variable "waf_demo_limit" {
   description = "Max /v1/demo/* requests per IP in 5 minutes (WAF, decision 49): the demo panel's scenarios and customer lookups."
   type        = number
-  default     = 60
+  default     = 120
 }
 
 variable "waf_admin_ips" {

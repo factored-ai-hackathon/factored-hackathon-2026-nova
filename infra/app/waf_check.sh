@@ -3,8 +3,8 @@
 #
 #   infra/app/waf_check.sh                       # public view: run it from an IP NOT in waf_admin_ips
 #   infra/app/waf_check.sh --admin               # from an admin IP: everything reaches the app
-#   infra/app/waf_check.sh --rate                # also trips the 30/5 min limit on /v1/metrics/live
-#                                                # (this IP then gets 429 there for up to ~5 minutes)
+#   infra/app/waf_check.sh --rate                # also trips the 60/5 min limit on /v1/metrics/live
+#                                                # (this IP then gets 429 there for ~5 minutes after it stops)
 #   FUNCTION_URL=https://<id>.lambda-url.<region>.on.aws infra/app/waf_check.sh
 #                                                # also checks the direct function URL answers 403
 #
@@ -75,6 +75,8 @@ else
   check "trailing slash /v1/metrics/live/" 404 blocked_route -A "$UA" "$APP_URL/v1/metrics/live/"
   check "encoded traversal in an id" 404 blocked_route -A "$UA" --path-as-is "$APP_URL/v1/demo/customers/%2e%2e%2f%2e%2e%2fetc"
   check "FastAPI docs /v1/docs" 404 blocked_route -A "$UA" "$APP_URL/v1/docs"
+  check "dot segments before /v1" 404 blocked_route -A "$UA" --path-as-is "$APP_URL/x/../v1/nonexistent"
+  check "double slash //v1/" 404 - -A "$UA" --path-as-is "$APP_URL//v1/nonexistent"
   check "unknown console action" 404 blocked_route "${json[@]}" -d '{}' "$APP_URL/v1/agent/cases/NB-000000/delete"
 
   echo "== Refused at the edge: body size (413) and managed rules (403)"
@@ -92,8 +94,8 @@ if [[ -n "${FUNCTION_URL:-}" ]]; then
 fi
 
 if [[ "$RATE" == 1 && "$MODE" == public ]]; then
-  echo "== Rate limit: 45 requests to /v1/metrics/live, then wait for 429 (WAF counts with a delay)"
-  for _ in $(seq 45); do curl -s -o /dev/null -A "$UA" "$APP_URL/v1/metrics/live"; done
+  echo "== Rate limit: 90 requests to /v1/metrics/live, then wait for 429 (WAF counts with a delay)"
+  for _ in $(seq 90); do curl -s -o /dev/null -A "$UA" "$APP_URL/v1/metrics/live"; done
   got=""
   for _ in $(seq 24); do
     got=$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" "$APP_URL/v1/metrics/live")

@@ -6,10 +6,10 @@
 # Order of evaluation (lowest priority first; the first terminating action wins):
 #   0  admin-allow        the operators' own IPs (var.waf_admin_ips, only in terraform.tfvars) skip
 #                         every rule below, so tests and evaluation runs are never rate limited.
-#   1  ip-reputation      AWS list of IPs known for bots, scanners and attacks.
+#   1  ip-reputation      AWS list of IPs known for bots, scanners and attacks (all but /health).
 #   2  site-flood         per-IP ceiling on every path, pages included.
 #   3  api-label          labels API requests (/v1/* and /health, the paths CloudFront sends to the
-#                         Lambda) as fh26:api. Count only.
+#                         Lambda; decoded and normalized path) as fh26:api. Count only.
 #   4-5 api-route-get/post label the API requests whose method AND path are in the allowlist (the
 #                         routes the frontend calls) as fh26:route-ok. Count only.
 #   6  api-unknown-route  any other API request: 404 blocked_route. Scanners, wrong methods,
@@ -206,6 +206,26 @@ resource "aws_wafv2_web_acl" "app" {
       managed_rule_group_statement {
         vendor_name = "AWS"
         name        = "AWSManagedRulesAmazonIpReputationList"
+
+        # The deploy workflow's smoke test calls /health from GitHub's runners; /health returns
+        # no data and still has the API rate limits.
+        scope_down_statement {
+          not_statement {
+            statement {
+              byte_match_statement {
+                search_string         = "/health"
+                positional_constraint = "EXACTLY"
+                field_to_match {
+                  uri_path {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "NONE"
+                }
+              }
+            }
+          }
+        }
       }
     }
 
@@ -253,7 +273,9 @@ resource "aws_wafv2_web_acl" "app" {
     }
   }
 
-  # 3. Label the requests CloudFront sends to the Lambda (its behaviors: /v1/* and /health).
+  # 3. Label the requests CloudFront sends to the Lambda (its behaviors: /v1/* and /health). The
+  # path is URL-decoded and normalized first, so /x/../v1/..., //v1/... or %2Fv1 are labeled too
+  # (and then refused by rule 6, which matches the allowlist on the raw path): fails closed.
   rule {
     name     = "api-label"
     priority = 3
@@ -277,7 +299,11 @@ resource "aws_wafv2_web_acl" "app" {
             }
             text_transformation {
               priority = 0
-              type     = "NONE"
+              type     = "URL_DECODE"
+            }
+            text_transformation {
+              priority = 1
+              type     = "NORMALIZE_PATH"
             }
           }
         }
@@ -290,7 +316,11 @@ resource "aws_wafv2_web_acl" "app" {
             }
             text_transformation {
               priority = 0
-              type     = "NONE"
+              type     = "URL_DECODE"
+            }
+            text_transformation {
+              priority = 1
+              type     = "NORMALIZE_PATH"
             }
           }
         }
