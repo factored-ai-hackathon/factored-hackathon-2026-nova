@@ -75,7 +75,8 @@ def _read(web_acl: str, region: str) -> dict[str, Any]:
     client = boto3.client(
         "cloudwatch",
         region_name=region,
-        config=Config(connect_timeout=2, read_timeout=2, retries={"max_attempts": 1}),
+        # No retry: worst case ~4 s, inside the endpoint's lock, once per cache period.
+        config=Config(connect_timeout=2, read_timeout=2, retries={"total_max_attempts": 1}),
     )
     end = datetime.now(UTC)
     res = client.get_metric_data(

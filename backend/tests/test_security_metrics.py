@@ -126,3 +126,22 @@ def test_endpoint_still_200_when_cloudwatch_fails(client, monkeypatch):
     body = res.json()
     assert body["security"] == {"error": "unavailable"}
     assert "turns" in body
+
+
+def test_endpoint_caches_the_failure_and_uses_short_timeouts(client, monkeypatch):
+    # A CloudWatch outage must not turn into one slow call per request.
+    _with_web_acl(monkeypatch)
+    configs = []
+
+    def boom(*args, config=None, **kwargs):
+        configs.append(config)
+        raise RuntimeError("no access")
+
+    monkeypatch.setattr(security_metrics.boto3, "client", boom)
+    for _ in range(2):
+        res = client.get("/v1/metrics/live")
+        assert res.status_code == 200 and res.json()["security"] == {"error": "unavailable"}
+    assert len(configs) == 1
+    config = configs[0]
+    assert config.connect_timeout == 2 and config.read_timeout == 2
+    assert config.retries == {"total_max_attempts": 1}
