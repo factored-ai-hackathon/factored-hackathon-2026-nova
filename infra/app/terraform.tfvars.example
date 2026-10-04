@@ -7,3 +7,9 @@ aws_profile = "hackathon"
 # rate_limit_per_hour         = 30   # messages per visitor per hour
 # lambda_reserved_concurrency = 5
 # create_github_oidc_provider = false   # if the account already has token.actions.githubusercontent.com
+
+# WAF (decision 49). Your own public IPs skip every WAF rule, for tests and evaluation runs.
+# Only here (this file is gitignored), never in the repo. IPv4 as /32; IPv6 as /64 or /128.
+# waf_admin_ips           = ["203.0.113.10/32", "2001:db8:1234:5678::/64"]
+# waf_managed_rules_block = true   # false: AWS managed rules only count (if a false positive shows up)
+# waf_block               = true   # false: the custom rules only count

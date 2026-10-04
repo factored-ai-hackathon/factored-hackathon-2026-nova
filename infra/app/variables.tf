@@ -126,8 +126,49 @@ variable "waf_flood_limit" {
   default     = 600
 }
 
+variable "waf_site_limit" {
+  description = "Max requests per IP in 5 minutes on every path, pages and assets included (WAF, decision 49). A page load is ~20 requests."
+  type        = number
+  default     = 3000
+}
+
+variable "waf_live_limit" {
+  description = "Max GET /v1/metrics/live per IP in 5 minutes (WAF, decision 49). The /models page polls it once a minute."
+  type        = number
+  default     = 60
+}
+
+variable "waf_auth_limit" {
+  description = "Max /v1/auth/* requests per IP in 5 minutes (WAF, decision 49). A login is 2 requests; several judges may share one NAT."
+  type        = number
+  default     = 60
+}
+
+variable "waf_demo_limit" {
+  description = "Max /v1/demo/* requests per IP in 5 minutes (WAF, decision 49): the demo panel's scenarios and customer lookups."
+  type        = number
+  default     = 120
+}
+
+variable "waf_admin_ips" {
+  description = "Operators' public IPs as CIDRs (IPv4 /32, IPv6 /128 or /64) that skip every WAF rule, for tests and evaluation runs. Set it ONLY in terraform.tfvars (gitignored), never in the repo. Empty = no bypass rule."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = alltrue([for c in var.waf_admin_ips : can(cidrhost(c, 0))])
+    error_message = "Each entry must be a CIDR, e.g. 203.0.113.10/32 or 2001:db8::/64."
+  }
+}
+
 variable "waf_block" {
-  description = "true (default, after the count-mode check): the WAF rules block with a 429; false: they only count, visible in the WAF metrics."
+  description = "true (default): the custom WAF rules block (429 rate limits, 404 unknown routes, 413 large bodies); false: they only count, visible in the WAF metrics."
+  type        = bool
+  default     = true
+}
+
+variable "waf_managed_rules_block" {
+  description = "true (default): the AWS managed rule groups (IP reputation, known bad inputs, core rule set) block with a 403; false: they only count. Use false if the dry run shows a false positive."
   type        = bool
   default     = true
 }

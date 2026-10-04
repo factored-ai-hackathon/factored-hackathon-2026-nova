@@ -20,7 +20,8 @@ concurrency:
 #   backend/**   -> Backend + Evaluation (evals exercise the backend agent)
 #   evals/**     -> Evaluation
 #   data/**      -> Data model (dbt parse; the production build is the Data pipeline job of deploy.yml)
-#   docs/**, infra/** and Markdown files anywhere -> nothing (Terraform is planned by hand)
+#   infra/app/waf.tf -> Backend (a test checks the WAF route allowlist against the API routes)
+#   docs/**, other infra/** and Markdown files anywhere -> nothing (Terraform is planned by hand)
 #   anything else (ml/, .github/, root files) -> everything
 # Skipped jobs count as passed, so they work with required status checks.
 jobs:
@@ -32,6 +33,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       evals: ${{ steps.filter.outputs.evals }}
       data: ${{ steps.filter.outputs.data }}
+      waf: ${{ steps.filter.outputs.waf }}
       other: ${{ steps.filter.outputs.other }}
     steps:
       - uses: actions/checkout@v4
@@ -59,6 +61,8 @@ jobs:
             data:
               - 'data/**'
               - '!**/*.md'
+            waf:
+              - 'infra/app/waf.tf'
             other:
               - '**'
               - '!frontend/**'
@@ -72,7 +76,7 @@ jobs:
   backend:
     name: Backend
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.other == 'true'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.waf == 'true' || needs.changes.outputs.other == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
