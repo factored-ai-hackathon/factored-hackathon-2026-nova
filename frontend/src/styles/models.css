@@ -135,6 +135,9 @@
   padding: var(--space-5);
 }
 
+.models-layers { padding-left: var(--space-5); color: var(--color-text-secondary); display: grid; gap: var(--space-2); }
+.models-layers strong { color: var(--color-text); }
+
 .models-limits {
   margin-top: var(--space-10);
   background: var(--color-surface);

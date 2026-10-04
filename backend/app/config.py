@@ -66,6 +66,10 @@ class Settings(BaseSettings):
     # Spend limits (see docs/api-contract.md). Unset = no limit (local development).
     daily_budget_usd: float | None = None
     rate_limit_per_hour: int | None = None
+    # Edge firewall numbers on /models (decision 50): the web ACL's CloudWatch metrics are read from
+    # us-east-1 (CLOUDFRONT scope). Unset = no security section (local development, tests).
+    waf_web_acl_name: str | None = None
+    waf_metrics_region: str = "us-east-1"
     # Price of the model, to turn tokens into dollars. Defaults: Claude Haiku 4.5 on Bedrock.
     llm_price_input_per_mtok: float = 1.0
     llm_price_output_per_mtok: float = 5.0

@@ -504,6 +504,7 @@ export default function ModelsPage() {
           <a href="#rag">Knowledge search</a>
           <a href="#cost">Cost per token</a>
           <a href="#live">Live, from production</a>
+          <a href="#protection">How it is protected</a>
           <a href="#limits">Limitations</a>
         </nav>
       </header>

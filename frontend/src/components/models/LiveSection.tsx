@@ -1,7 +1,8 @@
 /**
  * "Live, from production": aggregates over the deployed app's interactions table
  * (GET /v1/metrics/live), polled every minute while the page is open. The rest of /modelos is a
- * static snapshot and keeps working if this endpoint fails.
+ * static snapshot and keeps working if this endpoint fails. The same fetch feeds the firewall
+ * numbers of "How the demo is protected" (SecuritySection, decision 50): no second poll.
  */
 import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
@@ -9,6 +10,7 @@ import { getLiveMetrics, type Faithfulness, type Group, type LiveMetrics, type S
 import { HBars } from './charts';
 import { Card, Stat } from './cards';
 import { C, INTENT, pct, usd } from './viz';
+import SecuritySection from './SecuritySection';
 
 const LIVE_POLL_MS = 60_000;
 
@@ -236,6 +238,8 @@ export default function LiveSection() {
         </p>
       )}
       {!data && !failed && <p className="models-live-empty">Loading the live numbers…</p>}
+
+      <SecuritySection data={data} failed={failed} />
     </>
   );
 }

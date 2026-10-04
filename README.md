@@ -13,7 +13,7 @@ Team: **Nova** · Repository: `factored-hackathon-2026-nova`.
 | **Live demo** | [https://d2k8cgrqduyk2o.cloudfront.net](https://d2k8cgrqduyk2o.cloudfront.net): the demo page, with the three parts below |
 | Customer app | [`/login`](https://d2k8cgrqduyk2o.cloudfront.net/login): open **"Modo demo: clientes de prueba"** on the login page; password `Nova2026`, the SMS code is shown on screen |
 | Human agent console | [`/console`](https://d2k8cgrqduyk2o.cloudfront.net/console), key `Asesor2026` (shown in the field) |
-| How the models are measured | [`/models`](https://d2k8cgrqduyk2o.cloudfront.net/models), password `Modelos2026` (shown in the field) |
+| How the models are measured | [`/models`](https://d2k8cgrqduyk2o.cloudfront.net/models), password `Modelos2026` (shown in the field); it also shows live production numbers and how the demo is protected, with what the firewall blocked in the last 24 h |
 | Full demo guide | [docs/demo.md](docs/demo.md) |
 
 All customers are the challenge's **synthetic** dataset; no real person's data is used anywhere.

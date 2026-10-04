@@ -110,6 +110,14 @@ resource "aws_iam_role_policy" "api" {
         Action   = ["dynamodb:GetItem", "dynamodb:Query"]
         Resource = [aws_dynamodb_table.demo_customers.arn, "${aws_dynamodb_table.demo_customers.arn}/index/by-document"]
       },
+      {
+        # Decision 50: /models shows what the edge firewall blocked. GetMetricData has no
+        # resource-level permissions, so the resource must be "*"; it only reads metrics.
+        Sid      = "ReadWafMetrics"
+        Effect   = "Allow"
+        Action   = ["cloudwatch:GetMetricData"]
+        Resource = "*"
+      },
     ]
   })
 }
@@ -156,6 +164,7 @@ resource "aws_lambda_function" "api" {
       DAILY_BUDGET_USD      = tostring(var.daily_budget_usd)
       RATE_LIMIT_PER_HOUR   = tostring(var.rate_limit_per_hour)
       ORIGIN_VERIFY_SECRET  = random_password.origin_verify.result
+      WAF_WEB_ACL_NAME      = aws_wafv2_web_acl.app.name
     }
   }
 
