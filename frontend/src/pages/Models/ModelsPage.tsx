@@ -8,8 +8,8 @@
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Brain, Coins, Headset, LineChart, Search } from 'lucide-react';
-import { KEYS, loadStored, saveStored } from '../../utils/persist';
+import { ArrowLeft, Brain, Coins, Headset, LineChart, LogOut, Search } from 'lucide-react';
+import { KEYS, clearStored, loadStored, saveStored } from '../../utils/persist';
 import metrics from '../../data/modelMetrics.json';
 import { Confusion, DotRows, HBars, Segmented } from '../../components/models/charts';
 import { C, INTENT, pct, usd } from '../../components/models/viz';
@@ -490,9 +490,21 @@ export default function ModelsPage() {
           <Link to="/login" className="models-back">
             <ArrowLeft size={16} aria-hidden="true" /> NovaBank
           </Link>
-          <Link to="/console" className="models-back">
-            <Headset size={16} aria-hidden="true" /> Human agent console
-          </Link>
+          <div className="models-top-actions">
+            <Link to="/console" className="models-back">
+              <Headset size={16} aria-hidden="true" /> Human agent console
+            </Link>
+            <button
+              type="button"
+              className="models-back models-signout"
+              onClick={() => {
+                clearStored(KEYS.models);
+                setEntered(false);
+              }}
+            >
+              <LogOut size={16} aria-hidden="true" /> Sign out
+            </button>
+          </div>
         </div>
         <h1>Do the models work?</h1>
         <p>
