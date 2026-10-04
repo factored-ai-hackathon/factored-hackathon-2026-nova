@@ -49,6 +49,16 @@ describe('models page', () => {
     expect(await screen.findByText(/live numbers are not available/)).toBeInTheDocument();
   });
 
+  it('signs out: back to the password gate, and a reload stays out', async () => {
+    await enter();
+    await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Intent classifier' })).not.toBeInTheDocument();
+    document.body.innerHTML = '';
+    renderPage();
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+  });
+
   it('remembers the password after a reload', async () => {
     await enter();
     document.body.innerHTML = '';
