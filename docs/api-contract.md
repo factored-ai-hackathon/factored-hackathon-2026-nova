@@ -120,9 +120,15 @@ Where it goes depends on `INTERACTIONS_STORE`:
                    "window": {"first": "<iso>", "last": "<iso>"}, "limit": 50},
   "satisfaction": {"rated": 4, "mean": 4.25, "distribution": {"1": 0, "2": 0, "3": 1, "4": 1, "5": 2},
                    "window": {"first": "<iso>", "last": "<iso>"}},
+  "security": {"window_hours": 24, "requests": 12345, "blocked": 678,
+               "by_reason": {"rate_limits": 500, "unknown_routes": 100,
+                             "attack_signatures": 60, "bad_reputation": 18},
+               "generated_at": "<iso>"},
   "generated_at": "<iso>", "cache_seconds": 60
 }
 ```
+
+`security` (decision 50) is what the edge firewall (AWS WAF web ACL) did in the last 24 hours: `requests` is allowed plus blocked for the whole ACL, `blocked` the blocked ones, and `by_reason` adds up the blocks of the rules in four groups (`rate_limits`: the per-IP and flood limits; `unknown_routes`: route/method allowlist and body size; `attack_signatures`: AWS managed known-bad-inputs and core rules; `bad_reputation`: the IP reputation list). Numbers only: no IPs, no request samples, no rule internals. It is read with one CloudWatch `GetMetricData` call (us-east-1) inside the same 60 s cache. It is `null` when `WAF_WEB_ACL_NAME` is unset (local, tests) and `{"error": "unavailable"}` if CloudWatch fails; the rest of the body is returned either way. The WAF metrics lag a few minutes and include the team's own tests.
 
 `satisfaction` (decision 46) covers every rated case (window: first and last `rated_at`); `mean` is `null` with no ratings. DynamoDB: a `Scan` of the cases table projecting only `rating` and `rated_at` (stored as top-level attributes next to the case JSON), never the case text. It is the same `Scan` the console's queue already uses: no new IAM permission.
 `faithfulness` scores the last `limit` handed-over cases with the agent console's check (decision 28): the share of checkable claims in Nova's answers (amounts, dates, last digits, names) found in the data it consulted. `scored` counts the cases with at least one claim; `buckets`: every claim found, 75-99%, under 75%. Only the scores: never the answers, case ids or names.

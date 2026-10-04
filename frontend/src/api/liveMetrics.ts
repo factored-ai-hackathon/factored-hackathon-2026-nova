@@ -31,6 +31,20 @@ export interface Satisfaction {
   window: { first: string | null; last: string | null }
 }
 
+/** What the edge firewall blocked (decision 50): counts only. */
+export interface SecurityMetrics {
+  window_hours: number
+  requests: number
+  blocked: number
+  by_reason: {
+    rate_limits: number
+    unknown_routes: number
+    attack_signatures: number
+    bad_reputation: number
+  }
+  generated_at: string
+}
+
 export interface LiveMetrics {
   turns: number
   conversations: number
@@ -55,6 +69,8 @@ export interface LiveMetrics {
   by_channel: Record<string, Group>
   faithfulness?: Faithfulness
   satisfaction?: Satisfaction
+  /** null: not configured (local); {error}: CloudWatch unavailable. */
+  security?: SecurityMetrics | { error: string } | null
   generated_at: string
   cache_seconds: number
 }

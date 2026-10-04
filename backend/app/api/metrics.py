@@ -22,6 +22,7 @@ from app.agent.handoff import CaseStore, get_case_store, satisfaction
 from app.agent.intent import get_intent_model
 from app.api.chat import Interactions
 from app.config import get_settings
+from app.security_metrics import fetch_security
 
 CACHE_SECONDS = 60
 CASES_LIMIT = 50  # the agent console's queue: the most recent handed-over cases
@@ -86,6 +87,9 @@ async def live_metrics(interactions: Interactions, cases: Cases) -> dict[str, An
             )
             body["faithfulness"] = faithfulness_summary(await cases.list_recent(CASES_LIMIT))
             body["satisfaction"] = satisfaction(await cases.ratings())
+            body["security"] = await fetch_security(
+                settings.waf_web_acl_name, settings.waf_metrics_region
+            )
             body["generated_at"] = datetime.now(UTC).isoformat()
             body["cache_seconds"] = CACHE_SECONDS
             _cache.update(at=time.monotonic(), body=body)
