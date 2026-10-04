@@ -126,7 +126,7 @@ reason in [docs/decisions.md](docs/decisions.md).
   learns from team-written phrases and takes the FCR rates from the dataset.
 - Abstention is the weak part of the knowledge search; the model reading the chunks does most of it.
 - NovaBank's policies and figures are fictitious.
-- **Git history**: `evals/report/results/e2e.json` was anonymized before the repository went public, but the
+- **Git history**: `evals/report/results/e2e.json` was anonymized before the repository was made public, but the
   commits of Oct 1, 2026 between `db25f6e` and `85ead33` (and the PRs, branches and release tags that include
   them) still hold the first version, with fragments of two records of the organizers' dataset (customer ids,
   first names, a card's last four digits, balances). The dataset is fully synthetic, with no real customers; we
