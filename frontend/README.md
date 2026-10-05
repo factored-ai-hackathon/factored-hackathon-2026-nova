@@ -1,6 +1,6 @@
 # NovaBank frontend
 
-Customer-facing banking demo with the Nova AI assistant (Spanish and Portuguese). Banking data and login are simulated; the Nova chat talks to the real backend. Owners: Esteban, Miguel.
+Customer-facing banking demo with the Nova AI assistant (Spanish and Portuguese). Banking data and login are simulated; the Nova chat talks to the real backend. Owner: Miguel.
 
 Vite + React + TypeScript. Chat API contract: [docs/api-contract.md](../docs/api-contract.md).
 

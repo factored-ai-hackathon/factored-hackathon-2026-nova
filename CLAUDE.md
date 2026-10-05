@@ -50,8 +50,8 @@ Details: @docs/architecture.md
 - `data/`: data pipeline code (upload script, Athena cleaning SQL). No dataset files.
 
 ## Team and responsibilities
-- **Miguel**: coordination, QA / reliability / evaluation; co-platform; co-frontend
-- **Esteban**: architecture; co-backend; co-frontend
+- **Miguel**: coordination, QA / reliability / evaluation; co-platform; frontend
+- **Esteban**: architecture; co-backend
 - **Paul**: backend (with Esteban); platform; Agent AI; data and ML
 
 ## AWS environment

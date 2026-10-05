@@ -12,7 +12,7 @@ Goal: resolve more issues on the first contact, benchmark agents, track customer
 | `data/` | Cleaning and the data model (dbt SQL) | Paul |
 | `ml/` | Notebooks and models | Paul |
 | `backend/` | API and the agent | Paul, Esteban |
-| `frontend/` | Chat UI | Esteban, Miguel |
+| `frontend/` | Chat UI | Miguel |
 | `evals/` | Tests of the agent and models | Miguel |
 | `infra/` | AWS setup (Terraform) | Paul, Miguel |
 | `docs/` | Architecture, decisions, data findings | everyone |
