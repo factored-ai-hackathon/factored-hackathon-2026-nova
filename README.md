@@ -149,8 +149,8 @@ then open http://localhost:5173. Tests: `uv run pytest` (backend), `npm test` (f
 | | Role |
 |---|---|
 | [Paul Montero](https://github.com/lpaulmp) | Backend, platform, agent AI |
-| [Esteban Quintero Gómez](https://github.com/Estebanquingo) | Architecture, backend, frontend (the MVP chat foundation and its plan) |
-| [Miguel Higorre](https://github.com/miguel-higorre-ch) | Coordination, QA and evaluation, frontend |
+| [Esteban Quintero Gómez](https://github.com/Estebanquingo) | Architecture and backend (the initial architecture, the MVP chat backend and its plan) |
+| [Miguel Higorre](https://github.com/miguel-higorre-ch) | Coordination, QA and frontend |
 | Iris | Initial Kickoff data and ML |
 
 ## Contributions
@@ -158,5 +158,5 @@ then open http://localhost:5173. Tests: `uv run pytest` (backend), `npm test` (f
 What each person did, from the repository history and the [decisions log](docs/decisions.md). Much of the code was written with Claude Code (an AI coding assistant). Since Oct 2 every pull request also gets a review comment from a review agent (PulMAgent), and every merge and every release is done by a person.
 
 - **Paul Montero**: the agent and its backend (identity verification, account tools, handoff to a human agent and the agent console, intent classifier, knowledge search), the evaluation report, the data pipeline, the infrastructure and the release process.
-- **Miguel Higorre**: the banking UI draft (#3), the evaluation issue template and workflow, an evaluation plan (#31), the 14 manual test cases (issues #32 to #45), the report that led to the demo-pool fix (#88, #90) and the fixes to the chat's full view (#85, #89).
-- **Esteban Quintero Gómez**: the first version of the chat (Sep 27), with the streaming API, the agent, the React UI and the first evaluations, and the plan for the first end-to-end chat ([docs/plans/mvp-chat.md](docs/plans/mvp-chat.md)).
+- **Miguel Higorre**: the frontend, from the banking UI (#3) to the fixes to the chat's full view (#85, #89); the evaluation issue template and workflow, an evaluation plan (#31), the 14 manual test cases (issues #32 to #45) and the report that led to the demo-pool fix (#88, #90).
+- **Esteban Quintero Gómez**: the initial architecture and the first version of the chat backend (Sep 27), with the streaming API, the agent and the first evaluations, and the plan for the first end-to-end chat ([docs/plans/mvp-chat.md](docs/plans/mvp-chat.md)).

@@ -1,7 +1,7 @@
 # NovaBank Frontend — Agent API Contract
 
 > **Status**: Proposed draft — pending backend team review  
-> **Owner**: Frontend (Miguel, Esteban)  
+> **Owner**: Frontend (Miguel)  
 > **Last updated**: 2026-09-27
 
 This document specifies the expected HTTP API contract between the NovaBank frontend and the FastAPI + LangGraph backend agent.
